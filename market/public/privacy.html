@@ -6,35 +6,68 @@
 <title>Privacy · MyOffiCity</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Figtree:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="portal.css">
-<style>.doc h2{margin-top:28px}.doc ul{padding-left:20px}.doc li{margin:4px 0}</style>
+<link rel="stylesheet" href="portal.css?v=22">
+<style>.doc h2{margin-top:28px}.doc ul{padding-left:20px}.doc li{margin:6px 0}html[lang=en] [data-l=sv],html[lang=sv] [data-l=en]{display:none}.langsw{margin-left:auto}</style>
 </head>
 <body>
-<header class="bar"><a class="brand" href="./" aria-label="MyOffiCity"><span class="word"><i>My</i><b>Offi</b><b class="c">City</b></span></a><nav id="nav"><a href="./">Open the site</a></nav></header>
+<header class="bar"><a class="brand" href="./" aria-label="MyOffiCity"><span class="word"><i>My</i><b>Offi</b><b class="c">City</b></span></a><nav id="nav"><a href="./" data-l="en">Open the site</a><a href="./" data-l="sv">Öppna sajten</a></nav><div class="bar-r"><select id="lang" aria-label="Language"><option value="en">English</option><option value="sv">Svenska</option></select></div></header>
 <main class="doc">
+
+<div data-l="en">
 <h1>Privacy policy</h1>
-<p class="muted">MyOffiCity, run by nRnWorld. Last updated 25 October 2026. Svensk sammanfattning finns längst ned.</p>
+<p class="muted">MyOffiCity, run by nRnWorld. Last updated 25 October 2026.</p>
 
 <h2>What we store</h2>
 <ul>
-<li><b>Account:</b> username, email address, and a salted hash of your password (never the password itself). If you sign in with Google we receive your Google account ID and your verified email address; we do not receive your Google password and we ask for no other Google data.</li>
-<li><b>Company profile</b> (if you run a company): name, description, services, tags, building type and ratings. This is public on the site.</li>
+<li><b>Account:</b> username, email address and a salted hash of your password (never the password itself). If you sign in with Google we receive your Google account ID and your verified email address. We do not receive your Google password and we ask for no other Google data.</li>
+<li><b>Company profile</b> (if you run a company): name, description, services, tags, website, organisation number, logo, building type and ratings. This is public on the site.</li>
 <li><b>Orders and chats:</b> briefs, messages, proposals, delivered files and reviews you send through the site. They are visible to you and to the company or customer on the other side.</li>
-<li><b>API keys</b> for company accounts: stored as hashes only; the key itself is shown once.</li>
+<li><b>API keys</b> for company accounts: stored as hashes only. The key itself is shown once.</li>
 <li><b>Technical data:</b> your IP address is used briefly to limit abuse (rate limits). We do not use advertising or tracking cookies and we do not run analytics.</li>
 </ul>
 
 <h2>Where and how</h2>
-<p>Data is stored with Cloudflare (Workers and D1 database). Pages load fonts from Google Fonts and the 3D library from cdnjs, which means those providers see your IP address when you open the site. We do not sell or share your data for marketing.</p>
+<p>Data is stored with Cloudflare (Workers and D1 database). Pages load fonts from Google Fonts and a 3D library from cdnjs, which means those providers see your IP address when you open the site. We do not sell or share your data for marketing.</p>
 
 <h2>Sign in with Google</h2>
-<p>We use Google only to confirm who you are (name of account, email, account ID). The use of information received from Google APIs adheres to the Google API Services User Data Policy, including the Limited Use requirements.</p>
+<p>We use Google only to confirm who you are (account ID and email). The use of information received from Google APIs adheres to the Google API Services User Data Policy, including the Limited Use requirements.</p>
 
 <h2>Your rights</h2>
 <p>You can ask to see, correct or delete your data at any time, and we will delete your account and its content on request. Contact us through the contact form at <a href="https://nrnworld.one">nrnworld.one</a>.</p>
+</div>
 
-<h2>Svenska i korthet</h2>
-<p>Vi sparar användarnamn, e-post, ett saltat lösenordshash (aldrig lösenordet) och det du själv skickar via sajten: företagsprofil, beställningar, chattar och filer. Vid Google-inloggning får vi bara ditt konto-ID och din verifierade e-postadress. Datan ligger hos Cloudflare. Vi använder ingen reklam eller spårning och säljer inget. Du kan när som helst be om att se, ändra eller radera din data via kontaktformuläret på nrnworld.one.</p>
+<div data-l="sv">
+<h1>Integritetspolicy</h1>
+<p class="muted">MyOffiCity drivs av nRnWorld. Senast uppdaterad 25 oktober 2026.</p>
+
+<h2>Vad vi sparar</h2>
+<ul>
+<li><b>Konto:</b> användarnamn, e-postadress och ett saltat hash av ditt lösenord (aldrig själva lösenordet). Om du loggar in med Google får vi ditt Google-konto-ID och din verifierade e-postadress. Vi får inte ditt Google-lösenord och ber inte om några andra uppgifter från Google.</li>
+<li><b>Företagsprofil</b> (om du driver ett företag): namn, beskrivning, tjänster, taggar, hemsida, organisationsnummer, logotyp, byggnadstyp och betyg. Detta är offentligt på sajten.</li>
+<li><b>Beställningar och chattar:</b> beställningstexter, meddelanden, förslag, levererade filer och omdömen som du skickar via sajten. De syns för dig och för företaget eller kunden på andra sidan.</li>
+<li><b>API-nycklar</b> för företagskonton: sparas bara som hash. Själva nyckeln visas en gång.</li>
+<li><b>Teknisk data:</b> din IP-adress används kort för att begränsa missbruk (hastighetsgränser). Vi använder inga reklam- eller spårningskakor och kör ingen statistik.</li>
+</ul>
+
+<h2>Var och hur</h2>
+<p>Data lagras hos Cloudflare (Workers och databasen D1). Sidorna hämtar typsnitt från Google Fonts och ett 3D-bibliotek från cdnjs, vilket betyder att de leverantörerna ser din IP-adress när du öppnar sajten. Vi säljer eller delar inte dina uppgifter för marknadsföring.</p>
+
+<h2>Logga in med Google</h2>
+<p>Vi använder bara Google för att bekräfta vem du är (konto-ID och e-post). Användningen av information som tas emot från Googles API:er följer Google API Services User Data Policy, inklusive kraven på begränsad användning.</p>
+
+<h2>Dina rättigheter</h2>
+<p>Du kan när som helst be om att se, rätta eller radera dina uppgifter, och vi raderar ditt konto och dess innehåll på begäran. Kontakta oss via kontaktformuläret på <a href="https://nrnworld.one">nrnworld.one</a>.</p>
+</div>
+
 </main>
+<script>
+(function () {
+  var l; try { l = localStorage.getItem('nrn.market.lang'); } catch (e) { l = null; }
+  if (l !== 'sv' && l !== 'en') l = (navigator.language || 'en').toLowerCase().indexOf('sv') === 0 ? 'sv' : 'en';
+  var set = function (x) { document.documentElement.lang = x; document.title = x === 'sv' ? 'Integritet · MyOffiCity' : 'Privacy · MyOffiCity'; document.getElementById('lang').value = x; };
+  set(l);
+  document.getElementById('lang').onchange = function (e) { l = e.target.value; try { localStorage.setItem('nrn.market.lang', l); } catch (x) { /* privat läge */ } set(l); };
+})();
+</script>
 </body>
 </html>

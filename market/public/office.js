@@ -761,11 +761,11 @@ function animTalk(p,t,sp){
 const SKINS=[0xf1c9a5,0xe0ac82,0xc68a62,0x8a5a3c,0x6b4430],HAIRS=[0x1a1210,0x3a2a22,0x8a5a33,0xb8863b,0x555555],
   SHIRTS=[0x4a78c9,0xc94a6e,0x3fa56b,0xd18a3a,0x7a5cc9,0x2e3a4a,0xe8d6c0],STYLES=['short','long','bob','bun','afro'];
 const PRESET={
-  tomas:{skin:0xe6bd9c,shirt:0x1d3f7a,hair:0x3b2a22,hairStyle:'short',glasses:true,beard:true,tie:0xffffff},
-  ebba:{skin:0xefc6a6,shirt:0x24262d,hair:0x8a5a33,hairStyle:'bob'},
-  kia:{skin:0x8a5a3c,shirt:0xe8d6c0,hair:0x1a1210,hairStyle:'long',headset:true},
-  manus:{skin:0xc98f68,shirt:0x2e2f3a,hair:0x2a1b14,hairStyle:'afro',hood:true},
-  laila:{skin:0xe3b595,shirt:0xff8fb3,hair:0x15100f,hairStyle:'bun'}};
+  tomas:{skin:0xe6bd9c,shirt:0x23304f,hair:0x4a3426,hairStyle:'short',glasses:true,beard:true},
+  ebba:{skin:0xeebfa0,shirt:0x55585f,hair:0x7a4228,hairStyle:'bob'},
+  kia:{skin:0x6e4630,shirt:0xe8d6c0,hair:0x1a1210,hairStyle:'long',headset:true},
+  manus:{skin:0x7a5238,shirt:0x4d5058,hair:0x120d0b,hairStyle:'afro',hood:true},
+  laila:{skin:0xd7a37c,shirt:0xc77882,hair:0x2a1912,hairStyle:'bun'}};
 function look(e){
   const p=PRESET[(e.name||'').toLowerCase()];if(p)return e.age>52?{...p,hair:0x9a9a9a,beard:p.beard}:p;
   const h=hash(VAR?e.id+'#'+VAR:e.id);

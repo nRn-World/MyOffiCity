@@ -7,7 +7,29 @@ const BSTYLES={
   loft:{frame:0x1d1e22,slab:0xd8b27c,wall:0xf4eee4,win:0x1d1e22,roof:0x2a2b30,floors:['pine','pine']},
   kontor:{frame:0xb9c0c8,slab:0xe8e6e1,wall:0xf1ebe0,win:0xb9c0c8,roof:0xe4e0d8,floors:['wood','wood','wood']},
   hq:{frame:0x2a2c33,slab:0x2a2c33,wall:0xe9e1d3,win:0x2a2c33,roof:0x23252b,gold:0xc9a24a,floors:['tile','wood','wood','walnut']}};
-let VAR=0,TIERK='kontor';
+let VAR=0,TIERK='kontor',OBST=[];
+function obst(x,y,z,hw,hd,ry){OBST.push({x,y,z,hw,hd,ry});}   // halvbredd/halvdjup, rotation runt y
+function pushOut(o){   // flyttar ut personen ur ett möbelhinder (glider längs kanten)
+  for(const b of OBST){
+    if(Math.abs(b.y-o.position.y)>1)continue;
+    const c=Math.cos(b.ry),s=Math.sin(b.ry),dx=o.position.x-b.x,dz=o.position.z-b.z,lx=dx*c-dz*s,lz=dx*s+dz*c,px=b.hw+.32,pz=b.hd+.32;
+    if(Math.abs(lx)<px&&Math.abs(lz)<pz){
+      const ox=px-Math.abs(lx),oz=pz-Math.abs(lz);let nx=0,nz=0;if(ox<oz)nx=lx>=0?ox:-ox;else nz=lz>=0?oz:-oz;
+      o.position.x+=nx*c+nz*s;o.position.z+=-nx*s+nz*c;
+    }
+  }
+}
+function safePt(x,z,y){   // flyttar en målpunkt ut ur möbler så att ingen försöker stå i dem
+  for(let k=0;k<3;k++)for(const b of OBST){
+    if(Math.abs(b.y-y)>1)continue;
+    const c=Math.cos(b.ry),s=Math.sin(b.ry),dx=x-b.x,dz=z-b.z,lx=dx*c-dz*s,lz=dx*s+dz*c,px=b.hw+.5,pz=b.hd+.5;
+    if(Math.abs(lx)<px&&Math.abs(lz)<pz){
+      const ox=px-Math.abs(lx),oz=pz-Math.abs(lz);let nx=0,nz=0;if(ox<oz)nx=lx>=0?ox:-ox;else nz=lz>=0?oz:-oz;
+      x+=nx*c+nz*s;z+=-nx*s+nz*c;
+    }
+  }
+  return [x,z];
+}
 const PAL=[{},{wall:0xe6efe8,slab:0xc9b99a,roof:0x2f6b55,frame:0x2c5a4a,win:0x2c5a4a},{wall:0xf2e4d2,slab:0xb98b5b,roof:0xa94a35,frame:0x7a3328,win:0x7a3328},{wall:0xe4ebf2,slab:0xa9b3bf,roof:0x3a62a8,frame:0x2f4b7a,win:0x2f4b7a},{wall:0xf4dfd8,slab:0xd2a590,roof:0xc9922f,frame:0xc08a2e,win:0xc08a2e},{wall:0xeceae0,slab:0x8fa88a,roof:0x7a5aa8,frame:0x6b5a8a,win:0x6b5a8a}];
 const SIGNC=[['#1b2550','#0c1230','#ffd27a','#6fc8ff'],['#2a1a12','#120a06','#f0b07a','#ffb36b'],['#12332b','#06150f','#8fe0b8','#6fffd0'],['#2b1245','#12061f','#d9a7ff','#c58bff'],['#3a1216','#190508','#ffc4a0','#ff8f6f'],['#10283a','#06121c','#a7e0ff','#6fd0ff']];
 const GROUNDC=[0x9cc58a,0xb5c78a,0xa4a07a,0x8fb59a,0xc2bd8c,0x93b878];
@@ -129,13 +151,13 @@ function deskTop(parent,w,d,x,y,z,col=wood){
   box(w,.07,d,col,x,y-.035,z,parent);
   for(const sx of[-1,1])for(const sz of[-1,1])box(.07,y-.07,.07,metal,x+sx*(w/2-.1),(y-.07)/2,z+sz*(d/2-.1),parent);
 }
-function sofa(x,y,z,ry,col=0x8a6a52){
+function sofa(x,y,z,ry,col=0x8a6a52){obst(x,y,z,1.1,.45,ry);
   const g=new T3.Group();g.position.set(x,y,z);g.rotation.y=ry;
   const m=M(col);box(2.2,.45,.9,m,0,.3,0,g);box(2.2,.7,.25,m,0,.7,-.35,g);
   box(.25,.6,.9,m,-1.1,.5,0,g);box(.25,.6,.9,m,1.1,.5,0,g);
   box(.55,.3,.4,M(0xe58a3a),-.5,.65,-.1,g);root.add(g);
 }
-function armchair(x,y,z,ry,col=0x7b5d49){
+function armchair(x,y,z,ry,col=0x7b5d49){obst(x,y,z,.5,.45,ry);
   const g=new T3.Group();g.position.set(x,y,z);g.rotation.y=ry;
   const m=M(col);box(.95,.4,.9,m,0,.28,0,g);box(.95,.7,.22,m,0,.7,-.34,g);box(.2,.55,.9,m,-.5,.5,0,g);box(.2,.55,.9,m,.5,.5,0,g);root.add(g);
 }
@@ -849,7 +871,7 @@ function build(o){
   if(root){disposeTree(root);scene.remove(root);}
   glassMat=null;
   root=new T3.Group();scene.add(root);
-  screens=[];leds=[];holos=[];lights=[];cars=[];bikes=[];screenHits=[];cityTex=[];flames=[];
+  screens=[];leds=[];holos=[];lights=[];cars=[];bikes=[];screenHits=[];cityTex=[];flames=[];OBST=[];
   cityFaces.forEach(f=>f.t.dispose());cityFaces=CITY_STYLES.map((_,i)=>makeCityFace(i));cityMats=[];cityBeacons=[];
   Object.values(agents).forEach(a=>{a.tag.remove();a.bub.remove();});for(const k in agents)delete agents[k];
   packets.forEach(p=>p.res());packets=[];trails=[];
@@ -889,7 +911,7 @@ function build(o){
     glass(3.8,3.4,-1.2,y+1.7,-3.5,Math.PI/2);glass(3.8,3.4,2.2,y+1.7,-3.5,Math.PI/2);glass(3.4,3.4,.5,y+1.7,-1.6,0);
     deskTop(root,2.2,1.1,.5,y+.74,-3.6,M(0xe6e1d6));[[-.2,-4.4,0],[1.2,-4.4,0],[-.2,-2.8,Math.PI],[1.2,-2.8,Math.PI]].forEach(([x,z,r])=>chair(root,x,z,r,y));
     statsTV(4.6,y+2.7,Z0+.35,2.75,1.6);
-    sofa(sx+1,y,-3.4,Math.PI/2);armchair(sx+4,y,-.4,.5);box(.9,.4,.9,M(0xb8956a),sx+3.6,y+.2,-2.3,root);box(5,.03,3.4,M(0xd9c6a0),sx+4.6,y+.015,-2.4,root);
+    sofa(sx+1,y,-3.4,Math.PI/2);armchair(sx+4,y,-.4,.5);box(.9,.4,.9,M(0xb8956a),sx+3.6,y+.2,-2.3,root);obst(sx+3.6,y,-2.3,.45,.45,0);box(5,.03,3.4,M(0xd9c6a0),sx+4.6,y+.015,-2.4,root);
     plant(sx+.4,y,.3,1.3);plant(BW/2-.5,y,-4.9,1.2);pendant(sx+4.5,y+WH-.1,-2.3);pendant(4.6,y+WH-.1,-2.6);
     bossPerson(o,y,sx+7.1,-3.9,1.8);
   }else{
@@ -897,7 +919,7 @@ function build(o){
     slotRows(0,rest,5,-3,monsFor);
     const srx=7.9;glass(2.7,3.2,srx-1.35,1.6,-4.0,Math.PI/2);glass(2.7,3.2,srx+1.35,1.6,-4.0,Math.PI/2);glass(2.7,3.2,srx,1.6,-2.65,0);
     for(let i=0;i<3;i++){rack(srx-.9+i*.9,0,-4.6);const gl=new T3.Mesh(new T3.PlaneGeometry(.6,1),new T3.MeshBasicMaterial({color:0x35c6ff,transparent:true,opacity:.35}));gl.position.set(srx-.9+i*.9,.6,-4.29);root.add(gl);}
-    sofa(7.9,0,.2,Math.PI);box(.9,.4,.9,M(0xb8956a),7.9,.2,-1.0,root);cooler(sx+.7,0,-4.8);plant(sx+.6,0,-3.6,1.1);wcDoor(0);
+    sofa(7.9,0,.2,Math.PI);box(.9,.4,.9,M(0xb8956a),7.9,.2,-1.0,root);obst(7.9,0,-1.0,.45,.45,0);cooler(sx+.7,0,-4.8);plant(sx+.6,0,-3.6,1.1);wcDoor(0);
     /* våning 2: mission control – ledare framför statusvyer, träribbad akustikvägg */
     const y1=FH;[0,1].forEach(i=>leadStation(y1,leads[i],-1.5+i*3.6));
     for(let i=0;i<14;i++)box(.12,2.6,.12,M(0x8a5a36),-6+i*.4,y1+1.3,-4.95,root);
@@ -915,7 +937,7 @@ function build(o){
     const y=topY;
     box(BW-.4,1.2,.05,M(0x3f281b),0,y+.6,Z0+.03,root);
     fireplace(-1.5,y,Z0+.3);statsTV(-1.5,y+2.75,Z0+.35,3.2,1.6,goldM);
-    const lea=0x4a2a1a;armchair(-3.2,y,-3.0,.6,lea);armchair(.2,y,-3.0,-.6,lea);box(1.2,.35,.8,M(0x2a1c14),-1.5,y+.18,-3.2,root);box(5,.03,3.2,M(0x7a5a3a),-1.5,y+.015,-3.3,root);
+    const lea=0x4a2a1a;armchair(-3.2,y,-3.0,.6,lea);armchair(.2,y,-3.0,-.6,lea);box(1.2,.35,.8,M(0x2a1c14),-1.5,y+.18,-3.2,root);obst(-1.5,y,-3.2,.6,.4,0);box(5,.03,3.2,M(0x7a5a3a),-1.5,y+.015,-3.3,root);
     
     sofa(6.5,y,-3.6,0,lea);bookshelf(4.0,y,-5.1,0);
     plant(sx+.6,y,.2,1.3);plant(BW/2-.7,y,-4.6,1.3);plant(BW/2-.7,y,.2,1.1);pendant(-1.5,y+WH-.1,-1.8);pendant(sx+5,y+WH-.1,-3);
@@ -985,7 +1007,54 @@ function drawCity(d){
   const glow=Math.max(0,1-d*1.55);
   cityMats.forEach(m=>{m.emissiveIntensity=glow*.55;});
 }
-function applyTime(){
+/* ---------- väder: regn, snö, dimma och åska i kontorsscenen ---------- */
+const WXCLEAR={kind:'clear',c:0,snow:0,wet:0,fog:0,int:0,wind:0,flash:0,nextFlash:0};
+let WX=WXCLEAR,wxObj=null,wxData=null,wxHemi=0;
+function wxBuild(){
+  if(wxObj){scene.remove(wxObj);wxObj.geometry.dispose();wxObj.material.dispose();wxObj=null;wxData=null;}
+  if(!['rain','thunder','snow'].includes(WX.kind))return;
+  const snow=WX.kind==='snow',N=Math.round((snow?500:500)+(snow?1100:1400)*WX.int),D={n:N,x:new Float32Array(N),y:new Float32Array(N),z:new Float32Array(N),sp:new Float32Array(N),ph:new Float32Array(N)};
+  for(let i=0;i<N;i++){D.x[i]=-34+Math.random()*68;D.y[i]=-.7+Math.random()*46;D.z[i]=-26+Math.random()*44;D.sp[i]=snow?.9+Math.random()*1.3:26+Math.random()*14;D.ph[i]=Math.random()*6.28;}
+  const g=new T3.BufferGeometry();
+  if(snow){g.setAttribute('position',new T3.BufferAttribute(new Float32Array(N*3),3));wxObj=new T3.Points(g,new T3.PointsMaterial({color:0xffffff,size:4.4*Math.min(2,devicePixelRatio||1),sizeAttenuation:false,transparent:true,opacity:.88,depthWrite:false}));}
+  else{g.setAttribute('position',new T3.BufferAttribute(new Float32Array(N*6),3));wxObj=new T3.LineSegments(g,new T3.LineBasicMaterial({color:0xbfd3ff,transparent:true,opacity:.42,depthWrite:false}));}
+  wxObj.frustumCulled=false;wxObj.renderOrder=9;wxData=D;scene.add(wxObj);wxStep(.016,0,0);
+}
+function wxStep(dt,t,now){
+  if(WX.kind==='thunder'){
+    if(now>WX.nextFlash){WX.flash=1;WX.nextFlash=now+6000+Math.random()*9000;}
+    if(WX.flash>.02){WX.flash*=.9;if(hemi)hemi.intensity=wxHemi+WX.flash*1.5;}else if(WX.flash>0){WX.flash=0;if(hemi)hemi.intensity=wxHemi;}
+  }
+  if(!wxObj||!wxData||!wxObj.visible)return;
+  const D=wxData,N=D.n,p=wxObj.geometry.attributes.position.array,wind=WX.wind,snow=WX.kind==='snow',top=46,bot=-.7;
+  for(let i=0;i<N;i++){
+    D.y[i]-=D.sp[i]*dt;D.x[i]+=(snow?wind*.6+Math.sin(t*.9+D.ph[i])*.5:wind)*dt;
+    if(D.y[i]<bot){D.y[i]=top;D.x[i]=-34+Math.random()*68;D.z[i]=-26+Math.random()*44;}
+    if(snow){const k=i*3;p[k]=D.x[i];p[k+1]=D.y[i];p[k+2]=D.z[i];}
+    else{const k=i*6;p[k]=D.x[i];p[k+1]=D.y[i];p[k+2]=D.z[i];p[k+3]=D.x[i]-wind*.03;p[k+4]=D.y[i]+1.5;p[k+5]=D.z[i];}
+  }
+  wxObj.geometry.attributes.position.needsUpdate=true;
+}
+function wxLook(){   // molnighet, dimma, blöt mark och snötäcke ovanpå dygnsljuset
+  if(!hemi)return;
+  const c=WX.c,d=daylight(hourNow);
+  if(c>0){
+    hemi.intensity*=1-.32*c;sunL.intensity*=1-.9*c;
+    const grey=lerpC('#1a2033','#aab3c0',d);
+    if(scene.fog){scene.fog.color.lerp(grey,.75*c);scene.fog.near=105-70*WX.fog;scene.fog.far=230-150*WX.fog;}
+    const g=bgC.getContext('2d');g.globalAlpha=.72*c;g.fillStyle=hexOf(grey);g.fillRect(0,0,4,256);g.globalAlpha=1;bgT.needsUpdate=true;
+    if(groundMat){if(WX.snow)groundMat.color.lerp(new T3.Color('#eef3f9'),WX.snow);else if(WX.wet)groundMat.color.multiplyScalar(1-.28*WX.wet);}
+  }else if(scene.fog){scene.fog.near=105;scene.fog.far=230;}
+  wxHemi=hemi.intensity;
+}
+function setWeather(w){   // w: {kind:'clear'|'cloud'|'fog'|'rain'|'snow'|'thunder', intensity:0..1, wind:km/h} eller null
+  const k=w&&w.kind||'clear',int=Math.max(.15,Math.min(1,(w&&w.intensity)||.5));
+  const base={clear:0,cloud:.4,fog:.85,rain:.6+.3*int,snow:.65,thunder:1}[k];
+  WX={kind:k,c:base===undefined?0:base,snow:k==='snow'?.85:0,wet:k==='rain'||k==='thunder'?.8:0,fog:k==='fog'?1:(k==='rain'||k==='snow'?.35:0),int,wind:Math.min(6,((w&&w.wind)||0)*.12),flash:0,nextFlash:0};
+  wxBuild();if(root)applyTime();
+}
+function applyTime(){applyTimeBase();wxLook();}
+function applyTimeBase(){
   if(!hemi)return;
   const d=daylight(hourNow),w=1-Math.abs(2*d-1),g=bgC.getContext('2d'),gr=g.createLinearGradient(0,0,0,256);
   gr.addColorStop(0,hexOf(lerpC('#050914','#7fbfee',d).lerp(new T3.Color('#ff8f5a'),w*.45)));
@@ -1035,12 +1104,12 @@ const v=new T3.Vector3();
 const pause=ms=>new Promise(r=>setTimeout(r,ms));
 function walkTo(obj,pts,speed=1.4){
   walkSet.add(obj);
-  return new Promise(res=>{obj.userData.walking=true;movers.push({obj,pts:pts.map(q=>new T3.Vector3(q[0],obj.position.y,q[1])),i:0,speed,res,blk:0});});
+  return new Promise(res=>{obj.userData.walking=true;movers.push({obj,pts:pts.map(q=>{const p=safePt(q[0],q[1],obj.position.y);return new T3.Vector3(p[0],obj.position.y,p[1]);}),i:0,speed,res,blk:0});});
 }
 // Personer går inte genom varandra: de saktar in, viker undan åt sidan och skjuts isär om de kommer för nära
 const AVOID=1.2;
 function steer(o,ux,uz){
-  let ax=ux,az=uz,slow=1,blocked=false;
+  pushOut(o);let ax=ux,az=uz,slow=1,blocked=false;
   for(const q of walkSet){
     if(q===o||!q.parent||q.visible===false||Math.abs(q.position.y-o.position.y)>1)continue;
     const rx=q.position.x-o.position.x,rz=q.position.z-o.position.z,dist=Math.hypot(rx,rz);
@@ -1268,7 +1337,7 @@ function frame(now){
   const visible=canvas.clientWidth>0&&canvas.clientHeight>0&&!document.hidden;
   if(!visible){lastF=now;requestAnimationFrame(frame);return;}
   const t=now/1000,dt=Math.min(.05,(now-(lastF||now))/1000);lastF=now;
-  moveCars(dt);moveBikes(dt);moveWalkers(dt,t);talk.forEach((st,o)=>animTalk(o,t,st.sp));phoning.forEach(o=>{if(!o.userData.walking)animPerson(o,t,false,0);});
+  wxStep(dt,t,now);moveCars(dt);moveBikes(dt);moveWalkers(dt,t);talk.forEach((st,o)=>animTalk(o,t,st.sp));phoning.forEach(o=>{if(!o.userData.walking)animPerson(o,t,false,0);});
   poses.forEach((fn,o)=>{if(!o.userData.walking){animPerson(o,t,false,0);fn(o,t);}});
   if(kit&&kit.fd){const f=kit.fd;f.k+=(f.t-f.k)*.1;f.g.rotation.y=-1.8*f.k;}
   if(cityBeacons.length){const n=Math.max(0,1-daylight(hourNow)*1.8);cityBeacons.forEach((m,i)=>{m.opacity=n*(.18+.82*(Math.sin(t*1.7+i*1.9)>0?1:0));});}
@@ -1366,6 +1435,7 @@ function init(c,ov){
 }
 /* förhandsbild av en byggnadstyp (för startskärmen) */
 function snapshot(tier,staff,label,w=640,h=440,variant=0,logo=null){
+  const wxKeep=WX;WX=WXCLEAR;if(wxObj)wxObj.visible=false;
   const old=[canvas.style.width,canvas.style.height],keep={zoom,az,el},h0=hourNow;hourNow=12;
   build({tier,staff:staff||[],company:label||'nRn Company',variant,logoUrl:logo&&logo.url,logoShape:logo&&logo.shape});
   renderer.setSize(w,h,false);
@@ -1373,7 +1443,7 @@ function snapshot(tier,staff,label,w=640,h=440,variant=0,logo=null){
   const halfW=((cfg.BW+AWL+AWR)*Math.cos(az)+BD*Math.sin(az))/2+3,halfH=((cfg.floors*FH+3)*Math.cos(el)+BD*Math.sin(el))/2+2,hh=Math.max(halfH,halfW/asp);
   camera.left=-hh*asp;camera.right=hh*asp;camera.top=hh;camera.bottom=-hh;camera.updateProjectionMatrix();
   renderer.render(scene,camera);const url=renderer.domElement.toDataURL('image/jpeg',.85);
-  hourNow=h0;Object.assign({zoom,az,el},keep);resize();return url;
+  hourNow=h0;WX=wxKeep;if(wxObj)wxObj.visible=true;Object.assign({zoom,az,el},keep);resize();return url;
 }
-return {init,build,send,say,busy,snapshot,resize,setHour,daylight,pick:f=>{onPick=f;},sign:f=>{onSign=f;},zoomOut:f=>{onZoomOut=f;},preloadLogo,screen:f=>{onScreen=f;},select:id=>{selId=id;for(const k in agents)agents[k].tag.classList.toggle('on',k===id);},setStats:d=>{statsData=d;},visit,socialVisit,away:id=>agents[id]&&agents[id].away,pos:id=>{const g=agents[id],o=g&&(g.mover||g.p);return o?[+o.position.x.toFixed(2),+o.position.y.toFixed(2),+o.position.z.toFixed(2),g.away||'',g.seat?[g.seat.x,g.seat.y,g.seat.z,g.seat.facing]:null]:null;},toilet,kitchen,has:id=>!!agents[id],TIERS};
+return {init,build,send,say,busy,snapshot,resize,setHour,daylight,pick:f=>{onPick=f;},phone:()=>phoneCall(),obst:()=>OBST,setWeather,sign:f=>{onSign=f;},zoomOut:f=>{onZoomOut=f;},preloadLogo,screen:f=>{onScreen=f;},select:id=>{selId=id;for(const k in agents)agents[k].tag.classList.toggle('on',k===id);},setStats:d=>{statsData=d;},visit,socialVisit,away:id=>agents[id]&&agents[id].away,pos:id=>{const g=agents[id],o=g&&(g.mover||g.p);return o?[+o.position.x.toFixed(2),+o.position.y.toFixed(2),+o.position.z.toFixed(2),g.away||'',g.seat?[g.seat.x,g.seat.y,g.seat.z,g.seat.facing]:null]:null;},toilet,kitchen,has:id=>!!agents[id],TIERS};
 })();

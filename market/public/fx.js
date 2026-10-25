@@ -21,6 +21,24 @@ function build() {
     bl.push({ x, w, h, layer, win }); x += w * rnd(.55, .95);
   }
 }
+let fxW = { kind: 'clear', int: 0 }, drops = [], flash = 0, nextFlash = 0;
+function makeWx() {
+  const k = fxW.kind, n = k === 'snow' ? Math.round(80 + fxW.int * 170) : (k === 'rain' || k === 'thunder') ? Math.round(110 + fxW.int * 260) : 0;
+  drops = Array.from({ length: n }, () => ({ x: rnd(0, W), y: rnd(0, H), s: k === 'snow' ? rnd(28, 70) : rnd(620, 980), r: k === 'snow' ? rnd(1, 2.8) : rnd(9, 18), p: rnd(0, 6.28) }));
+}
+addEventListener('myoffi-weather', (e) => { fxW = e.detail || { kind: 'clear', int: 0 }; makeWx(); });
+function drawWx(tt) {
+  if (!drops.length) return;
+  const dt = .033, snow = fxW.kind === 'snow';
+  if (snow) g.fillStyle = 'rgba(255,255,255,.75)'; else { g.strokeStyle = 'rgba(190,210,255,.38)'; g.lineWidth = 1; g.beginPath(); }
+  for (const d of drops) {
+    d.y += d.s * dt; d.x += snow ? Math.sin(tt + d.p) * .6 : 70 * dt;
+    if (d.y > H) { d.y = -10; d.x = rnd(0, W); } if (d.x > W + 20) d.x = -10;
+    if (snow) { g.beginPath(); g.arc(d.x, d.y, d.r, 0, 6.283); g.fill(); } else { g.moveTo(d.x, d.y); g.lineTo(d.x - 4, d.y - d.r); }
+  }
+  if (!snow) g.stroke();
+  if (fxW.kind === 'thunder') { if (tt * 1000 > nextFlash) { flash = .55; nextFlash = tt * 1000 + 7000 + Math.random() * 9000; } if (flash > .02) { g.fillStyle = 'rgba(220,230,255,' + flash.toFixed(3) + ')'; g.fillRect(0, 0, W, H); flash *= .86; } }
+}
 function frame(t) {
   raf = requestAnimationFrame(frame);
   if (t - last < 33) return; last = t;   // ~30 bilder/s räcker och sparar batteri
@@ -37,6 +55,7 @@ function frame(t) {
       for (const w of b.win) { const a = .12 + .5 * Math.max(0, Math.sin(tt * w.s + w.p)) * (w.on > .45 ? 1 : .25); g.fillStyle = 'rgba(244,196,120,' + a.toFixed(3) + ')'; g.fillRect(b.x + w.x, by + w.y, 3.2, 4.2); }
     }
   }
+  drawWx(tt);
 }
 function toggle() { cv.style.display = dark.matches ? 'block' : 'none'; cancelAnimationFrame(raf); if (dark.matches && !reduce) raf = requestAnimationFrame(frame); else if (dark.matches) { frame(100); cancelAnimationFrame(raf); } }
 build(); toggle();

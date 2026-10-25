@@ -19,3 +19,14 @@ INSERT OR IGNORE INTO users(id,username,pw,created,email,email_verified,recovery
 INSERT OR IGNORE INTO companies(id,owner_id,name,tagline,description,services,tags,building,demo,created,updated) VALUES('cdemo09','udemo09','Apelsin Apps','Små appar och verktyg','Webbappar och enkla verktyg: kalkylatorer, bokningar och interna system för småföretag.','[{"title":"Webbapp (enkel)","price":"från 299 USD","desc":"En tydlig funktion, väl byggd"},{"title":"Kalkylator för sajt","price":"från 59 USD","desc":"Offert- eller prisräknare"}]','["app","webbapp","verktyg"]',2,1,1792785702619,1792785702619);
 INSERT OR IGNORE INTO users(id,username,pw,created,email,email_verified,recovery_hash) VALUES('udemo10','demo_10','disabled',1792872102619,NULL,0,NULL);
 INSERT OR IGNORE INTO companies(id,owner_id,name,tagline,description,services,tags,building,demo,created,updated) VALUES('cdemo10','udemo10','Morgonrodnad Media','Portfolio och personliga sidor','Sidor för fotografer, konstnärer och frilansare som vill visa upp sitt arbete snyggt.','[{"title":"Portfoliosida","price":"från 89 USD","desc":"Galleri och kontakt"},{"title":"Bokningssida för fotograf","price":"från 79 USD","desc":"Med prislista"}]','["portfolio","foto","design"]',0,1,1792872102619,1792872102619);
+
+UPDATE companies SET city='Stockholm',lat=59.329,lon=18.069 WHERE id='cdemo01';
+UPDATE companies SET city='Göteborg',lat=57.708,lon=11.975 WHERE id='cdemo02';
+UPDATE companies SET city='Malmö',lat=55.605,lon=13.004 WHERE id='cdemo03';
+UPDATE companies SET city='Uppsala',lat=59.859,lon=17.639 WHERE id='cdemo04';
+UPDATE companies SET city='Umeå',lat=63.826,lon=20.263 WHERE id='cdemo05';
+UPDATE companies SET city='Luleå',lat=65.584,lon=22.154 WHERE id='cdemo06';
+UPDATE companies SET city='Östersund',lat=63.179,lon=14.636 WHERE id='cdemo07';
+UPDATE companies SET city='Visby',lat=57.639,lon=18.294 WHERE id='cdemo08';
+UPDATE companies SET city='Kiruna',lat=67.855,lon=20.225 WHERE id='cdemo09';
+UPDATE companies SET city='Karlstad',lat=59.379,lon=13.504 WHERE id='cdemo10';

@@ -233,7 +233,7 @@ async function login(req, env) {
 /* ---------- företag ---------- */
 const COMPANY_SQL = "SELECT c.*, (SELECT ROUND(AVG(stars),2) FROM reviews r WHERE r.company_id=c.id) AS avg, (SELECT COUNT(*) FROM reviews r WHERE r.company_id=c.id) AS cnt, (SELECT COUNT(*) FROM orders o WHERE o.company_id=c.id AND o.status='delivered') AS done FROM companies c";
 const companyOut = (r) => ({
-  id: r.id, name: r.name, tagline: r.tagline, description: r.description, services: parseJson(r.services, []), tags: parseJson(r.tags, []), building: Number(r.building || 0), created: r.created,
+  id: r.id, name: r.name, tagline: r.tagline, description: r.description, services: parseJson(r.services, []), tags: parseJson(r.tags, []), building: Number(r.building || 0), demo: !!r.demo, created: r.created,
   rating: { avg: Number(r.avg || 0), count: Number(r.cnt || 0) }, done: Number(r.done || 0),
 });
 const tagsIn = (v) => [...new Set((Array.isArray(v) ? v : String(v || '').split(',')).map(x => clip(x, 24).trim().toLowerCase().replace(/[^a-z0-9åäö -]/g, '').trim()).filter(Boolean))].slice(0, 5);
@@ -294,8 +294,9 @@ async function orderFor(env, id, user) {
 async function createOrder(req, env, user) {
   await limit(env, 'ord:' + user.id, 10, 3600);
   const b = await readBody(req);
-  const co = await env.DB.prepare('SELECT id,owner_id,name FROM companies WHERE id=?').bind(clip(b.companyId, 40)).first();
+  const co = await env.DB.prepare('SELECT id,owner_id,name,demo FROM companies WHERE id=?').bind(clip(b.companyId, 40)).first();
   if (!co) throw new HttpError(404, 'no_company', 'That company does not exist');
+  if (co.demo) throw new HttpError(409, 'demo_company', 'This is a demo company and cannot take orders');
   if (co.owner_id === user.id) throw bad('You cannot order from your own company', 'own_company');
   const brief = clip(b.brief, 1500).trim();
   if (brief.length < 15) throw bad('Describe what you want in a few sentences', 'bad_brief');
@@ -721,8 +722,9 @@ function openapi(origin) {
 /* ---------- förfrågningschatt (kund <-> företagets ägare, före en beställning) ---------- */
 async function startInquiry(env, companyId, user) {
   await limit(env, 'inq:' + user.id, 20, 3600);
-  const co = await env.DB.prepare('SELECT id,owner_id FROM companies WHERE id=?').bind(companyId).first();
+  const co = await env.DB.prepare('SELECT id,owner_id,demo FROM companies WHERE id=?').bind(companyId).first();
   if (!co) throw new HttpError(404, 'not_found', 'Company not found');
+  if (co.demo) throw new HttpError(409, 'demo_company', 'This is a demo company and cannot be contacted');
   if (co.owner_id === user.id) throw bad('This is your own company', 'own_company');
   let q = await env.DB.prepare('SELECT id FROM inquiries WHERE company_id=? AND customer_id=?').bind(co.id, user.id).first();
   if (!q) { const id = rid('q'), t = now(); await env.DB.prepare('INSERT INTO inquiries(id,company_id,customer_id,customer_name,created,last_at) VALUES(?,?,?,?,?,?)').bind(id, co.id, user.id, user.username, t, t).run(); q = { id }; }

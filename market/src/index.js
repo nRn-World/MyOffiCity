@@ -231,9 +231,9 @@ async function login(req, env) {
 }
 
 /* ---------- företag ---------- */
-const COMPANY_SQL = "SELECT c.*, (SELECT ROUND(AVG(stars),2) FROM reviews r WHERE r.company_id=c.id) AS avg, (SELECT COUNT(*) FROM reviews r WHERE r.company_id=c.id) AS cnt, (SELECT COUNT(*) FROM orders o WHERE o.company_id=c.id AND o.status='delivered') AS done FROM companies c";
+const COMPANY_SQL = "SELECT c.*, (SELECT shape FROM company_logos l WHERE l.company_id=c.id) AS logo_shape, (SELECT v FROM company_logos l WHERE l.company_id=c.id) AS logo_v, (SELECT ROUND(AVG(stars),2) FROM reviews r WHERE r.company_id=c.id) AS avg, (SELECT COUNT(*) FROM reviews r WHERE r.company_id=c.id) AS cnt, (SELECT COUNT(*) FROM orders o WHERE o.company_id=c.id AND o.status='delivered') AS done FROM companies c";
 const companyOut = (r) => ({
-  id: r.id, name: r.name, tagline: r.tagline, description: r.description, services: parseJson(r.services, []), tags: parseJson(r.tags, []), building: Number(r.building || 0), demo: !!r.demo, created: r.created,
+  id: r.id, name: r.name, tagline: r.tagline, description: r.description, services: parseJson(r.services, []), tags: parseJson(r.tags, []), building: Number(r.building || 0), demo: !!r.demo, logo: r.logo_v ? { shape: r.logo_shape, v: r.logo_v } : null, created: r.created,
   rating: { avg: Number(r.avg || 0), count: Number(r.cnt || 0) }, done: Number(r.done || 0),
 });
 const tagsIn = (v) => [...new Set((Array.isArray(v) ? v : String(v || '').split(',')).map(x => clip(x, 24).trim().toLowerCase().replace(/[^a-z0-9åäö -]/g, '').trim()).filter(Boolean))].slice(0, 5);
@@ -253,6 +253,37 @@ async function saveCompany(req, env, user) {
   if (mine) await env.DB.prepare('UPDATE companies SET name=?,tagline=?,description=?,services=?,tags=?,building=?,updated=? WHERE id=?').bind(v.name, v.tagline, v.description, v.services, v.tags, v.building, t, mine.id).run();
   else { id = rid('c'); await env.DB.prepare('INSERT INTO companies(id,owner_id,name,tagline,description,services,tags,building,created,updated) VALUES(?,?,?,?,?,?,?,?,?,?)').bind(id, user.id, v.name, v.tagline, v.description, v.services, v.tags, v.building, t, t).run(); }
   return companyOut(await env.DB.prepare(COMPANY_SQL + ' WHERE c.id=?').bind(id).first());
+}
+/* ---------- företagslogotyp: bara PNG ---------- */
+const LOGO_SHAPES = ['rect', 'round', 'tri'];
+function pngCheck(b64) {
+  if (!/^[A-Za-z0-9+/=]+$/.test(b64) || b64.length > 220000) throw bad('The logo must be a PNG file of at most about 160 kB', 'bad_logo');
+  let bin; try { bin = atob(b64); } catch { throw bad('That is not a valid PNG', 'bad_logo'); }
+  const sig = [137, 80, 78, 71, 13, 10, 26, 10];
+  if (bin.length < 33 || sig.some((x, i) => bin.charCodeAt(i) !== x) || bin.slice(12, 16) !== 'IHDR') throw bad('Only PNG images are allowed', 'bad_logo');
+  const u32 = (o) => ((bin.charCodeAt(o) << 24) | (bin.charCodeAt(o + 1) << 16) | (bin.charCodeAt(o + 2) << 8) | bin.charCodeAt(o + 3)) >>> 0;
+  const w = u32(16), h = u32(20);
+  if (!w || !h || w > 1024 || h > 1024) throw bad('The logo can be at most 1024 x 1024 pixels', 'bad_logo');
+}
+async function saveLogo(req, env, user) {
+  await limit(env, 'logo:' + user.id, 20, 3600);
+  const co = await env.DB.prepare('SELECT id FROM companies WHERE owner_id=?').bind(user.id).first();
+  if (!co) throw new HttpError(409, 'no_company', 'Publish your company first, then add the logo');
+  const b = await readBody(req), png = String(b.png || '').replace(/^data:image\/png;base64,/, '');
+  pngCheck(png);
+  const shape = LOGO_SHAPES.includes(b.shape) ? b.shape : 'rect', v = now();
+  await env.DB.prepare('INSERT INTO company_logos(company_id,png,shape,v) VALUES(?,?,?,?) ON CONFLICT(company_id) DO UPDATE SET png=excluded.png,shape=excluded.shape,v=excluded.v').bind(co.id, png, shape, v).run();
+  return { ok: true, logo: { shape, v }, id: co.id };
+}
+async function deleteLogo(env, user) {
+  const co = await env.DB.prepare('SELECT id FROM companies WHERE owner_id=?').bind(user.id).first();
+  if (co) await env.DB.prepare('DELETE FROM company_logos WHERE company_id=?').bind(co.id).run();
+  return { ok: true };
+}
+async function logoFile(env, id) {
+  const r = await env.DB.prepare('SELECT png FROM company_logos WHERE company_id=?').bind(id).first();
+  if (!r) return new Response('Not found', { status: 404 });
+  return new Response(Uint8Array.from(atob(r.png), (c) => c.charCodeAt(0)), { headers: { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=86400', 'X-Content-Type-Options': 'nosniff', 'Access-Control-Allow-Origin': '*', 'Cross-Origin-Resource-Policy': 'cross-origin' } });
 }
 const bayes = (c) => ((c.rating.avg * c.rating.count) + 4 * 3) / (c.rating.count + 3);     // nya företag börjar neutralt, inte längst ner
 async function listCompanies(req, env) {
@@ -865,6 +896,8 @@ route('GET', /^\/api\/dev\/outbox$/, async (req, env) => {   // bara lokalt (DEV
   const to = clip(new URL(req.url).searchParams.get('to'), 120).toLowerCase();
   return { mails: (await env.DB.prepare('SELECT to_addr,subject,body,created FROM outbox WHERE to_addr=? ORDER BY id DESC LIMIT 5').bind(to).all()).results };
 });
+route('PUT', new RegExp('^/api/company/logo$'), (req, env, m, user) => saveLogo(req, env, user), true);
+route('DELETE', new RegExp('^/api/company/logo$'), (req, env, m, user) => deleteLogo(env, user), true);
 route('PUT', /^\/api\/company$/, (req, env, m, user) => saveCompany(req, env, user), true);
 route('GET', /^\/api\/company\/orders$/, (req, env, m, user) => companyOrders(env, user), true);
 route('POST', /^\/api\/orders$/, (req, env, m, user) => createOrder(req, env, user), true);
@@ -901,6 +934,8 @@ export default {
       req = new Request(url.toString(), { method: req.method, headers: h, body: ['GET', 'HEAD'].includes(req.method) ? undefined : req.body });
     }
     if (!url.pathname.startsWith('/api/') && !url.pathname.startsWith('/.well-known/')) return env.ASSETS.fetch(req);   // statiska sidor (portalen) under prefixet
+    const lg = req.method === 'GET' && new RegExp('^/api/companies/([a-z0-9]+)/logo\\.png$').exec(url.pathname);
+    if (lg) return await logoFile(env, lg[1]);
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: isOauthPath(url.pathname) ? OAUTH_CORS : corsHeaders(req, env) });
     try {
       const oa = await oauthFetch(req, env, url); if (oa) return oa;

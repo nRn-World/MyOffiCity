@@ -106,3 +106,5 @@ CREATE TABLE IF NOT EXISTS inquiry_msgs (id INTEGER PRIMARY KEY AUTOINCREMENT, i
 CREATE INDEX IF NOT EXISTS inquiry_msgs_q ON inquiry_msgs(inquiry_id, id);
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google ON users(google_sub) WHERE google_sub IS NOT NULL;
+
+CREATE TABLE IF NOT EXISTS company_logos (company_id TEXT PRIMARY KEY, png TEXT NOT NULL, shape TEXT NOT NULL, v INTEGER NOT NULL);

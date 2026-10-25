@@ -219,8 +219,53 @@ const need=(signal)=>{if(signal.aborted)throw new Error(t('run_cancelled'));};
 const MK='nrn.market',DEFAULT_BASE='https://nrnworld.one/MyOffiCity';
 const MKD={base:DEFAULT_BASE,token:'',username:'',companyId:'',profile:{tagline:'',description:'',services:'',tags:''},recovery:'',rating:null,lastSync:0};
 const mkLoad=()=>{try{return Object.assign({},MKD,JSON.parse(localStorage.getItem(MK))||{});}catch{return Object.assign({},MKD);}};
+/* ---------- företagslogotyp: bara PNG, skylten får logotypens form ---------- */
+function detectShape(d,w,h){   // rund / triangel / fyrkant utifrån var bilden är ogenomskinlig
+  let minx=w,miny=h,maxx=-1,maxy=-1,n=0;
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(d[(y*w+x)*4+3]>40){n++;if(x<minx)minx=x;if(x>maxx)maxx=x;if(y<miny)miny=y;if(y>maxy)maxy=y;}
+  if(!n)return'rect';
+  const bw=maxx-minx+1,bh=maxy-miny+1,fill=n/(bw*bh),ar=bw/bh;
+  if(fill>.88)return'rect';
+  const band=(x0,y0,x1,y1)=>{let c=0;for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++)if(d[(y*w+x)*4+3]>40)c++;return c;};
+  const bt=Math.max(2,Math.round(bh*.22)),bl=Math.max(2,Math.round(bw*.22));
+  const top=band(minx,miny,maxx+1,miny+bt),bot=band(minx,maxy+1-bt,maxx+1,maxy+1),left=band(minx,miny,minx+bl,maxy+1),right=band(maxx+1-bl,miny,maxx+1,maxy+1);
+  const asym=(a,b)=>Math.max(a,1)/Math.max(b,1);
+  if(fill>.36&&fill<.64&&(asym(bot,top)>2.2||asym(top,bot)>2.2||asym(right,left)>2.2||asym(left,right)>2.2))return'tri';
+  if(fill>.68&&fill<.88&&ar>.8&&ar<1.25)return'round';
+  return'rect';
+}
+async function logoFromFile(file){
+  if(!file||file.type!=='image/png')throw new Error(t('o_logo_bad'));
+  if(file.size>3000000)throw new Error(t('o_logo_big'));
+  const buf=new Uint8Array(await file.arrayBuffer());
+  if(buf.length<33||[137,80,78,71,13,10,26,10].some((v,i)=>buf[i]!==v))throw new Error(t('o_logo_bad'));
+  const url=URL.createObjectURL(file);
+  const img=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=()=>no(new Error(t('o_logo_bad')));i.src=url;});
+  URL.revokeObjectURL(url);
+  for(const max of[320,220,150]){
+    const k=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight)),w=Math.max(1,Math.round(img.naturalWidth*k)),h=Math.max(1,Math.round(img.naturalHeight*k));
+    const c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');g.drawImage(img,0,0,w,h);
+    const dataUrl=c.toDataURL('image/png');
+    if(dataUrl.length<200000)return{png:dataUrl.split(',')[1],dataUrl,shape:detectShape(g.getImageData(0,0,w,h).data,w,h)};
+  }
+  throw new Error(t('o_logo_big'));
+}
+function applyLogo(){window.MK_LOGO=mk.logoData?{url:mk.logoData,shape:mk.logoShape||'rect'}:null;if(typeof rebuild==='function')rebuild();}
+function logoBlock(){
+  return '<label>'+esc(t('o_logo_h'))+'</label><p class="small mut">'+esc(t('o_logo_p'))+'</p><div class="row" style="gap:10px;align-items:center">'
+   +(mk.logoData?'<img src="'+mk.logoData+'" alt="" style="width:64px;height:64px;object-fit:contain;background:rgba(128,128,128,.15);border-radius:8px"><span class="pill">'+esc(t('o_logo_shape_'+(mk.logoShape||'rect')))+'</span>':'')
+   +'<input type="file" id="mkLogo" accept="image/png" style="flex:1;min-width:180px"><button class="btn ghost" data-mk="logorm" '+(mk.logoData?'':'disabled')+'>'+esc(t('o_logo_rm'))+'</button></div>';
+}
+document.addEventListener('change',async e=>{
+  if(!e.target||e.target.id!=='mkLogo')return;const f=e.target.files&&e.target.files[0];if(!f)return;
+  try{
+    if(!mk.companyId)throw new Error(t('o_logo_first'));
+    const L=await logoFromFile(f);await mapi('PUT','/company/logo',{png:L.png,shape:L.shape});
+    mk.logoData=L.dataUrl;mk.logoShape=L.shape;mkSave();applyLogo();toast(t('o_logo_ok'));render();
+  }catch(err){toast(err.message,5000);e.target.value='';}
+});
 const mkVariant=id=>id?[...String(id)].reduce((x,c)=>(x*31+c.charCodeAt(0))>>>0,7)%12:0;   // samma formel som kundportalen: kontoret ser likadant ut för dig och kunderna
-let mk=mkLoad();window.MK_VARIANT=mkVariant(mk.companyId);const mkSave=()=>{try{localStorage.setItem(MK,JSON.stringify(mk));}catch{}};
+let mk=mkLoad();window.MK_VARIANT=mkVariant(mk.companyId);window.MK_LOGO=mk.logoData?{url:mk.logoData,shape:mk.logoShape||'rect'}:null;const mkSave=()=>{try{localStorage.setItem(MK,JSON.stringify(mk));}catch{}};
 const online=()=>!!mk.token;
 const flushing=new Set(),errSeen=new Map();
 async function mapi(method,path,body){
@@ -313,7 +358,7 @@ function marketPanel(){
   return rec+'<div class="card"><div class="row sp"><div><h3>'+esc(t('o_mk_h'))+'</h3><p class="small mut">'+esc(t('o_mk_connected',{u:mk.username}))+(mk.companyId?' · <span class="pill ok">'+esc(t('o_mk_live'))+'</span>':'')+rt+(mk.rating&&mk.rating.done?' · '+esc(mk.rating.done)+' '+esc(t('o_mk_delivered')):'')+'</p></div><div class="row" style="gap:8px"><a class="btn ghost sm" href="'+esc(mk.base)+'" target="_blank" rel="noopener">'+esc(t('o_mk_open'))+'</a><button class="btn ghost sm" data-mk="sync">'+esc(t('o_mk_sync'))+'</button><button class="btn ghost sm" data-mk="out">'+esc(t('o_mk_out'))+'</button></div></div>'
    +'<details'+(mk.companyId?'':' open')+'><summary class="small" style="cursor:pointer;margin-top:8px">'+esc(t('o_mk_profile'))+'</summary>'
    +'<label>'+esc(t('o_mk_tag'))+'</label><input id="mkTag" value="'+esc(mk.profile.tagline)+'" maxlength="100"><label>'+esc(t('o_mk_desc'))+'</label><textarea id="mkDesc" rows="3" maxlength="800">'+esc(mk.profile.description)+'</textarea>'
-   +'<label>'+esc(t('o_mk_serv'))+'</label><textarea id="mkServ" rows="3" placeholder="Landing page | from 49 USD | One polished page">'+esc(mk.profile.services)+'</textarea><label>'+esc(t('o_mk_tags'))+'</label><input id="mkTags" value="'+esc(mk.profile.tags||'')+'" placeholder="web, design, logo" maxlength="120"><button class="btn" style="margin-top:10px" data-mk="publish">'+esc(t('o_mk_publish',{c:S.company}))+'</button></details></div>';
+   +'<label>'+esc(t('o_mk_serv'))+'</label><textarea id="mkServ" rows="3" placeholder="Landing page | from 49 USD | One polished page">'+esc(mk.profile.services)+'</textarea><label>'+esc(t('o_mk_tags'))+'</label><input id="mkTags" value="'+esc(mk.profile.tags||'')+'" placeholder="web, design, logo" maxlength="120"><button class="btn" style="margin-top:10px" data-mk="publish">'+esc(t('o_mk_publish',{c:S.company}))+'</button>'+logoBlock()+'</details></div>';
 }
 document.addEventListener('click',async e=>{
   const b=e.target.closest&&e.target.closest('[data-mk]');if(!b||!S)return;
@@ -325,6 +370,7 @@ document.addEventListener('click',async e=>{
     else if(a==='out'){try{await mapi('POST','/logout',{});}catch{}mk.token='';mk.companyId='';mkSave();render();}
     else if(a==='copyrec'){try{await navigator.clipboard.writeText(mk.recovery);toast(t('o_mk_copied'));}catch{}}
     else if(a==='dlrec'){const u=URL.createObjectURL(new Blob(['MyOffiCity recovery code\n'+mk.recovery+'\n'],{type:'text/plain'})),l=document.createElement('a');l.href=u;l.download='nrn-market-recovery-code.txt';document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),3000);}
+    else if(a==='logorm'){await mapi('DELETE','/company/logo');mk.logoData='';mk.logoShape='';mkSave();applyLogo();render();}
     else if(a==='ackrec'){mk.recovery='';mkSave();render();}
   }catch(err){toast(t('o_mk_err',{e:err.message}),5000);b.disabled=false;}
 });

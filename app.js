@@ -266,7 +266,7 @@ function fixTeam(){
   save();rebuild();refresh();
 }
 const present=e=>!e.homeUntil;
-function rebuild(){Office.build({tier:S.tier,variant:window.MK_VARIANT||0,staff:S.employees.filter(present),company:S.company,boss:S.boss,bossGender:S.gender,bossTitle:t('owner')});}
+function rebuild(){Office.build({tier:S.tier,variant:window.MK_VARIANT||0,logoUrl:(window.MK_LOGO||{}).url||'',logoShape:(window.MK_LOGO||{}).shape||'',staff:S.employees.filter(present),company:S.company,boss:S.boss,bossGender:S.gender,bossTitle:t('owner')});}
 
 /* ---- agenternas mående & enkla frågor (inga AI-anrop, gratis) ---- */
 let pickEmp=null,pickLog=[];

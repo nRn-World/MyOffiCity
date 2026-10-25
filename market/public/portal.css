@@ -117,3 +117,7 @@ main>p.muted{max-width:62ch;font-size:17px}
 .word i,.word .c{color:var(--acc)}
 .bar{align-items:center}
 @media(max-width:700px){.word{font-size:18px}.mark{width:32px;height:32px}}
+
+.roof{display:block;width:calc(100% + 12px);height:14px;color:var(--acc);margin-bottom:1px}
+.brand{padding:0 2px}
+.roof{height:22px}

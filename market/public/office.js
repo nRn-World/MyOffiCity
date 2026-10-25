@@ -253,9 +253,9 @@ function buildLevel(n,kind,lift){
   if(STY.gold)box(BW+.72,.08,.08,goldM,0,y-.05,Z1+.32,root); // guldlist längs bjälklaget
   const L=new T3.PointLight(0xfff0d8,.5,26,1);L.position.set(0,y+3.8,ZC);root.add(L);lights.push(L);
 }
-function tree(x,z,s=1){const g=new T3.Group();g.position.set(x,-.7,z);g.scale.setScalar(s);cyl(.18,.25,2,M(0x6b4a30),0,1,0,g,8);
+function tree(x,z,s=1){if(VAR){const r=rnd(x*7.1+z*3.3+VAR*13);if(r<.2)return;x+=(rnd(x+VAR)-.5)*3;z+=(rnd(z+VAR*2)-.5)*2;s*=.75+rnd(x*z+VAR)*.7;}const g=new T3.Group();g.position.set(x,-.7,z);g.scale.setScalar(s);cyl(.18,.25,2,M(0x6b4a30),0,1,0,g,8);
   const LC=LEAFC[VAR%LEAFC.length];sph(1.3,M(LC[0]),0,2.8,0,g);sph(1,M(LC[1]),.6,3.4,.2,g);sph(.9,M(LC[2]),-.6,3.2,-.3,g);root.add(g);}
-function pine(x,z,s=1){const g=new T3.Group();g.position.set(x,-.7,z);g.scale.setScalar(s);
+function pine(x,z,s=1){if(VAR){if(rnd(x*5.3+z*2.1+VAR*7)<.2)return;x+=(rnd(x+VAR)-.5)*2;s*=.8+rnd(z+VAR)*.5;}const g=new T3.Group();g.position.set(x,-.7,z);g.scale.setScalar(s);
   const tr=cyl(.14,.24,2.4,M(0x5a3d27),0,1.2,0,g,8);tr.rotation.z=.18;
   [[.45,2.1,0,1.3],[-.6,2.7,.2,1.05],[.35,3.3,-.2,.85],[-.05,3.85,0,.6]].forEach(([dx,y,dz,r],i)=>sph(r,M(i%2?0x2d5a32:0x356b3a),dx,y,dz,g,1,.3,1));root.add(g);}
 function bike(x,z,col){
@@ -363,9 +363,10 @@ function outside(){
     [[-e-2-AW,-1],[e+2+AW,-1.5],[-e-4-AW,-6],[e+4+AW,-6.5],[-e-8-AW,4],[e+8+AW,4]].forEach(([x,z],i)=>pine(x,z,.9+rnd(i)*.3));
     [[-e-12,-10],[e+12,-11],[8,-17],[-6,-19]].forEach(([x,z],i)=>tree(x,z,1+rnd(i)*.4));
   }else[[-e-3-AW,4.4],[e+AW+6,3],[-e-7-AW,-2],[e+7+AW,-3],[-e-5-AW,-10],[e+6+AW,-11],[8,-17],[-6,-19]].forEach(([x,z],i)=>tree(x,z,.9+rnd(i)*.5));
+  if(VAR)for(let i=0;i<1+VAR%4;i++){const sx=i%2?1:-1;tree(sx*(BW/2+AW+7+rnd(i*5+VAR)*15),3.5-rnd(i*3+VAR)*2,.9+rnd(i+VAR)*.5);}
   if(TIERK==='loft'){ // cykelställ med pendlingscyklar
     for(let i=0;i<4;i++)box(.05,.6,.05,metal,-4.2+i*.9,-.35,Z1+1.5,root);box(2.8,.05,.05,metal,-2.85,-.07,Z1+1.5,root);
-    [0x2f6fe0,0xd62b3a,0x3fa56b].forEach((c,i)=>bike(-3.8+i*.9,Z1+1.6,c));
+    const BC=[0x2f6fe0,0xd62b3a,0x3fa56b,0xf2b632,0x8a56d6,0x1fb5c2],nb=VAR?1+VAR%4:3;for(let i=0;i<nb;i++)bike(-3.8+i*.9,Z1+1.6,BC[(i+VAR)%BC.length]);
   }
   if(TIERK==='kontor'){ // häckar och belysningspollare
     for(const sx of[-1,1]){box(e-2.5,.7,.7,M(0x2f7a43,{roughness:.9}),sx*(e/2+1.6),-.3,Z1+1.6,root);
@@ -383,11 +384,11 @@ function outside(){
   [[8.0,1],[10.4,-1]].forEach(([z,lane],i)=>{
     const seed=i===0?['taxi','sedan','sport']:['taxi','moto','small'];
     let x=-60+Math.random()*5;
-    for(let k=0;k<3;k++){const c=spawnCar(lane,z,x,seed[k]);cars.push(c);x+=c.len+26+Math.random()*22;}
+    for(let k=0;k<(VAR?2+VAR%3:3);k++){const c=spawnCar(lane,z,x,seed[k%3]);cars.push(c);x+=c.len+26+Math.random()*22;}
   });
   // en egen cykelbana närmast byggnaden, med tre cyklister som passerar
   let bx=-58+Math.random()*5;
-  for(let k=0;k<3;k++){const b=spawnBike(1,6.95,bx);bikes.push(b);bx+=b.len+30+Math.random()*18;}
+  for(let k=0;k<(VAR?1+VAR%4:3);k++){const b=spawnBike(1,6.95,bx);bikes.push(b);bx+=b.len+30+Math.random()*18;}
 }
 
 /* ---------- tillbyggnader: WC (vänster, helt tät, dörren sitter inne i kontoret) och stort inglasat kök (höger) ---------- */
@@ -719,7 +720,7 @@ const PRESET={
   laila:{skin:0xe3b595,shirt:0xff8fb3,hair:0x15100f,hairStyle:'bun'}};
 function look(e){
   const p=PRESET[(e.name||'').toLowerCase()];if(p)return e.age>52?{...p,hair:0x9a9a9a,beard:p.beard}:p;
-  const h=hash(e.id);
+  const h=hash(VAR?e.id+'#'+VAR:e.id);
   const o={skin:SKINS[h%5],hair:HAIRS[(h>>3)%5],shirt:SHIRTS[(h>>5)%7],hairStyle:STYLES[(h>>7)%5],glasses:(h>>9)%3===0,headset:(h>>11)%4===0};
   if(e.rank==='leader'){o.shirt=0x1d3f7a;o.tie=0xffffff;o.glasses=true;}
   if(e.age>52)o.hair=0x9a9a9a;

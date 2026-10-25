@@ -165,11 +165,11 @@ function googleButton() {
 let cityLoad = null, officeHost = null, curCo = null, focusCo = null;
 const loadOffice = () => cityLoad || (cityLoad = new Promise((ok, no) => {
   const add = (src, next) => { const el = document.createElement('script'); el.src = src; el.onload = next; el.onerror = () => { cityLoad = null; no(new Error('3D')); }; document.head.appendChild(el); };
-  const full = () => add('office.js?v=4', ok);
+  const full = () => add('office.js?v=5', ok);
   window.THREE ? full() : add('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', full);
 }));
 const TIER_KEY = ['loft', 'kontor', 'hq'], TIER_STAFF = [5, 8, 12], PCOL = ['#6c8cff', '#ff8a5c', '#3ccf91', '#c77dff', '#ffd166', '#4dd0e1', '#ef6f8f', '#9ccc65'];
-const sampleStaff = (n) => Array.from({ length: n }, (_, i) => ({ id: 's' + i, name: 'Staff', rank: i === 0 ? 'leader' : i < 3 ? 'lead' : 'worker', kind: i % 3 ? 'dev' : 'design', color: PCOL[i % 8], title: '' }));
+const sampleStaff = (n, v = 0) => Array.from({ length: n }, (_, i) => ({ id: 's' + i, name: 'Staff', rank: i === 0 ? 'leader' : i < 3 ? 'lead' : 'worker', kind: i % 3 ? 'dev' : 'design', color: PCOL[(i + v) % 8], title: '' }));
 const variantOf = (id) => [...String(id)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7) % 12;   // samma id ger alltid samma utseende (färger, omgivning, detaljer)
 const hourNow = () => { const d = new Date(); return d.getHours() + d.getMinutes() / 60; };
 async function startChat(c) {
@@ -208,7 +208,7 @@ async function pageMap() {
   const view = (i) => {
     if (!list.length) { curCo = null; $('#cityBar').innerHTML = '<span class="muted">' + esc(t('mapNone')) + '</span>'; $('#cityCard').innerHTML = ''; return res(); }
     const n = (i + list.length) % list.length, c = list[n]; curCo = c;
-    Office.build({ tier: TIER_KEY[c.building] || 'loft', staff: sampleStaff(TIER_STAFF[c.building] || 5), company: c.name, variant: variantOf(c.id), boss: '', bossTitle: '' });
+    Office.build({ tier: TIER_KEY[c.building] || 'loft', staff: sampleStaff((TIER_STAFF[c.building] || 5) - (variantOf(c.id) % 3), variantOf(c.id)), company: c.name, variant: variantOf(c.id), boss: '', bossTitle: '' });
     Office.setHour(hourNow()); Office.resize(); $('#cityCard').innerHTML = '';
     $('#cityBar').innerHTML = '<button class="btn ghost sm" id="cp">&larr;</button><b>' + esc(c.name) + '</b><span class="muted small">' + esc(t('bTier' + c.building)) + ' · ' + (n + 1) + '/' + list.length + '</span><button class="btn ghost sm" id="cn">&rarr;</button>';
     $('#cp').onclick = () => view(n - 1); $('#cn').onclick = () => view(n + 1);

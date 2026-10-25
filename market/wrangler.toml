@@ -1,0 +1,46 @@
+name = "nrn-market"
+main = "src/index.js"
+compatibility_date = "2026-10-25"
+workers_dev = true
+preview_urls = false
+
+# Adresser: nrnworld.one/MyOffiCity (zonen ligger i samma Cloudflare-konto) samt workers.dev som reserv.
+routes = [
+  { pattern = "nrnworld.one/MyOffiCity*", zone_name = "nrnworld.one" },
+  { pattern = "nrnworld.one/.well-known/oauth-protected-resource/MyOffiCity*", zone_name = "nrnworld.one" },
+  { pattern = "nrnworld.one/.well-known/oauth-authorization-server/MyOffiCity*", zone_name = "nrnworld.one" },
+]
+
+# Kundportalen (statiska sidor) serveras av samma Worker; bara /api/* körs som kod.
+[assets]
+directory = "./public"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+run_worker_first = ["/api/*", "/.well-known/*", "/MyOffiCity", "/MyOffiCity/*"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "nrn-market"
+# D1-databasen skapades med `npx wrangler d1 create nrn-market`
+database_id = "cb9e1ec8-90f7-490d-8162-828a919eeb06"
+
+[observability]
+enabled = true
+
+# Webbadresser (förutom portalen själv) som får anropa API:t från en webbläsare, kommaseparerade.
+# Ägarappen kör på localhost:8766.
+[vars]
+ALLOWED_ORIGINS = "http://localhost:8766,http://127.0.0.1:8766,https://nrnworld.one"
+# Google-inloggning: klistra in Web-klient-ID (…apps.googleusercontent.com). Tomt = knappen visas inte.
+GOOGLE_CLIENT_ID = "970228207998-ktdvagsl5ur05fe21a367frp4455og9c.apps.googleusercontent.com"
+# Avsändare för e-post (domänen måste vara verifierad hos leverantören). Avkommentera när e-post slås på:
+# MAIL_FROM = "nRn Market <no-reply@nrnworld.one>"
+
+# ---- E-post (av tills du väljer en leverantör; utan den fungerar återställningskoden ändå) ----
+# Alternativ A: Cloudflare Email Service. Kräver Workers Paid (5 USD/mån) och aktiverad avsändardomän:
+#   npx wrangler email sending enable nrnworld.one
+# Avkommentera MAIL_FROM i [vars] ovan och raderna nedan, kör sedan `npx wrangler deploy`:
+# [[send_email]]
+# name = "EMAIL"
+# Alternativ B: Resend (gratisnivå, extern leverantör). Verifiera domänen hos Resend, avkommentera MAIL_FROM ovan och:
+#   npx wrangler secret put RESEND_API_KEY

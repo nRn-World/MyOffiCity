@@ -1,0 +1,10 @@
+# hemligheter och lokalt tillstånd: ska aldrig i git
+.env
+.env.*
+!.env.example
+.wrangler/
+market/.wrangler-state/
+node_modules/
+*.log
+__pycache__/
+.DS_Store

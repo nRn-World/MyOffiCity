@@ -219,7 +219,8 @@ const need=(signal)=>{if(signal.aborted)throw new Error(t('run_cancelled'));};
 const MK='nrn.market',DEFAULT_BASE='https://nrnworld.one/MyOffiCity';
 const MKD={base:DEFAULT_BASE,token:'',username:'',companyId:'',profile:{tagline:'',description:'',services:'',tags:''},recovery:'',rating:null,lastSync:0};
 const mkLoad=()=>{try{return Object.assign({},MKD,JSON.parse(localStorage.getItem(MK))||{});}catch{return Object.assign({},MKD);}};
-let mk=mkLoad();const mkSave=()=>{try{localStorage.setItem(MK,JSON.stringify(mk));}catch{}};
+const mkVariant=id=>id?[...String(id)].reduce((x,c)=>(x*31+c.charCodeAt(0))>>>0,7)%12:0;   // samma formel som kundportalen: kontoret ser likadant ut för dig och kunderna
+let mk=mkLoad();window.MK_VARIANT=mkVariant(mk.companyId);const mkSave=()=>{try{localStorage.setItem(MK,JSON.stringify(mk));}catch{}};
 const online=()=>!!mk.token;
 const flushing=new Set(),errSeen=new Map();
 async function mapi(method,path,body){
@@ -248,7 +249,7 @@ async function mkPublish(){
   mk.profile={tagline:val('mkTag'),description:val('mkDesc'),services:val('mkServ'),tags:val('mkTags')};
   const c=await mapi('PUT','/company',{name:S.company,tagline:mk.profile.tagline,description:mk.profile.description,services:parseServices(mk.profile.services),tags:mk.profile.tags,building:S.tier});
   mk.rating=c.rating;
-  mk.companyId=c.id;mkSave();toast(t('o_mk_published'));
+  mk.companyId=c.id;window.MK_VARIANT=mkVariant(c.id);if(typeof rebuild==='function')rebuild();mkSave();toast(t('o_mk_published'));
 }
 async function restore(o){
   const j=(await mapi('GET','/orders/'+o.id)).order;

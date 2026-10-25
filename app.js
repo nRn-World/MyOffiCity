@@ -266,7 +266,7 @@ function fixTeam(){
   save();rebuild();refresh();
 }
 const present=e=>!e.homeUntil;
-function rebuild(){Office.build({tier:S.tier,staff:S.employees.filter(present),company:S.company,boss:S.boss,bossGender:S.gender,bossTitle:t('owner')});}
+function rebuild(){Office.build({tier:S.tier,variant:window.MK_VARIANT||0,staff:S.employees.filter(present),company:S.company,boss:S.boss,bossGender:S.gender,bossTitle:t('owner')});}
 
 /* ---- agenternas mående & enkla frågor (inga AI-anrop, gratis) ---- */
 let pickEmp=null,pickLog=[];

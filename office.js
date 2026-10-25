@@ -7,6 +7,11 @@ const BSTYLES={
   loft:{frame:0x1d1e22,slab:0xd8b27c,wall:0xf4eee4,win:0x1d1e22,roof:0x2a2b30,floors:['pine','pine']},
   kontor:{frame:0xb9c0c8,slab:0xe8e6e1,wall:0xf1ebe0,win:0xb9c0c8,roof:0xe4e0d8,floors:['wood','wood','wood']},
   hq:{frame:0x2a2c33,slab:0x2a2c33,wall:0xe9e1d3,win:0x2a2c33,roof:0x23252b,gold:0xc9a24a,floors:['tile','wood','wood','walnut']}};
+let VAR=0,TIERK='kontor';
+const PAL=[{},{wall:0xe6efe8,slab:0xc9b99a,roof:0x2f6b55,frame:0x2c5a4a,win:0x2c5a4a},{wall:0xf2e4d2,slab:0xb98b5b,roof:0xa94a35,frame:0x7a3328,win:0x7a3328},{wall:0xe4ebf2,slab:0xa9b3bf,roof:0x3a62a8,frame:0x2f4b7a,win:0x2f4b7a},{wall:0xf4dfd8,slab:0xd2a590,roof:0xc9922f,frame:0xc08a2e,win:0xc08a2e},{wall:0xeceae0,slab:0x8fa88a,roof:0x7a5aa8,frame:0x6b5a8a,win:0x6b5a8a}];
+const SIGNC=[['#1b2550','#0c1230','#ffd27a','#6fc8ff'],['#2a1a12','#120a06','#f0b07a','#ffb36b'],['#12332b','#06150f','#8fe0b8','#6fffd0'],['#2b1245','#12061f','#d9a7ff','#c58bff'],['#3a1216','#190508','#ffc4a0','#ff8f6f'],['#10283a','#06121c','#a7e0ff','#6fd0ff']];
+const GROUNDC=[0x9cc58a,0xb5c78a,0xa4a07a,0x8fb59a,0xc2bd8c,0x93b878];
+const LEAFC=[[0x3d9a52,0x48ab5e,0x338a49],[0x5aa14a,0x6bb35a,0x4a8f3c],[0xd2862f,0xe09b3f,0xb9702a],[0x3b8f7a,0x49a48c,0x2f7a68],[0x7aa84a,0x8bbb59,0x699639],[0x2f7d4a,0x3c9159,0x27693d]];
 let STY=BSTYLES.kontor,frameM=null,winM=null,goldM=null,flames=[];
 const BD=6.6,Z0=-5.4,Z1=1.2,ZC=-2.1,FH=5.2,WH=FH-.4;
 // Fyra fasadstilar till staden bakom kontoret. Färgerna blandas mellan natt och dag
@@ -244,12 +249,12 @@ function buildLevel(n,kind,lift){
   glass(BD,WH-.3,BW/2,y+WH/2,ZC,Math.PI/2);glass(BW,WH-.3,0,y+WH/2,Z1,0); // fram- och sidoglas i samma stil
   if(lift)elevator(BW/2-2.3,y);
   [[-BW/2+.1,Z1-.1],[BW/2-.1,Z1-.1],[BW/2-.1,Z0+.2]].forEach(([x,z])=>box(.45,WH,.45,frameM,x,y+WH/2,z,root));
-  if(STY===BSTYLES.loft){box(BW+.7,.3,.32,frameM,0,y-.2,Z1+.2,root);[-3,0,3].forEach(x=>box(.25,.3,BD,M(0xd8b27c),x,y+WH-.15,ZC,root));} // svart stålbalk + furubjälkar
+  if(TIERK==='loft'){box(BW+.7,.3,.32,frameM,0,y-.2,Z1+.2,root);[-3,0,3].forEach(x=>box(.25,.3,BD,M(0xd8b27c),x,y+WH-.15,ZC,root));} // svart stålbalk + furubjälkar
   if(STY.gold)box(BW+.72,.08,.08,goldM,0,y-.05,Z1+.32,root); // guldlist längs bjälklaget
   const L=new T3.PointLight(0xfff0d8,.5,26,1);L.position.set(0,y+3.8,ZC);root.add(L);lights.push(L);
 }
 function tree(x,z,s=1){const g=new T3.Group();g.position.set(x,-.7,z);g.scale.setScalar(s);cyl(.18,.25,2,M(0x6b4a30),0,1,0,g,8);
-  sph(1.3,M(0x3d9a52),0,2.8,0,g);sph(1,M(0x48ab5e),.6,3.4,.2,g);sph(.9,M(0x338a49),-.6,3.2,-.3,g);root.add(g);}
+  const LC=LEAFC[VAR%LEAFC.length];sph(1.3,M(LC[0]),0,2.8,0,g);sph(1,M(LC[1]),.6,3.4,.2,g);sph(.9,M(LC[2]),-.6,3.2,-.3,g);root.add(g);}
 function pine(x,z,s=1){const g=new T3.Group();g.position.set(x,-.7,z);g.scale.setScalar(s);
   const tr=cyl(.14,.24,2.4,M(0x5a3d27),0,1.2,0,g,8);tr.rotation.z=.18;
   [[.45,2.1,0,1.3],[-.6,2.7,.2,1.05],[.35,3.3,-.2,.85],[-.05,3.85,0,.6]].forEach(([dx,y,dz,r],i)=>sph(r,M(i%2?0x2d5a32:0x356b3a),dx,y,dz,g,1,.3,1));root.add(g);}
@@ -325,24 +330,26 @@ function cityBuilding(o){
   }
 }
 function cityLayout(){
-  const out=[];
+  const out=[],K=VAR%4,HS=[1,.5,1.45,.85][K],R=n=>rnd(n+VAR*31.7);   // K: 0 original, 1 lågt villaområde, 2 tät storstad, 3 blandad kvartersstad
   // närzonen: låg- och mellanhöga hus som ramar in kontoret
   for(let i=0;i<6;i++){
-    out.push({x:-19-i*8.8-rnd(i*3)*2,z:-12-rnd(i*5)*8,w:6+rnd(i*2)*4,d:6+rnd(i*4)*4,h:10+rnd(i*7)*16,style:(i+1)%4,seed:i*9+2});
-    out.push({x:19+i*8.8+rnd(i*4)*2,z:-12-rnd(i*6)*8,w:6+rnd(i*5)*4,d:6+rnd(i*8)*4,h:10+rnd(i*11)*16,style:i%4,seed:i*7+5});
+    out.push({x:-19-i*8.8-R(i*3)*2,z:-12-R(i*5)*8,w:6+R(i*2)*4,d:6+R(i*4)*4,h:(10+R(i*7)*16)*HS,style:(i+1+VAR)%4,seed:i*9+2});
+    out.push({x:19+i*8.8+R(i*4)*2,z:-12-R(i*6)*8,w:6+R(i*5)*4,d:6+R(i*8)*4,h:(10+R(i*11)*16)*HS,style:(i+VAR)%4,seed:i*7+5});
   }
   // den täta stadssilhuetten längre bak
   for(let i=0;i<26;i++){
-    out.push({x:-78+i*6.2+rnd(i*2)*2,z:-33-rnd(i*3)*17,w:4.5+rnd(i*5)*5.5,d:4.5+rnd(i*7)*5,h:12+rnd(i*13)*30,style:i%4,seed:i*13+1,far:true});
+    if(K===1&&i%2)continue;
+    out.push({x:-78+i*6.2+R(i*2)*2,z:-33-R(i*3)*17,w:4.5+R(i*5)*5.5,d:4.5+R(i*7)*5,h:(12+R(i*13)*30)*HS,style:(i+VAR)%4,seed:i*13+1,far:true});
   }
   // två landmärken som sticker upp över resten
-  out.push({x:-44,z:-27,w:11,d:9,h:43,style:0,seed:101});
-  out.push({x:40,z:-29,w:10,d:8,h:37,style:3,seed:102});
+  const lm=VAR%3-1;
+  out.push({x:-44+lm*7,z:-27,w:11,d:9,h:43*HS,style:VAR%4,seed:101});
+  out.push({x:40-lm*6,z:-29,w:10,d:8,h:37*HS,style:(3+VAR)%4,seed:102});
   return out;
 }
 function outside(){
   box(BW+1.2,.7,BD+1.2,M(0xb9b3a8),0,-.35,ZC,root);
-  groundMat=M(0x9cc58a,{roughness:1});const ground=new T3.Mesh(new T3.PlaneGeometry(260,260),groundMat);ground.rotation.x=-Math.PI/2;ground.position.y=-.7;ground.receiveShadow=true;root.add(ground);
+  groundMat=M(GROUNDC[VAR%GROUNDC.length],{roughness:1});const ground=new T3.Mesh(new T3.PlaneGeometry(260,260),groundMat);ground.rotation.x=-Math.PI/2;ground.position.y=-.7;ground.receiveShadow=true;root.add(ground);
   box(BW+30,.15,3.2,M(0xd9d5cc),0,-.62,3.6,root);
   box(150,.1,5,M(0x4a4f58),0,-.66,9.2,root);
   for(let i=-9;i<=9;i++)box(1.6,.02,.18,M(0xf2efe5),i*5,-.6,9.2,root);
@@ -356,11 +363,11 @@ function outside(){
     [[-e-2-AW,-1],[e+2+AW,-1.5],[-e-4-AW,-6],[e+4+AW,-6.5],[-e-8-AW,4],[e+8+AW,4]].forEach(([x,z],i)=>pine(x,z,.9+rnd(i)*.3));
     [[-e-12,-10],[e+12,-11],[8,-17],[-6,-19]].forEach(([x,z],i)=>tree(x,z,1+rnd(i)*.4));
   }else[[-e-3-AW,4.4],[e+AW+6,3],[-e-7-AW,-2],[e+7+AW,-3],[-e-5-AW,-10],[e+6+AW,-11],[8,-17],[-6,-19]].forEach(([x,z],i)=>tree(x,z,.9+rnd(i)*.5));
-  if(STY===BSTYLES.loft){ // cykelställ med pendlingscyklar
+  if(TIERK==='loft'){ // cykelställ med pendlingscyklar
     for(let i=0;i<4;i++)box(.05,.6,.05,metal,-4.2+i*.9,-.35,Z1+1.5,root);box(2.8,.05,.05,metal,-2.85,-.07,Z1+1.5,root);
     [0x2f6fe0,0xd62b3a,0x3fa56b].forEach((c,i)=>bike(-3.8+i*.9,Z1+1.6,c));
   }
-  if(STY===BSTYLES.kontor){ // häckar och belysningspollare
+  if(TIERK==='kontor'){ // häckar och belysningspollare
     for(const sx of[-1,1]){box(e-2.5,.7,.7,M(0x2f7a43,{roughness:.9}),sx*(e/2+1.6),-.3,Z1+1.6,root);
       for(let i=0;i<3;i++){const bx=sx*(2.2+i*2.6);cyl(.09,.09,.8,dark,bx,-.3,Z1+2.3,root,8);cyl(.1,.1,.08,new T3.MeshBasicMaterial({color:0xfff3c8}),bx,.14,Z1+2.3,root,8);}}
   }
@@ -615,12 +622,12 @@ function moveCars(dt){
 }
 function signBoard(text,width){
   const W=1024,H=220,c=cv(W,H),g=c.getContext('2d');
-  const gr=g.createLinearGradient(0,0,0,H);gr.addColorStop(0,'#1b2550');gr.addColorStop(1,'#0c1230');g.fillStyle=gr;g.fillRect(0,0,W,H);
-  g.strokeStyle='#ffd27a';g.lineWidth=10;g.strokeRect(10,10,W-20,H-20);
+  const gr=g.createLinearGradient(0,0,0,H);const SC=SIGNC[VAR%SIGNC.length];gr.addColorStop(0,SC[0]);gr.addColorStop(1,SC[1]);g.fillStyle=gr;g.fillRect(0,0,W,H);
+  g.strokeStyle=SC[2];g.lineWidth=10;g.strokeRect(10,10,W-20,H-20);
   for(let x=30;x<W-20;x+=40){g.fillStyle='#fff3c8';g.beginPath();g.arc(x,22,5,0,7);g.fill();g.beginPath();g.arc(x,H-22,5,0,7);g.fill();}
   g.textAlign='center';g.textBaseline='middle';let fs=120;g.font='900 '+fs+'px "Arial Black",Arial,sans-serif';
   while(g.measureText(text).width>W-110&&fs>30){fs-=6;g.font='900 '+fs+'px "Arial Black",Arial,sans-serif';}
-  g.shadowColor='#6fc8ff';g.shadowBlur=24;g.fillStyle='#ffffff';g.fillText(text,W/2,H/2+4);
+  g.shadowColor=SC[3];g.shadowBlur=24;g.fillStyle='#ffffff';g.fillText(text,W/2,H/2+4);
   const h=width*H/W,grp=new T3.Group(),steel=M(0x8d939c,{metalness:.8,roughness:.35});
   box(width+.35,h+.35,.3,M(0x2a2f3a,{metalness:.6,roughness:.4}),0,0,-.05,grp);
   const face=new T3.Mesh(new T3.PlaneGeometry(width,h),new T3.MeshBasicMaterial({map:new T3.CanvasTexture(c)}));face.position.z=.11;grp.add(face);
@@ -789,7 +796,7 @@ function disposeTree(obj){
   });
 }
 function build(o){
-  const tier=TIERS[o.tier]?o.tier:'kontor',cfg=TIERS[tier];BW=cfg.BW;floors=cfg.floors;STY=BSTYLES[tier];
+  const tier=TIERS[o.tier]?o.tier:'kontor',cfg=TIERS[tier];BW=cfg.BW;floors=cfg.floors;VAR=Math.abs(o.variant|0)%12;TIERK=tier;STY=Object.assign({},BSTYLES[tier],PAL[VAR%PAL.length]);
   if(root){disposeTree(root);scene.remove(root);}
   glassMat=null;
   root=new T3.Group();scene.add(root);
@@ -868,6 +875,8 @@ function build(o){
   }
   const ry=floors*FH;
   box(BW+1.8,.5,BD+1.8,M(STY.roof),0,ry+.05,ZC,root);box(BW+2,.12,BD+2,STY.gold?goldM:M(0x3a4150),0,ry+.36,ZC,root);
+  if(VAR%3===1)for(let i=0;i<4;i++){const pn=box(2.2,.08,1.4,M(0x1c3350,{metalness:.5,roughness:.3}),-BW/2+2.5+i*2.6,ry+.7,ZC-.8,root);pn.rotation.x=-.35;}
+  if(VAR%3===2){box(BW*.5,.35,1.8,M(0x4f8f48,{roughness:1}),-BW*.2,ry+.5,ZC-.9,root);}
   const sb=signBoard(o.company||'nRn Company',Math.min(BW*.62,11));sb.grp.position.set(0,ry+.42+sb.postH+sb.h/2,Z1-1.6);root.add(sb.grp);signGrp=sb.grp;
   applyTime();fit();
 }

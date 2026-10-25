@@ -165,9 +165,18 @@ function googleButton() {
 let cityLoad = null, officeHost = null, curCo = null, focusCo = null;
 const loadOffice = () => cityLoad || (cityLoad = new Promise((ok, no) => {
   const add = (src, next) => { const el = document.createElement('script'); el.src = src; el.onload = next; el.onerror = () => { cityLoad = null; no(new Error('3D')); }; document.head.appendChild(el); };
-  const full = () => add('office.js?v=5', ok);
+  const full = () => add('office.js?v=6', ok);
   window.THREE ? full() : add('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', full);
 }));
+let officeCv = null, showCb = null;
+function ensureOffice() {
+  if (officeHost) return;
+  officeHost = document.createElement('div'); officeHost.className = 'city-host';
+  officeCv = document.createElement('canvas'); const ov = document.createElement('div'); ov.id = 'overlay';
+  officeHost.append(officeCv, ov);
+  Office.init(officeCv, ov);
+  Office.sign(() => curCo && showCb && showCb(curCo));
+}
 const TIER_KEY = ['loft', 'kontor', 'hq'], TIER_STAFF = [5, 8, 12], PCOL = ['#6c8cff', '#ff8a5c', '#3ccf91', '#c77dff', '#ffd166', '#4dd0e1', '#ef6f8f', '#9ccc65'];
 const sampleStaff = (n, v = 0) => Array.from({ length: n }, (_, i) => ({ id: 's' + i, name: 'Staff', rank: i === 0 ? 'leader' : i < 3 ? 'lead' : 'worker', kind: i % 3 ? 'dev' : 'design', color: PCOL[(i + v) % 8], title: '' }));
 const variantOf = (id) => [...String(id)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7) % 12;   // samma id ger alltid samma utseende (färger, omgivning, detaljer)
@@ -192,13 +201,7 @@ async function pageMap() {
     $('#cc').onclick = () => { $('#cityCard').innerHTML = ''; };
     if ($('#cs')) $('#cs').onclick = () => { if (me && me.company && me.company.id === c.id) return toast(t('ownCo')); startChat(c); };
   };
-  if (!officeHost) {
-    officeHost = document.createElement('div'); officeHost.className = 'city-host';
-    const cv = document.createElement('canvas'), ov = document.createElement('div'); ov.id = 'overlay';
-    officeHost.append(cv, ov); $('#cityHost').appendChild(officeHost);
-    Office.init(cv, ov);
-    Office.sign(() => curCo && show(curCo));
-  } else $('#cityHost').appendChild(officeHost);
+  ensureOffice(); showCb = show; $('#cityHost').appendChild(officeHost);
   const hay = (c) => (c.name + ' ' + c.tagline + ' ' + c.description + ' ' + c.tags.join(' ') + ' ' + c.services.map(x => x.title + ' ' + x.desc).join(' ')).toLowerCase();
   const filt = () => { const w = sq.q.trim().toLowerCase().split(/\s+/).filter(Boolean); list = w.length ? all.filter(c => { const h = hay(c); return w.every(x => h.includes(x)); }) : all; };
   const res = () => {
@@ -231,10 +234,18 @@ function pageChoose() {
   $('#rr').onclick = () => rail.scrollBy({ left: rail.clientWidth * 0.8, behavior: 'smooth' });
   api('GET', '/companies?map=1&sort=best').then((j) => {
     if (!j.companies.length) { rail.innerHTML = '<p class="muted">' + esc(t('homeEmpty')) + '</p>'; return; }
-    rail.innerHTML = j.companies.map((c, i) => '<article class="co"><div class="co-top"><span class="co-tier t' + c.building + '">' + esc(t('bTier' + c.building)) + '</span>' + (c.demo ? '<span class="pill">' + esc(t('demoTag')) + '</span>' : '') + '<span class="small">' + ratingHtml(c.rating) + '</span></div><h3>' + esc(c.name) + '</h3>'
+    rail.innerHTML = j.companies.map((c, i) => '<article class="co"><div class="co-img"><img data-i="' + esc(c.id) + '" alt="' + esc(c.name) + '" width="520" height="360"></div><div class="co-top"><span class="co-tier t' + c.building + '">' + esc(t('bTier' + c.building)) + '</span>' + (c.demo ? '<span class="pill">' + esc(t('demoTag')) + '</span>' : '') + '<span class="small">' + ratingHtml(c.rating) + '</span></div><h3>' + esc(c.name) + '</h3>'
       + (c.tagline ? '<p class="co-tag">' + esc(c.tagline) + '</p>' : '') + (c.tags.length ? '<p>' + c.tags.map(x => '<span class="tag">' + esc(x) + '</span>').join(' ') + '</p>' : '')
       + (c.services.length ? '<ul class="co-svc">' + c.services.slice(0, 3).map(x => '<li><span>' + esc(x.title) + '</span><b>' + esc(x.price || '') + '</b></li>').join('') + '</ul>' : '')
       + '<div class="row" style="margin-top:auto"><button class="btn sm" data-c="' + esc(c.id) + '">' + esc(t('seeInCity')) + '</button><a class="btn ghost sm" href="#/company/' + esc(c.id) + '">' + esc(t('viewProfile')) + '</a></div></article>').join('');
+    loadOffice().then(async () => {   // riktiga byggnaden som bild, en i taget
+      ensureOffice();
+      for (const c of j.companies.slice(0, 24)) {
+        await new Promise(r => setTimeout(r, 40));
+        const im = rail.querySelector('img[data-i="' + c.id + '"]'); if (!im || !document.body.contains(im)) return;
+        try { im.src = Office.snapshot(TIER_KEY[c.building] || 'loft', sampleStaff((TIER_STAFF[c.building] || 5) - (variantOf(c.id) % 3), variantOf(c.id)), c.name, 520, 360, variantOf(c.id)); im.classList.add('on'); } catch { /* */ }
+      }
+    }).catch(() => {});
     rail.querySelectorAll('button[data-c]').forEach(b => { b.onclick = () => { focusCo = b.dataset.c; lsSet(ROLE_KEY, 'customer'); if (location.hash === '#/') route(); else location.hash = '#/'; }; });
   }).catch(() => { rail.innerHTML = ''; });
 }

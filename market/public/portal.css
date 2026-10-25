@@ -131,3 +131,7 @@ main>p.muted{max-width:62ch;font-size:17px}
 .brand{padding:32px 50px 9px}@media(max-width:700px){.brand{padding:26px 36px 7px}}
 .roof{color:var(--ink)}
 #nav{gap:4px 16px}#nav a{font-size:12px;letter-spacing:.05em}.bar{gap:18px}
+
+.co{padding-top:0;overflow:hidden}
+.co-img{margin:0 -18px 6px;aspect-ratio:13/9;background:#c5d3da;border-bottom:1px solid var(--ink);overflow:hidden}
+.co-img img{display:block;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .4s}.co-img img.on{opacity:1}

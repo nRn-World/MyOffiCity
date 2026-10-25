@@ -1317,9 +1317,9 @@ function init(c,ov){
   build({tier:'kontor',staff:[]});resize();requestAnimationFrame(frame);
 }
 /* förhandsbild av en byggnadstyp (för startskärmen) */
-function snapshot(tier,staff,label,w=640,h=440){
+function snapshot(tier,staff,label,w=640,h=440,variant=0){
   const old=[canvas.style.width,canvas.style.height],keep={zoom,az,el},h0=hourNow;hourNow=12;
-  build({tier,staff:staff||[],company:label||'nRn Company'});
+  build({tier,staff:staff||[],company:label||'nRn Company',variant});
   renderer.setSize(w,h,false);
   const asp=w/h,cfg=TIERS[tier];
   const halfW=((cfg.BW+AWL+AWR)*Math.cos(az)+BD*Math.sin(az))/2+3,halfH=((cfg.floors*FH+3)*Math.cos(el)+BD*Math.sin(el))/2+2,hh=Math.max(halfH,halfW/asp);

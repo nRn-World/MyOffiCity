@@ -257,11 +257,11 @@ async function saveCompany(req, env, user) {
 const bayes = (c) => ((c.rating.avg * c.rating.count) + 4 * 3) / (c.rating.count + 3);     // nya företag börjar neutralt, inte längst ner
 async function listCompanies(req, env) {
   const sp = new URL(req.url).searchParams;
-  const q = clip(sp.get('q'), 60).trim().toLowerCase().split(/\s+/).filter(Boolean), tag = clip(sp.get('tag'), 24).trim().toLowerCase();
+  const q = clip(sp.get('q'), 60).trim().toLowerCase().split(/\s+/).filter(Boolean), tag = clip(sp.get('tag'), 400).trim().toLowerCase().split(',').map(x => x.trim()).filter(Boolean);   // flera taggar = någon av dem
   const sort = ['best', 'rating', 'orders', 'new'].includes(sp.get('sort')) ? sp.get('sort') : 'best';
   const page = Math.max(1, Math.min(50, Number(sp.get('page')) || 1)), per = sp.get('map') ? 200 : 12;   // kartan hämtar alla på en gång
   let list = (await env.DB.prepare(COMPANY_SQL + ' ORDER BY c.updated DESC LIMIT 500').all()).results.map(companyOut);
-  if (tag) list = list.filter(c => c.tags.includes(tag));
+  if (tag.length) list = list.filter(c => tag.some(x => c.tags.includes(x)));
   if (q.length) list = list.filter(c => { const h = (c.name + ' ' + c.tagline + ' ' + c.description + ' ' + c.tags.join(' ') + ' ' + c.services.map(x => x.title + ' ' + x.desc).join(' ')).toLowerCase(); return q.every(w => h.includes(w)); });
   const cmp = { best: (a, b) => bayes(b) - bayes(a) || b.done - a.done, rating: (a, b) => (b.rating.count ? b.rating.avg : 0) - (a.rating.count ? a.rating.avg : 0) || b.rating.count - a.rating.count, orders: (a, b) => b.done - a.done, new: (a, b) => b.created - a.created }[sort];
   list.sort(cmp);

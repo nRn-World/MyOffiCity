@@ -135,3 +135,12 @@ main>p.muted{max-width:62ch;font-size:17px}
 .co{padding-top:0;overflow:hidden}
 .co-img{margin:0 -18px 6px;aspect-ratio:13/9;background:#c5d3da;border-bottom:1px solid var(--ink);overflow:hidden}
 .co-img img{display:block;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .4s}.co-img img.on{opacity:1}
+
+/* kategorier i företagslistan */
+.cats{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.cat{font:600 13px var(--sans);letter-spacing:.04em;background:var(--card);color:var(--ink);border:1px solid var(--ink);padding:9px 16px;cursor:pointer;border-radius:var(--r);transition:background .15s,color .15s,transform .15s,box-shadow .15s}
+.cat small{opacity:.6;margin-left:4px;font-weight:700}
+.cat:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--acc)}
+.cat.on{background:var(--ink);color:var(--bg)}
+.subtags{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.subtags .btn-chip{padding:3px 11px;font-size:13px}

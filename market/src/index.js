@@ -806,6 +806,59 @@ async function postInquiryMessage(req, env, id, user) {
   return { ok: true };
 }
 
+/* ---------- företagets team: anställda agenter (anställningsdatum, avsked, nyanställningar) ---------- */
+const TEAM_ROLES = ['dRoleLead', 'dRoleRev', 'dRoleBuild', 'dRolePolish'], TEAM_STYLES = ['short', 'bob', 'long', 'afro', 'bun'];
+const hexc = (x, d) => /^#[0-9a-fA-F]{6}$/.test(String(x)) ? String(x) : d;
+function cleanPersona(p) {   // släpper bara igenom kända fält, i kända format
+  if (!p || typeof p !== 'object') throw bad('The team member is not valid', 'bad_member');
+  const two = (o, n) => ({ sv: clip(o && o.sv, n).trim(), en: clip(o && o.en, n).trim() });
+  const arr = (a) => (Array.isArray(a) ? a : []).slice(0, 6).map((x) => clip(x, 24).trim()).filter(Boolean);
+  const name = clip(p.name, 40).trim(), born = String(p.born || '');
+  if (name.length < 2 || !/^\d{4}-\d{2}-\d{2}$/.test(born) || !TEAM_ROLES.includes(p.role)) throw bad('The team member is not valid', 'bad_member');
+  const L = p.look || {};
+  return { name, role: p.role, born, no: clip(p.no, 12), photo: ['tomas', 'ebba', 'kia', 'manus', 'laila'].includes(p.photo) ? p.photo : '',
+    from: two(p.from, 80), langs: { sv: arr(p.langs && p.langs.sv), en: arr(p.langs && p.langs.en) }, bg: two(p.bg, 400), hobby: two(p.hobby, 160),
+    look: { skin: hexc(L.skin, '#e0b090'), hair: hexc(L.hair, '#3a2a22'), shirt: hexc(L.shirt, '#24262d'), style: TEAM_STYLES.includes(L.style) ? L.style : 'short', glasses: !!L.glasses, beard: !!L.beard, headset: !!L.headset, hood: !!L.hood } };
+}
+const teamOut = (r) => ({ id: r.id, slot: r.slot, hired: r.hired, fired: r.fired, persona: parseJson(r.persona, {}) });
+async function myCompany(env, user) {
+  const co = await env.DB.prepare('SELECT id,created FROM companies WHERE owner_id=?').bind(user.id).first();
+  if (!co) throw new HttpError(409, 'no_company', 'Publish your company first');
+  return co;
+}
+async function getTeam(env, user) {
+  const co = await myCompany(env, user);
+  const rows = (await env.DB.prepare('SELECT * FROM company_team WHERE company_id=? ORDER BY slot,hired').bind(co.id).all()).results;
+  return { team: rows.map(teamOut), companyCreated: co.created };
+}
+async function seedTeam(req, env, user) {
+  await limit(env, 'team:' + user.id, 60, 3600);
+  const co = await myCompany(env, user), b = await readBody(req);
+  if ((await env.DB.prepare('SELECT COUNT(*) AS n FROM company_team WHERE company_id=?').bind(co.id).first()).n) throw new HttpError(409, 'team_exists', 'The team already exists');
+  const members = (Array.isArray(b.members) ? b.members : []).slice(0, 5).map(cleanPersona);
+  for (let i = 0; i < members.length; i++) await env.DB.prepare('INSERT INTO company_team(id,company_id,slot,persona,hired,fired) VALUES(?,?,?,?,?,NULL)').bind(rid('m'), co.id, i, JSON.stringify(members[i]), co.created).run();
+  return getTeam(env, user);
+}
+async function fireMember(env, id, user) {
+  await limit(env, 'team:' + user.id, 60, 3600);
+  const co = await myCompany(env, user);
+  const r = await env.DB.prepare('UPDATE company_team SET fired=? WHERE id=? AND company_id=? AND fired IS NULL').bind(now(), id, co.id).run();
+  if (!r.meta.changes) throw new HttpError(404, 'not_found', 'Team member not found');
+  return getTeam(env, user);
+}
+async function hireMember(req, env, user) {
+  await limit(env, 'team:' + user.id, 60, 3600);
+  const co = await myCompany(env, user), b = await readBody(req), slot = Number(b.slot);
+  if (!Number.isInteger(slot) || slot < 0 || slot > 4) throw bad('Choose a position between 1 and 5', 'bad_slot');
+  if (await env.DB.prepare('SELECT 1 AS x FROM company_team WHERE company_id=? AND slot=? AND fired IS NULL').bind(co.id, slot).first()) throw new HttpError(409, 'slot_taken', 'That position is not vacant');
+  await env.DB.prepare('INSERT INTO company_team(id,company_id,slot,persona,hired,fired) VALUES(?,?,?,?,?,NULL)').bind(rid('m'), co.id, slot, JSON.stringify(cleanPersona(b.persona)), now()).run();
+  return getTeam(env, user);
+}
+async function publicTeam(env, companyId) {   // bara det som behövs för att rita personalen i 3D
+  const rows = (await env.DB.prepare('SELECT slot,persona FROM company_team WHERE company_id=? AND fired IS NULL ORDER BY slot').bind(companyId).all()).results;
+  return { team: rows.map((r) => { const p = parseJson(r.persona, {}); return { slot: r.slot, name: p.name, role: p.role, photo: p.photo || '', look: p.look || {} }; }) };
+}
+
 /* ---------- OAuth 2.1 (så att claude.ai m.fl. kopplar med bara adressen; åtkomstsvaret är en vanlig nrnm_-nyckel) ---------- */
 const OAUTH_CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Authorization, Content-Type, MCP-Protocol-Version', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Max-Age': '600' };
 const isOauthPath = (p) => p.startsWith('/.well-known/') || p === '/api/oauth/register' || p === '/api/oauth/token';
@@ -916,6 +969,11 @@ route('GET', /^\/api\/dev\/outbox$/, async (req, env) => {   // bara lokalt (DEV
   const to = clip(new URL(req.url).searchParams.get('to'), 120).toLowerCase();
   return { mails: (await env.DB.prepare('SELECT to_addr,subject,body,created FROM outbox WHERE to_addr=? ORDER BY id DESC LIMIT 5').bind(to).all()).results };
 });
+route('GET', new RegExp('^/api/company/team$'), (req, env, m, user) => getTeam(env, user), true);
+route('POST', new RegExp('^/api/company/team/seed$'), (req, env, m, user) => seedTeam(req, env, user), true);
+route('POST', new RegExp('^/api/company/team/hire$'), (req, env, m, user) => hireMember(req, env, user), true);
+route('POST', new RegExp('^/api/company/team/([a-z0-9]+)/fire$'), (req, env, m, user) => fireMember(env, m[1], user), true);
+route('GET', new RegExp('^/api/companies/([a-z0-9]+)/team$'), (req, env, m) => publicTeam(env, m[1]));
 route('PUT', new RegExp('^/api/company/logo$'), (req, env, m, user) => saveLogo(req, env, user), true);
 route('DELETE', new RegExp('^/api/company/logo$'), (req, env, m, user) => deleteLogo(env, user), true);
 route('PUT', /^\/api\/company$/, (req, env, m, user) => saveCompany(req, env, user), true);

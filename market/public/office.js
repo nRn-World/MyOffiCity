@@ -789,6 +789,7 @@ const PRESET={
   manus:{skin:0x7a5238,shirt:0x4d5058,hair:0x120d0b,hairStyle:'afro',hood:true},
   laila:{skin:0xd7a37c,shirt:0xc77882,hair:0x2a1912,hairStyle:'bun'}};
 function look(e){
+  if(e.look&&typeof e.look==='object')return e.look;
   const p=PRESET[(e.name||'').toLowerCase()];if(p)return e.age>52?{...p,hair:0x9a9a9a,beard:p.beard}:p;
   const h=hash(VAR?e.id+'#'+VAR:e.id);
   const o={skin:SKINS[h%5],hair:HAIRS[(h>>3)%5],shirt:SHIRTS[(h>>5)%7],hairStyle:STYLES[(h>>7)%5],glasses:(h>>9)%3===0,headset:(h>>11)%4===0};

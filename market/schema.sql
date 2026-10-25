@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS companies (
   services TEXT NOT NULL DEFAULT '[]',
   tags TEXT NOT NULL DEFAULT '[]',
   building INTEGER NOT NULL DEFAULT 0,
-  demo INTEGER NOT NULL DEFAULT 0,   -- 1 = exempelföretag utan riktig ägare (tas bort med DELETE FROM companies WHERE demo=1)
+  demo INTEGER NOT NULL DEFAULT 0, website TEXT NOT NULL DEFAULT '', org_no TEXT NOT NULL DEFAULT '',   -- 1 = exempelföretag utan riktig ägare (tas bort med DELETE FROM companies WHERE demo=1)
   created INTEGER NOT NULL,
   updated INTEGER NOT NULL
 );

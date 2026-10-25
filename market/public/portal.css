@@ -234,3 +234,5 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--gold);bo
 .bopt:hover{transform:translateY(-3px);box-shadow:0 14px 34px -16px var(--glow)}
 .bopt:has(input:checked){border-color:var(--gold);box-shadow:0 0 0 2px var(--gold),0 14px 34px -16px var(--glow)}
 .lg-prev{width:64px;height:64px;display:grid;place-items:center;background:rgba(128,128,128,.15);border-radius:10px;overflow:hidden}.lg-prev img{max-width:100%;max-height:100%;object-fit:contain}
+
+.facts{margin:8px 0}.facts a{color:var(--acc)}

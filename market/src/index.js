@@ -233,15 +233,27 @@ async function login(req, env) {
 /* ---------- företag ---------- */
 const COMPANY_SQL = "SELECT c.*, (SELECT shape FROM company_logos l WHERE l.company_id=c.id) AS logo_shape, (SELECT v FROM company_logos l WHERE l.company_id=c.id) AS logo_v, (SELECT ROUND(AVG(stars),2) FROM reviews r WHERE r.company_id=c.id) AS avg, (SELECT COUNT(*) FROM reviews r WHERE r.company_id=c.id) AS cnt, (SELECT COUNT(*) FROM orders o WHERE o.company_id=c.id AND o.status='delivered') AS done FROM companies c";
 const companyOut = (r) => ({
-  id: r.id, name: r.name, tagline: r.tagline, description: r.description, services: parseJson(r.services, []), tags: parseJson(r.tags, []), building: Number(r.building || 0), demo: !!r.demo, logo: r.logo_v ? { shape: r.logo_shape, v: r.logo_v } : null, created: r.created,
+  id: r.id, name: r.name, tagline: r.tagline, description: r.description, services: parseJson(r.services, []), tags: parseJson(r.tags, []), building: Number(r.building || 0), website: r.website || '', orgNo: r.org_no || '', demo: !!r.demo, logo: r.logo_v ? { shape: r.logo_shape, v: r.logo_v } : null, created: r.created,
   rating: { avg: Number(r.avg || 0), count: Number(r.cnt || 0) }, done: Number(r.done || 0),
 });
 const tagsIn = (v) => [...new Set((Array.isArray(v) ? v : String(v || '').split(',')).map(x => clip(x, 24).trim().toLowerCase().replace(/[^a-z0-9åäö -]/g, '').trim()).filter(Boolean))].slice(0, 5);
+function cleanUrl(x) {
+  let v = clip(x, 200).trim(); if (!v) return '';
+  if (!/^[a-z][a-z0-9+.-]*:/i.test(v)) v = 'https://' + v;
+  let u; try { u = new URL(v); } catch { throw bad('That website address does not look right', 'bad_website'); }
+  if (!['http:', 'https:'].includes(u.protocol) || !u.hostname.includes('.')) throw bad('That website address does not look right', 'bad_website');
+  return u.toString().slice(0, 200);
+}
+function cleanOrg(x) {
+  const v = clip(x, 24).trim(); if (!v) return '';
+  if (!/^[A-Za-z0-9][A-Za-z0-9 .\-]{3,22}$/.test(v)) throw bad('The organisation number does not look right', 'bad_org');
+  return v;
+}
 function companyInput(b) {
   const name = clip(b.name, 40).trim();
   if (name.length < 2) throw bad('Give the company a name (at least 2 characters)', 'bad_name');
   const services = (Array.isArray(b.services) ? b.services : []).slice(0, 6).map(s => ({ title: clip(s && s.title, 60).trim(), price: clip(s && s.price, 40).trim(), desc: clip(s && s.desc, 200).trim() })).filter(s => s.title);
-  return { name, tagline: clip(b.tagline, 100).trim(), description: clip(b.description, 800).trim(), services: JSON.stringify(services), tags: JSON.stringify(tagsIn(b.tags)), building: [0, 1, 2].includes(Number(b.building)) ? Number(b.building) : 0 };
+  return { name, tagline: clip(b.tagline, 100).trim(), description: clip(b.description, 800).trim(), services: JSON.stringify(services), tags: JSON.stringify(tagsIn(b.tags)), building: [0, 1, 2].includes(Number(b.building)) ? Number(b.building) : 0, website: 'website' in b ? cleanUrl(b.website) : null, orgNo: 'orgNo' in b ? cleanOrg(b.orgNo) : null };   // null = oförändrat (appen skickar inte dessa)
 }
 async function saveCompany(req, env, user) {
   await limit(env, 'co:' + user.id, 20, 3600);
@@ -250,8 +262,8 @@ async function saveCompany(req, env, user) {
   const clash = await env.DB.prepare('SELECT id FROM companies WHERE name=? AND owner_id<>?').bind(v.name, user.id).first();
   if (clash) throw new HttpError(409, 'name_taken', 'A company with that name already exists');
   let id = mine && mine.id;
-  if (mine) await env.DB.prepare('UPDATE companies SET name=?,tagline=?,description=?,services=?,tags=?,building=?,updated=? WHERE id=?').bind(v.name, v.tagline, v.description, v.services, v.tags, v.building, t, mine.id).run();
-  else { id = rid('c'); await env.DB.prepare('INSERT INTO companies(id,owner_id,name,tagline,description,services,tags,building,created,updated) VALUES(?,?,?,?,?,?,?,?,?,?)').bind(id, user.id, v.name, v.tagline, v.description, v.services, v.tags, v.building, t, t).run(); }
+  if (mine) await env.DB.prepare('UPDATE companies SET name=?,tagline=?,description=?,services=?,tags=?,building=?,website=COALESCE(?,website),org_no=COALESCE(?,org_no),updated=? WHERE id=?').bind(v.name, v.tagline, v.description, v.services, v.tags, v.building, v.website, v.orgNo, t, mine.id).run();
+  else { id = rid('c'); await env.DB.prepare('INSERT INTO companies(id,owner_id,name,tagline,description,services,tags,building,website,org_no,created,updated) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)').bind(id, user.id, v.name, v.tagline, v.description, v.services, v.tags, v.building, v.website || '', v.orgNo || '', t, t).run(); }
   return companyOut(await env.DB.prepare(COMPANY_SQL + ' WHERE c.id=?').bind(id).first());
 }
 /* ---------- företagslogotyp: bara PNG ---------- */

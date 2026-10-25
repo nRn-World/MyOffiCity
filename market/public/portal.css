@@ -223,3 +223,14 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--gold);bo
 .ov-tile b{padding:8px 10px 0;font:600 17px var(--serif)}.ov-tile small{padding:0 10px;color:#9fb0d2;letter-spacing:.06em;text-transform:uppercase;font-size:11px}
 .ov-img{display:block;aspect-ratio:13/9;background:#c5d3da;border-bottom:1px solid color-mix(in srgb,var(--gold) 45%,transparent);overflow:hidden}
 .ov-img img{display:block;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .5s,transform 1s}.ov-img img.on{opacity:1}.ov-tile:hover .ov-img img{transform:scale(1.08)}
+
+/* skapa/ändra företag */
+.bopts{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-top:10px}
+.bopt{display:flex;flex-direction:column;gap:3px;margin:0;padding:0 0 12px;cursor:pointer;border:1px solid color-mix(in srgb,var(--gold) 30%,transparent);text-transform:none;letter-spacing:0;font-size:inherit;color:var(--ink);position:relative;transition:transform .2s,box-shadow .2s,border-color .2s}
+.bopt input{position:absolute;opacity:0;pointer-events:none}
+.bopt b{padding:8px 12px 0;font:600 18px var(--serif)}.bopt small{padding:0 12px;color:var(--mut);font-weight:400;line-height:1.35}
+.bimg{display:block;aspect-ratio:7/5;background:#c5d3da;overflow:hidden;border-bottom:1px solid color-mix(in srgb,var(--gold) 45%,transparent)}
+.bimg img{display:block;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .5s}.bimg img.on{opacity:1}
+.bopt:hover{transform:translateY(-3px);box-shadow:0 14px 34px -16px var(--glow)}
+.bopt:has(input:checked){border-color:var(--gold);box-shadow:0 0 0 2px var(--gold),0 14px 34px -16px var(--glow)}
+.lg-prev{width:64px;height:64px;display:grid;place-items:center;background:rgba(128,128,128,.15);border-radius:10px;overflow:hidden}.lg-prev img{max-width:100%;max-height:100%;object-fit:contain}

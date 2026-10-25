@@ -722,3 +722,6 @@ canvas.chart{width:100%;height:238px;display:block}
 .ord-vbody iframe{width:100%;max-width:100%;height:100%;border:0;border-radius:12px;background:#fff}
 .sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 @media(max-width:900px){.ord-layout{grid-template-columns:1fr}.ord-list{position:static;flex-direction:row;flex-wrap:wrap}}
+
+/* appikon: guldtak + byggnad, utan färgad platta */
+.brand .logo{background:none!important;border:0!important;box-shadow:none!important;width:48px!important;height:44px!important;padding:0!important}

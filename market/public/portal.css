@@ -260,3 +260,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--gold);bo
 .dav{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:var(--c,var(--gold));color:#0a0e18;font:700 24px var(--serif);margin-bottom:8px}
 @media(max-width:820px){.dash{grid-template-columns:1fr;grid-template-rows:auto 1fr}.dsb{flex-direction:row;align-items:center;border-right:0;border-bottom:1px solid var(--line);padding:8px;overflow-x:auto}.dbrand,.dfoot{display:none}.dnav{flex-direction:row}.dn span{display:none}.dn{padding:10px}.dsplit{grid-template-columns:1fr;grid-template-rows:200px 1fr}.dtop{padding:10px 14px}.dtop h2{font-size:22px}.dchips{margin-left:0}}
 .in-dash .bar{display:none}.in-dash main{padding:0;max-width:none}
+
+.dbrand{display:flex;justify-content:center;padding:14px 0 0!important;border-bottom:1px solid var(--gold);margin:-18px -14px 12px}
+.dbrand .brand{padding:30px 40px 9px}
+.dbrand .word b{display:inline!important;font:inherit!important;font-weight:700!important;letter-spacing:inherit!important}.dbrand .word{font-size:20px;white-space:nowrap}.dbrand .brand{padding:30px 34px 9px}

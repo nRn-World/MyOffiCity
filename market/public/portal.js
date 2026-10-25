@@ -367,7 +367,7 @@ async function pageDash(tab) {
   tab = tab || 'office';
   const [orders, chats] = await Promise.all([api('GET', '/company/orders').catch(() => ({ orders: [] })), api('GET', '/inquiries').catch(() => ({ inquiries: [] }))]);
   const myChats = chats.inquiries.filter((q) => q.role === 'owner');
-  $('#app').innerHTML = '<div class="dash"><aside class="dsb"><div class="dbrand"><span class="dmark">' + document.querySelector('.brand .mark').outerHTML + '</span><div><b>MyOffiCity</b><small>' + esc(t('dCompany')) + '</small></div></div><nav class="dnav">'
+  $('#app').innerHTML = '<div class="dash"><aside class="dsb"><div class="dbrand">' + document.querySelector('.brand').outerHTML.replace('href="#/"','href="#/"') + '</div><nav class="dnav">'
     + TABS.map(([id, k, ico]) => '<button class="dn' + (id === tab ? ' on' : '') + '" data-t="' + id + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + ico + '" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>' + esc(t(k)) + '</span></button>').join('')
     + '</nav><div class="dfoot"><a href="#/">' + esc(t('dSite')) + '</a><div class="duser"><b>' + esc(me.user.username) + '</b><small>' + esc(t('dOwner')) + ' ' + esc(c.name) + '</small></div></div></aside>'
     + '<section class="dmain"><header class="dtop"><h2>' + esc(c.name) + '</h2><span class="co-tier t' + c.building + '">' + esc(t('bTier' + c.building)) + '</span><div class="dchips">'

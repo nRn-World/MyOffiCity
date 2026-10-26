@@ -463,7 +463,7 @@ function outside(){
   box(520,.1,5,M(0x6b6559),0,-.66,9.2,root);
   for(let i=-50;i<=50;i++)box(1.6,.02,.18,M(0xfbf2dc),i*5,-.6,9.2,root);
   box(2.6,.15,2.4,M(0xcabf9f),0,-.6,2.4,root);
-  const e=BW/2;loadGrassKit();placeGrass(e);
+  const e=BW/2;loadGrassKit();placeGrass(e);loadPeds();placePeds();
   if(STY.gold){ // granittorg, spegeldammar och formklippta japanska tallar
     box(BW+18,.06,BD+12,M(0xa79c84,{roughness:.6}),0,-.64,ZC+1,root);
     const water=M(0x4f8fa0,{metalness:.6,roughness:.05});
@@ -733,6 +733,27 @@ function loadCivil(){
     CIVIL=out;
     if(root)cars.forEach((o,i)=>{if(o.type==='moto'||i%2)return;const t=pickR(CIVIL_KEYS),lane=o.dir,n=spawnCar(lane,o.z,0,t);n.g.position.x=o.g.position.x;root.remove(o.g);cars[i]=n;});
   }).catch(()=>{});
+}
+/* Fotgängare: två gratis CC0-personer (man och kvinna, gå-animation) från CityAssets (se models/CREDITS.md). De går fram och tillbaka på trottoarerna. */
+let PEDS=[],pedTried=false;
+const PED_SPOTS=[['man',3.9,-18,1,1.3,22],['woman',4.6,14,-1,1.5,22],['man',5.0,-6,-1,1.1,22],['woman',4.2,20,1,1.4,22],['woman',-8.0,-30,1,1.35,44],['man',-8.7,25,-1,1.2,44],['man',-8.3,-10,1,1.6,44]];
+function loadPeds(){
+  if(pedTried||!window.CityAssets||!T3.SkeletonUtils)return;pedTried=true;
+  window.CityAssets.loadAll(['man','woman']).then(()=>{if(root)placePeds();}).catch(()=>{});
+}
+function placePeds(){
+  const A=window.CityAssets;
+  if(!root||!A||root.userData.peds||!A.has('man')||!A.has('woman'))return;root.userData.peds=1;PEDS=[];
+  PED_SPOTS.forEach(([kind,z,x,dir,v,lim],i)=>{
+    let p;try{p=A.person({kind,h:1.72+(i%3)*.04});}catch(e){return;}
+    if(!p||!p.mixer)return;
+    p.group.position.set(x,-.58,z);p.group.rotation.y=dir>0?Math.PI/2:-Math.PI/2;root.add(p.group);
+    p.play('walk',v/1.4);PEDS.push({p,x,z,dir,v,lim});
+  });
+}
+function movePeds(dt){
+  for(const q of PEDS){q.x+=q.dir*q.v*dt;if(q.x>q.lim){q.x=q.lim;q.dir=-1;}else if(q.x<-q.lim){q.x=-q.lim;q.dir=1;}
+    q.p.group.position.x=q.x;q.p.group.rotation.y=q.dir>0?Math.PI/2:-Math.PI/2;q.p.mixer.update(dt);}
 }
 let BIKES=[],bikeTried=false,motoN=0;
 const BIKE_FILES=['bike','duc'];   // Honda CB500X och Ducati Panigale V4
@@ -1058,7 +1079,7 @@ function build(o){
   if(root){disposeTree(root);scene.remove(root);}
   glassMat=null;
   root=new T3.Group();scene.add(root);
-  TREES=[];loadCarPack();loadBike();loadCivil();loadOak();screens=[];leds=[];holos=[];lights=[];cars=[];bikes=[];screenHits=[];cityTex=[];flames=[];OBST=[];
+  TREES=[];PEDS=[];loadCarPack();loadBike();loadCivil();loadOak();screens=[];leds=[];holos=[];lights=[];cars=[];bikes=[];screenHits=[];cityTex=[];flames=[];OBST=[];
   cityFaces.forEach(f=>f.t.dispose());cityFaces=CITY_STYLES.map((_,i)=>makeCityFace(i));cityMats=[];cityBeacons=[];
   Object.values(agents).forEach(a=>{a.tag.remove();a.bub.remove();});for(const k in agents)delete agents[k];
   packets.forEach(p=>p.res());packets=[];trails=[];
@@ -1529,7 +1550,7 @@ function frame(now){
   const visible=canvas.clientWidth>0&&canvas.clientHeight>0&&!document.hidden;
   if(!visible){lastF=now;requestAnimationFrame(frame);return;}
   const t=now/1000,dt=Math.min(.05,(now-(lastF||now))/1000);lastF=now;
-  wxStep(dt,t,now);moveCars(dt);moveBikes(dt);moveWalkers(dt,t);talk.forEach((st,o)=>animTalk(o,t,st.sp));phoning.forEach(o=>{if(!o.userData.walking)animPerson(o,t,false,0);});
+  wxStep(dt,t,now);moveCars(dt);movePeds(dt);moveBikes(dt);moveWalkers(dt,t);talk.forEach((st,o)=>animTalk(o,t,st.sp));phoning.forEach(o=>{if(!o.userData.walking)animPerson(o,t,false,0);});
   poses.forEach((fn,o)=>{if(!o.userData.walking){animPerson(o,t,false,0);fn(o,t);}});
   if(kit&&kit.fd){const f=kit.fd;f.k+=(f.t-f.k)*.1;f.g.rotation.y=-1.8*f.k;}
   if(cityBeacons.length){const n=Math.max(0,1-daylight(hourNow)*1.8);cityBeacons.forEach((m,i)=>{m.opacity=n*(.18+.82*(Math.sin(t*1.7+i*1.9)>0?1:0));});}

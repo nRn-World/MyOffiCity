@@ -31,6 +31,17 @@ https://poly.pizza/m/b6USSQA731J. Licens: Creative Commons Attribution 3.0
 används tillsammans med våra CC0-personer för att bygga cyklisterna i staden.
 Attributionen finns även länkad i sidfoten («3D credits»).
 
+## Stadsscenen: Sketchfab (CC BY 4.0, attribution krävs)
+
+Modellerna i 3D-kontoret och staden (bilar, servicefordon, motorcyklar, träd och gräs) kommer från Sketchfab under Creative Commons Attribution 4.0 (https://creativecommons.org/licenses/by/4.0/). Alla är förenklade/omskalade och några är omfärgade.
+
+- **"Generic passenger car pack"** av Comrade1280, https://sketchfab.com/3d-models/generic-passenger-car-pack-20f9af9b8a404d5cb022ac6fe87f21f5, licens [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Ändrad: bilarna är uttagna ur paketet, vridna och skalade, och taxin är omfärgad. Filer: `models/cars.glb`, `market/public/models/cars.glb`.
+- **"Grass"** av MauroGonzalezA, https://sketchfab.com/3d-models/grass-4b800e07ea3543e3870ad5e53b39d825, licens [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Ändrad: modellen är fotad uppifrån till en sömlös marktextur (färgjusterad), och stråna är förenklade till remsor och samlade i fyra små tuvor som planteras med omskalning. Filer: models/grasscarpet.jpg och models/grassblades.bin (samt kopior i market/public/models).
+- **"Honda CB500X"** av DevanirGrau, https://sketchfab.com/3d-models/honda-cb500x-c2e1bff4afa34fc0b1957a5c418d666a, licens [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Ändrad: förenklad till ca 50 000 trianglar, delar sammanslagna per material, texturer nedskalade till 512 px, omskalad och vriden. Förare tillagd. Filer: models/bike.json, models/bike.bin och models/bike_t*.jpg/png (samt kopior i market/public/models).
+- **"Ducati Panigale V4"** av ROY (https://sketchfab.com/roy.gearloft.in), https://sketchfab.com/3d-models/ducati-panigale-v4-47f87e3d70f644289e34cbff91255d0c, licens [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Ändrad: förenklad till ca 36 000 trianglar, delar sammanslagna per material, texturer nedskalade till 512 px, omskalad och vriden. Förare tillagd. Filer: models/duc.json, models/duc.bin och models/duc_t*.jpg (samt kopior i market/public/models).
+- **"Animated Oak Trees"** av Jagobo (https://sketchfab.com/Jagobo), https://sketchfab.com/3d-models/animated-oak-trees-fcb0374d91334eb7a119bfc316167f7e, licens [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Ändrad: animeringen är borttagen (träden är statiska), stammen förenklad och enfärgad, bladverket glesat med förstorade löv, omskalad. Filer: models/oak.json, models/oak.bin och models/oak_t0.png (samt kopior i market/public/models).
+- **"Generic civil service vehicles pack"** av Comrade1280, https://sketchfab.com/3d-models/generic-civil-service-vehicles-pack-8ff2a13f30914932a70c7950cfa58465, licens [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Ändrad: fordonen är uttagna ur paketet, vridna så att fronten pekar framåt, centrerade, texturer nedskalade till 512 px. Filer: models/civ.json, models/civ.bin och models/civ_t*.jpg/png (samt kopior i market/public/models).
+
 ## Programvara
 
 `vendor/three.min.js`, `vendor/GLTFLoader.js`, `vendor/SkeletonUtils.js` och

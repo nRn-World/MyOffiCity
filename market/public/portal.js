@@ -346,7 +346,8 @@ const loadNet = () => netLoad || (netLoad = new Promise((ok, no) => {
 }));
 const loadOffice = () => cityLoad || (cityLoad = new Promise((ok, no) => {
   const add = (src, next) => { const el = document.createElement('script'); el.src = src; el.onload = next; el.onerror = () => { cityLoad = null; no(new Error('3D')); }; document.head.appendChild(el); };
-  const full = () => (window.THREE && THREE.GLTFLoader ? add('office.js?v=53', ok) : add('vendor/GLTFLoader.js', () => add('office.js?v=53', ok)));
+  const run = (list, i = 0) => { if (i >= list.length) return add('office.js?v=55', ok); const [src, have] = list[i]; if (have()) return run(list, i + 1); add(src, () => run(list, i + 1)); };
+  const full = () => run([['vendor/GLTFLoader.js', () => THREE.GLTFLoader], ['vendor/SkeletonUtils.js', () => THREE.SkeletonUtils], ['vendor/BufferGeometryUtils.js', () => THREE.BufferGeometryUtils], ['cityassets.js?v=13', () => window.CityAssets]]);
   window.THREE ? full() : add('vendor/three.min.js', full);
 }));
 let officeCv = null, showCb = null;

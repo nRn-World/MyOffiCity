@@ -48,10 +48,10 @@ let BW=19,floors=3,LAWN=null;
 /* Gräs: modellen "Grass" av MauroGonzalezA (CC BY 4.0, se CREDITS.md). Tuvan är bakad till en bild med genomskinlig bakgrund
    och planteras som tusentals korsade kort (en enda InstancedMesh), så det går lätt även på mobil. Marken under är den vanliga gröna ytan. */
 let TUFT=null,TUFT_TRIED=false,gpMat=null;
-const TUFT_SIZE=.8;
+const TUFT_SIZE=.55;
 function loadTuft(){
   if(TUFT_TRIED)return;TUFT_TRIED=true;
-  new T3.TextureLoader().load('models/grasstuft.png',t=>{
+  new T3.TextureLoader().load('models/grasstuft.png?v=2',t=>{
     t.encoding=T3.sRGBEncoding;t.anisotropy=4;
     gpMat=new T3.MeshBasicMaterial({map:t,alphaTest:.45,side:T3.DoubleSide});
     const g=new T3.BufferGeometry(),P=[],U=[],I=[];
@@ -64,21 +64,20 @@ function loadTuft(){
 function placeGrass(e){
   if(!root)return;root.userData.gpE=e;
   if(!TUFT||root.userData.gp)return;root.userData.gp=1;
-  // gräsytor [x0,x1,z0,z1]: sidogräsmattorna utanför trottoaren, remsan mellan huset och trottoaren och en smal remsa bakom huset
-  const zones=[[-(e+AW),e+AW,-7,-5.9],[-46,46,5.4,6.55]];
-  for(const sx of[-1,1]){
-    zones.push([Math.min(sx*(e+15.2),sx*46),Math.max(sx*(e+15.2),sx*46),-7,6.4]);
-    zones.push([Math.min(sx*(e+AW+1.2),sx*(e+14.8)),Math.max(sx*(e+AW+1.2),sx*(e+14.8)),-7,1.7]);
-  }
-  const areas=zones.map(z=>(z[1]-z[0])*(z[3]-z[2])),tot=areas.reduce((a,b)=>a+b,0),N=Math.min(5200,Math.round(tot*3.2));
+  // allt som är asfalt, trottoar, torg eller hus får ingen tuva; resten av den gröna marken fylls
+  const bl=-(e+AWL+.7),br=e+AWR+.7;
+  const paved=(x,z)=>(x>bl&&x<br&&z>-6.7&&z<2.7)||(Math.abs(x)<e+15.2&&z>1.9&&z<5.3)||z<-7.1||(z>6.65&&z<11.75)||(STY.gold&&Math.abs(x)<e+9.4&&z>-10.6&&z<8.4);
+  const spots=[],near=(x,z)=>Math.abs(x)<46&&z<14;
+  const sample=(x0,x1,z0,z1,dens,keep)=>{const n=Math.round((x1-x0)*(z1-z0)*dens);for(let i=0;i<n;i++){const x=x0+Math.random()*(x1-x0),z=z0+Math.random()*(z1-z0);if(!paved(x,z)&&keep(x,z))spots.push([x,z]);}};
+  sample(-46,46,-7.2,14,9,near);                       // nära: tätt
+  sample(-78,78,-7.2,46,2.4,(x,z)=>!near(x,z));            // längre bort: glesare men större tuvor
+  const N=Math.min(30000,spots.length);
   const mesh=new T3.InstancedMesh(TUFT,gpMat,N),m=new T3.Matrix4(),q=new T3.Quaternion(),up=new T3.Vector3(0,1,0),pos=new T3.Vector3(),sc=new T3.Vector3(),col=new T3.Color();
   for(let i=0;i<N;i++){
-    let r=Math.random()*tot,k=0;while(k<zones.length-1&&r>areas[k]){r-=areas[k];k++;}
-    const z=zones[k],sz=TUFT_SIZE*(.7+Math.random()*.6);
-    pos.set(z[0]+Math.random()*(z[1]-z[0]),-.7,z[2]+Math.random()*(z[3]-z[2]));
-    q.setFromAxisAngle(up,Math.random()*Math.PI);sc.set(sz,sz*(.8+Math.random()*.4),sz);
+    const [x,z]=spots[i],far=!near(x,z),sz=TUFT_SIZE*(far?1.25:1)*(.7+Math.random()*.6);
+    pos.set(x,-.7,z);q.setFromAxisAngle(up,Math.random()*Math.PI);sc.set(sz,sz*(.5+Math.random()*.3),sz);
     m.compose(pos,q,sc);mesh.setMatrixAt(i,m);
-    const v=.78+Math.random()*.22;mesh.setColorAt(i,col.setRGB(v,v,v));
+    const v=.74+Math.random()*.26;mesh.setColorAt(i,col.setRGB(v,v,v));
   }
   mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;
   mesh.frustumCulled=false;mesh.castShadow=false;mesh.receiveShadow=false;root.add(mesh);
@@ -1167,7 +1166,7 @@ function applyTimeBase(){
   sunL.intensity=.72*d;sunL.color.copy(lerpC('#fffdf8','#ffb070',w));
   const a=Math.min(1,Math.max(0,(hourNow-6)/14))*Math.PI;sunL.position.set(-34*Math.cos(a),26*Math.max(.3,Math.sin(a)),30);
   lights.forEach(L=>{L.intensity=.06+.94*(1-d);});
-  if(groundMat)groundMat.color.copy(lerpC('#050a07','#'+new T3.Color(GROUNDC[VAR%GROUNDC.length]).getHexString(),d));
+  if(groundMat)groundMat.color.copy(lerpC('#050a07','#'+new T3.Color(GROUNDC[VAR%GROUNDC.length]).multiplyScalar(.5).getHexString(),d));
   if(gpMat)gpMat.color.copy(lerpC('#080d0a','#ffffff',Math.min(1,.12+d*.9)));
   drawCity(d);const nk=Math.max(0,1-d*1.4);beamMat.opacity=.75*nk;coneMat.opacity=.13*nk;glowMat.opacity=nk;tailMat.opacity=.85*nk;if(scene.fog)scene.fog.color.copy(lerpC('#101a3a','#cfdbe6',d).lerp(new T3.Color('#ffb98a'),w*.18));
 }

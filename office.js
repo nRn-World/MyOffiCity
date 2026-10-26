@@ -53,21 +53,21 @@ function loadGrassKit(){
   if(GK_TRIED)return;GK_TRIED=true;
   Promise.all([
     new Promise((ok,no)=>new T3.TextureLoader().load('models/grasscarpet.jpg?v=2',ok,undefined,no)),
-    fetch('models/grassblades.bin?v=2').then(r=>r.ok?r.arrayBuffer():Promise.reject())
+    fetch('models/grassblades.bin?v=3').then(r=>r.ok?r.arrayBuffer():Promise.reject())
   ]).then(([tex,buf])=>{
     tex.encoding=T3.sRGBEncoding;tex.wrapS=tex.wrapT=T3.RepeatWrapping;tex.repeat.set(110,110);tex.anisotropy=8;
     const dv=new DataView(buf),n=dv.getUint32(0,true),geos=[];let off=4;
     for(let i=0;i<n;i++){
       const nV=dv.getUint32(off,true),nI=dv.getUint32(off+4,true);off+=8;
       const pos=new Float32Array(buf,off,nV*3);off+=nV*12;const col=new Uint8Array(buf,off,nV*3);off+=Math.ceil(nV*3/4)*4;const idx=new Uint16Array(buf,off,nI);off+=Math.ceil(nI/2)*4;
-      const g=new T3.BufferGeometry();g.setAttribute('position',new T3.BufferAttribute(pos,3));g.setAttribute('color',new T3.BufferAttribute(col,3,true));g.setIndex(new T3.BufferAttribute(idx,1));g.computeBoundingSphere();geos.push(g);
+      const g=new T3.BufferGeometry();g.setAttribute('position',new T3.BufferAttribute(pos,3));g.setAttribute('color',new T3.BufferAttribute(col,3,true));g.setIndex(new T3.BufferAttribute(idx,1));g.computeVertexNormals();g.computeBoundingSphere();geos.push(g);
     }
-    GK={tex,geos};gpMat=new T3.MeshBasicMaterial({vertexColors:true,side:T3.DoubleSide});
+    GK={tex,geos};gpMat=new T3.MeshLambertMaterial({vertexColors:true,side:T3.DoubleSide});
     applyCarpet();if(root)placeGrass(root.userData.gpE);
   }).catch(()=>{});
 }
 function applyCarpet(){if(!GK||!groundMat)return;groundMat.map=GK.tex;groundMat.needsUpdate=true;if(root)applyTime();}
-const GK_NEAR=2,GK_FAR=2.6;
+const GK_XZ=1.5,GK_Y=2.4;
 function placeGrass(e){
   if(!root)return;root.userData.gpE=e;
   if(!GK||root.userData.gp)return;root.userData.gp=1;
@@ -78,15 +78,15 @@ function placeGrass(e){
   const near=(x,z)=>Math.abs(x)<34&&z<16;
   const spots=[];   // [x,z,avstånd=0|1]
   const fill=(x0,x1,z0,z1,dens,keep,far)=>{const n=Math.round((x1-x0)*(z1-z0)*dens);for(let i=0;i<n;i++){const x=x0+Math.random()*(x1-x0),z=z0+Math.random()*(z1-z0);if(!paved(x,z)&&keep(x,z))spots.push([x,z,far]);}};
-  fill(-34,34,-7.2,16,4.2*k,near,0);                       // nära: tätt
-  fill(-70,70,-7.2,44,.8*k,(x,z)=>!near(x,z),1);            // längre bort: glesare och större tuvor
+  fill(-34,34,-7.2,16,4*k,near,0);                       // nära: tätt
+  fill(-56,56,-7.2,30,.7*k,(x,z)=>!near(x,z),1);            // längre bort: glesare och större tuvor
   const bins=GK.geos.map(()=>[]);spots.forEach(p=>bins[Math.floor(Math.random()*bins.length)].push(p));
   const m=new T3.Matrix4(),q=new T3.Quaternion(),up=new T3.Vector3(0,1,0),pos=new T3.Vector3(),sc=new T3.Vector3(),col=new T3.Color();
   GK.geos.forEach((geo,gi)=>{
     const list=bins[gi],mesh=new T3.InstancedMesh(geo,gpMat,list.length);
     list.forEach(([x,z,far],i)=>{
-      const r=(far?GK_FAR:GK_NEAR)*(.8+Math.random()*.4);
-      pos.set(x,-.7,z);q.setFromAxisAngle(up,Math.random()*Math.PI*2);sc.set(r,r*(.85+Math.random()*.3),r);
+      const r=(far?1.35:1)*(.8+Math.random()*.4);
+      pos.set(x,-.7,z);q.setFromAxisAngle(up,Math.random()*Math.PI*2);sc.set(GK_XZ*r,GK_Y*r*(.85+Math.random()*.3),GK_XZ*r);
       m.compose(pos,q,sc);mesh.setMatrixAt(i,m);const v=.78+Math.random()*.25;mesh.setColorAt(i,col.setRGB(v,v,v));
     });
     mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;

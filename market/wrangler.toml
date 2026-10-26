@@ -24,6 +24,10 @@ database_name = "nrn-market"
 # D1-databasen skapades med `npx wrangler d1 create nrn-market`
 database_id = "cb9e1ec8-90f7-490d-8162-828a919eeb06"
 
+# Workers AI: bilder på nyanställda agenter (flux-1-schnell, ca 43 neurons per bild av 10 000 gratis per dag)
+[ai]
+binding = "AI"
+
 [observability]
 enabled = true
 

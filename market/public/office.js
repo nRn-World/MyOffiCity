@@ -32,20 +32,29 @@ function safePt(x,z,y){   // flyttar en målpunkt ut ur möbler så att ingen f�
 }
 const PAL=[{},{wall:0xe6efe8,slab:0xc9b99a,roof:0x2f6b55,frame:0x2c5a4a,win:0x2c5a4a},{wall:0xf2e4d2,slab:0xb98b5b,roof:0xa94a35,frame:0x7a3328,win:0x7a3328},{wall:0xe4ebf2,slab:0xa9b3bf,roof:0x3a62a8,frame:0x2f4b7a,win:0x2f4b7a},{wall:0xf4dfd8,slab:0xd2a590,roof:0xc9922f,frame:0xc08a2e,win:0xc08a2e},{wall:0xeceae0,slab:0x8fa88a,roof:0x7a5aa8,frame:0x6b5a8a,win:0x6b5a8a}];
 const SIGNC=[['#1b2550','#0c1230','#ffd27a','#6fc8ff'],['#2a1a12','#120a06','#f0b07a','#ffb36b'],['#12332b','#06150f','#8fe0b8','#6fffd0'],['#2b1245','#12061f','#d9a7ff','#c58bff'],['#3a1216','#190508','#ffc4a0','#ff8f6f'],['#10283a','#06121c','#a7e0ff','#6fd0ff']];
-const GROUNDC=[0x9cc58a,0xb5c78a,0xa4a07a,0x8fb59a,0xc2bd8c,0x93b878];
+const GROUNDC=[0x7d9c48,0x9a9c4a,0x8f8549,0x77924f,0xa89851,0x769544];
 const LEAFC=[[0x3d9a52,0x48ab5e,0x338a49],[0x5aa14a,0x6bb35a,0x4a8f3c],[0xd2862f,0xe09b3f,0xb9702a],[0x3b8f7a,0x49a48c,0x2f7a68],[0x7aa84a,0x8bbb59,0x699639],[0x2f7d4a,0x3c9159,0x27693d]];
 let STY=BSTYLES.kontor,frameM=null,winM=null,goldM=null,flames=[];
 const BD=6.6,Z0=-5.4,Z1=1.2,ZC=-2.1,FH=5.2,WH=FH-.4;
 // Fyra fasadstilar till staden bakom kontoret. Färgerna blandas mellan natt och dag
 // i drawCity(), så fönstren tänds när det blir mörkt.
 const CITY_STYLES=[
-  {k:'glass',night:'#1a2b3a',day:'#a9c6d8',frameN:'#111d28',frameD:'#5f7e92',winN:'#0c1a24',winD:'#5d9cc0',lit:['#ffd38a','#ffe9b5'],glass:true},
-  {k:'stone',night:'#2b2927',day:'#c8bca9',frameN:'#1b1a18',frameD:'#8f8574',winN:'#111820',winD:'#5d7184',lit:['#ffcf87','#ffdda6']},
-  {k:'brick',night:'#2a1d1b',day:'#9a5f4d',frameN:'#1a1210',frameD:'#6d4234',winN:'#10151c',winD:'#4d6273',lit:['#ffd39a','#ffc37a']},
-  {k:'steel',night:'#151c25',day:'#7b8796',frameN:'#0c1118',frameD:'#536171',winN:'#0a1017',winD:'#9fc4dd',lit:['#cfe7ff','#ffe2b0'],glass:true}
+  {k:'glass',night:'#1a2b3a',day:'#c3cec2',frameN:'#111d28',frameD:'#7f8a74',winN:'#0c1a24',winD:'#5f8f8a',lit:['#ffd38a','#ffe9b5'],glass:true},
+  {k:'stone',night:'#2b2927',day:'#dcc9a5',frameN:'#1b1a18',frameD:'#a58f6a',winN:'#111820',winD:'#4f747c',lit:['#ffcf87','#ffdda6']},
+  {k:'brick',night:'#2a1d1b',day:'#b26e4f',frameN:'#1a1210',frameD:'#7d4a33',winN:'#10151c',winD:'#476a73',lit:['#ffd39a','#ffc37a']},
+  {k:'steel',night:'#151c25',day:'#b6ad97',frameN:'#0c1118',frameD:'#7f7867',winN:'#0a1017',winD:'#6d97a4',lit:['#cfe7ff','#ffe2b0'],glass:true}
 ];
-let BW=19,floors=3;
-let renderer,scene,camera,root,canvas,overlay;
+let BW=19,floors=3,LAWN=null;
+function lawnTex(){   // mjukt klippt gräsmatta: band och korn ger marken liv i stället för platt färg
+  if(LAWN)return LAWN;
+  const c=cv(64,64),g=c.getContext('2d');
+  g.fillStyle='#e4e4e4';g.fillRect(0,0,64,64);
+  for(let y=0;y<64;y+=8){g.fillStyle=y%16?'rgba(0,0,0,.07)':'rgba(255,255,255,.06)';g.fillRect(0,y,64,4);}
+  for(let i=0;i<800;i++){g.fillStyle=Math.random()>.5?'rgba(0,0,0,.08)':'rgba(255,255,255,.07)';g.fillRect(Math.random()*64,Math.random()*64,1,1);}
+  const t=new T3.CanvasTexture(c);t.wrapS=t.wrapT=T3.RepeatWrapping;t.repeat.set(64,64);t.anisotropy=4;
+  return LAWN=t;
+}
+let renderer,scene,camera,root,canvas,overlay,fillL;
 let screens=[],leds=[],holos=[],trails=[],packets=[],screenHits=[],onScreen=null;
 let hemi,sunL,bgC,bgT,skyC,groundMat,lights=[],hourNow=12,cars=[],bikes=[],cityTex=[],cityFaces=[],cityMats=[],cityBeacons=[],onPick=null,onSign=null,onZoomOut=null,signGrp=null,lastF=0,movers=[],ELX=0,visiting=false,socializing=false,sceneGen=0,selId=null,beamMat,glowMat,tailMat;
 const agents={};
@@ -65,7 +74,7 @@ let SKY,GT;
 
 /* ---------- skärmar ---------- */
 function makeScreen(type){
-  const c=cv(256,160),s={c,g:c.getContext('2d'),tex:new T3.CanvasTexture(c),type,seed:Math.random()*50};
+  const c=cv(256,160),tx=new T3.CanvasTexture(c);tx.encoding=T3.sRGBEncoding;const s={c,g:c.getContext('2d'),tex:tx,type,seed:Math.random()*50};
   screens.push(s);drawScreen(s,0);return s;
 }
 let statsData=null;
@@ -221,7 +230,7 @@ function texFloor(kind){
     g.fillStyle=P[0];g.fillRect(0,0,256,256);
     for(let i=0;i<8;i++){g.fillStyle=i%2?P[1]:P[2];g.fillRect(0,i*32,256,32);g.fillStyle='rgba(30,10,0,.4)';g.fillRect(0,i*32,256,2);g.fillRect((i*83)%256,i*32,2,32);}
   }
-  const t=new T3.CanvasTexture(c);t.wrapS=t.wrapT=T3.RepeatWrapping;const k=kind==='carpet'?5:4;t.repeat.set(BW/k,BD/k);return t;
+  const t=new T3.CanvasTexture(c);t.encoding=T3.sRGBEncoding;t.wrapS=t.wrapT=T3.RepeatWrapping;t.anisotropy=renderer?Math.min(8,renderer.capabilities.getMaxAnisotropy()):4;const k=kind==='carpet'?5:4;t.repeat.set(BW/k,BD/k);return t;
 }
 function slab(yTop,kind){
   const side=M(STY.slab,{metalness:STY.gold?.5:.05,roughness:.5}),top=new T3.MeshStandardMaterial({map:texFloor(kind),roughness:kind==='walnut'?.35:.8});
@@ -273,7 +282,7 @@ function buildLevel(n,kind,lift){
   [[-BW/2+.1,Z1-.1],[BW/2-.1,Z1-.1],[BW/2-.1,Z0+.2]].forEach(([x,z])=>box(.45,WH,.45,frameM,x,y+WH/2,z,root));
   if(TIERK==='loft'){box(BW+.7,.3,.32,frameM,0,y-.2,Z1+.2,root);[-3,0,3].forEach(x=>box(.25,.3,BD,M(0xd8b27c),x,y+WH-.15,ZC,root));} // svart stålbalk + furubjälkar
   if(STY.gold)box(BW+.72,.08,.08,goldM,0,y-.05,Z1+.32,root); // guldlist längs bjälklaget
-  const L=new T3.PointLight(0xfff0d8,.5,26,1);L.position.set(0,y+3.8,ZC);root.add(L);lights.push(L);
+  const L=new T3.PointLight(0xffbd80,.5,26,1);L.position.set(0,y+3.8,ZC);root.add(L);lights.push(L);
 }
 function tree(x,z,s=1){if(VAR){const r=rnd(x*7.1+z*3.3+VAR*13);if(r<.2)return;x+=(rnd(x+VAR)-.5)*3;z+=(rnd(z+VAR*2)-.5)*2;s*=.75+rnd(x*z+VAR)*.7;}const g=new T3.Group();g.position.set(x,-.7,z);g.scale.setScalar(s);cyl(.18,.25,2,M(0x6b4a30),0,1,0,g,8);
   const LC=LEAFC[VAR%LEAFC.length];sph(1.3,M(LC[0]),0,2.8,0,g);sph(1,M(LC[1]),.6,3.4,.2,g);sph(.9,M(LC[2]),-.6,3.2,-.3,g);root.add(g);}
@@ -309,9 +318,9 @@ function cityBuilding(o){
   const fm=mk(t,S.glass?.24:.78,S.glass?.42:.06),sm=mk(tz,S.glass?.24:.78,S.glass?.42:.06);
   cityMats.push(fm,sm);
   const cb=(w2,h2,d2,mat,x2,y2,z2)=>{const m=box(w2,h2,d2,mat,x2,y2,z2,root);m.castShadow=m.receiveShadow=false;return m;};
-  const plinthM=M(S.k==='brick'?0x5a4036:S.k==='stone'?0x8a8275:0x4b535b,{roughness:.92});
-  const trim=M(S.glass?0x394854:S.k==='brick'?0x4a332b:0x6a6d70,{roughness:.72,metalness:.12});
-  const roofM=M(S.glass?0x303c45:S.k==='brick'?0x3b2a23:0x5a5b5e,{roughness:.8});
+  const plinthM=M(S.k==='brick'?0x8a5a44:S.k==='stone'?0xb3a78d:0x808878,{roughness:.92});
+  const trim=M(S.glass?0x7f8674:S.k==='brick'?0x7b4a34:0x9d917b,{roughness:.72,metalness:.12});
+  const roofM=M(S.glass?0x717867:S.k==='brick'?0x6d4534:0x8d8674,{roughness:.8});
   // sockel + torn med fönsterfasad
   cb(w+.9,plinth,d+.9,plinthM,o.x,-.7+plinth/2,o.z);
   cb(w,towerH,d,[sm,sm,roofM,roofM,fm,fm],o.x,-.7+plinth+towerH/2,o.z);
@@ -371,17 +380,17 @@ function cityLayout(){
 }
 function outside(){
   box(BW+1.2,.7,BD+1.2,M(0xb9b3a8),0,-.35,ZC,root);
-  groundMat=M(GROUNDC[VAR%GROUNDC.length],{roughness:1});const ground=new T3.Mesh(new T3.PlaneGeometry(260,260),groundMat);ground.rotation.x=-Math.PI/2;ground.position.y=-.7;ground.receiveShadow=true;root.add(ground);
-  box(BW+30,.15,3.2,M(0xd9d5cc),0,-.62,3.6,root);
-  box(150,.1,5,M(0x4a4f58),0,-.66,9.2,root);
-  for(let i=-9;i<=9;i++)box(1.6,.02,.18,M(0xf2efe5),i*5,-.6,9.2,root);
-  box(2.6,.15,2.4,M(0xc9c4ba),0,-.6,2.4,root);
+  groundMat=M(GROUNDC[VAR%GROUNDC.length],{roughness:1,map:lawnTex()});const ground=new T3.Mesh(new T3.PlaneGeometry(260,260),groundMat);ground.rotation.x=-Math.PI/2;ground.position.y=-.7;ground.receiveShadow=true;root.add(ground);
+  box(BW+30,.15,3.2,M(0xd2c5a6),0,-.62,3.6,root);
+  box(150,.1,5,M(0x6b6559),0,-.66,9.2,root);
+  for(let i=-9;i<=9;i++)box(1.6,.02,.18,M(0xfbf2dc),i*5,-.6,9.2,root);
+  box(2.6,.15,2.4,M(0xcabf9f),0,-.6,2.4,root);
   const e=BW/2;
   if(STY.gold){ // granittorg, spegeldammar och formklippta japanska tallar
-    box(BW+18,.06,BD+12,M(0x8e8f94,{roughness:.6}),0,-.64,ZC+1,root);
-    const water=M(0x3f7894,{metalness:.6,roughness:.05});
-    for(const sx of[-1,1]){box(6.2,.1,3.4,M(0x6d6e73),sx*(e+4.5+AW),-.6,ZC+1.5,root);box(5.8,.12,3,water,sx*(e+4.5+AW),-.57,ZC+1.5,root);
-      box(4.2,.1,1.6,M(0x6d6e73),sx*(e/2+1.5),-.6,Z1+1.4,root);box(3.9,.12,1.3,water,sx*(e/2+1.5),-.57,Z1+1.4,root);}
+    box(BW+18,.06,BD+12,M(0xa79c84,{roughness:.6}),0,-.64,ZC+1,root);
+    const water=M(0x4f8fa0,{metalness:.6,roughness:.05});
+    for(const sx of[-1,1]){box(6.2,.1,3.4,M(0x9a9282),sx*(e+4.5+AW),-.6,ZC+1.5,root);box(5.8,.12,3,water,sx*(e+4.5+AW),-.57,ZC+1.5,root);
+      box(4.2,.1,1.6,M(0x9a9282),sx*(e/2+1.5),-.6,Z1+1.4,root);box(3.9,.12,1.3,water,sx*(e/2+1.5),-.57,Z1+1.4,root);}
     [[-e-2-AW,-1],[e+2+AW,-1.5],[-e-4-AW,-6],[e+4+AW,-6.5],[-e-8-AW,4],[e+8+AW,4]].forEach(([x,z],i)=>pine(x,z,.9+rnd(i)*.3));
     [[-e-12,-10],[e+12,-11],[8,-17],[-6,-19]].forEach(([x,z],i)=>tree(x,z,1+rnd(i)*.4));
   }else[[-e-3-AW,4.4],[e+AW+6,3],[-e-7-AW,-2],[e+7+AW,-3],[-e-5-AW,-10],[e+6+AW,-11],[8,-17],[-6,-19]].forEach(([x,z],i)=>tree(x,z,.9+rnd(i)*.5));
@@ -391,15 +400,15 @@ function outside(){
     const BC=[0x2f6fe0,0xd62b3a,0x3fa56b,0xf2b632,0x8a56d6,0x1fb5c2],nb=VAR?1+VAR%4:3;for(let i=0;i<nb;i++)bike(-3.8+i*.9,Z1+1.6,BC[(i+VAR)%BC.length]);
   }
   if(TIERK==='kontor'){ // häckar och belysningspollare
-    for(const sx of[-1,1]){box(e-2.5,.7,.7,M(0x2f7a43,{roughness:.9}),sx*(e/2+1.6),-.3,Z1+1.6,root);
+    for(const sx of[-1,1]){box(e-2.5,.7,.7,M(0x4a8a3a,{roughness:.9}),sx*(e/2+1.6),-.3,Z1+1.6,root);
       for(let i=0;i<3;i++){const bx=sx*(2.2+i*2.6);cyl(.09,.09,.8,dark,bx,-.3,Z1+2.3,root,8);cyl(.1,.1,.08,new T3.MeshBasicMaterial({color:0xfff3c8}),bx,.14,Z1+2.3,root,8);}}
   }
   [-e+1,e-1,-e-AW-1.5,e+AW+1.5].forEach(x=>lamp(x,5.2));
-  for(const i of[-1,1])box(2.4,.4,.8,M(0x4a8a52),i*Math.min(5.5,e-3),-.5,Z1+1,root);
+  for(const i of[-1,1])box(2.4,.4,.8,M(0x55893f),i*Math.min(5.5,e-3),-.5,Z1+1,root);
   // stad: asfalt, trottoar, körfält och en riktig stadsbild bakom kontoret
-  const road=box(200,.06,64,M(0x2c3138,{roughness:.98}),0,-.685,-40,root);road.castShadow=road.receiveShadow=false;
-  const walk=box(200,.08,2.2,M(0xc9c5ba,{roughness:.95}),0,-.64,-8.4,root);walk.castShadow=walk.receiveShadow=false;
-  for(let i=-9;i<=9;i++){const dash=box(2.6,.02,.12,M(0xe8dfbe),i*4.4,-.62,-10.8,root);dash.castShadow=dash.receiveShadow=false;}
+  const road=box(200,.06,64,M(0x5f5a4e,{roughness:.98}),0,-.685,-40,root);road.castShadow=road.receiveShadow=false;
+  const walk=box(200,.08,2.2,M(0xdbd0b4,{roughness:.95}),0,-.64,-8.4,root);walk.castShadow=walk.receiveShadow=false;
+  for(let i=-9;i<=9;i++){const dash=box(2.6,.02,.12,M(0xfaf0d8),i*4.4,-.62,-10.8,root);dash.castShadow=dash.receiveShadow=false;}
   for(let x=-42;x<=42;x+=14)lamp(x,-8.6);
   cityLayout().forEach(cityBuilding);
   // två körfält: färre fordon, men taxibilar och motorcyklar blandas in
@@ -472,7 +481,7 @@ function annexes(){
     cyl(.18,.12,.1,M(0xd8c3a0),tx,.87,tz,root,14);sph(.07,M(0xd62b3a),tx-.05,.95,tz,root);sph(.07,M(0xffc94a),tx+.06,.95,tz+.03,root);
     plant(gx-.6,0,.5,1);plant(e+.6,0,.5,.9);
     [e+1.4,e+3.2,e+5.0].forEach((x,i)=>pendant(x,WH-.1,i%2?-.2:-2.4));
-    const L=new T3.PointLight(0xfff0d8,.55,14,1);L.position.set(cx,3.6,ZC);root.add(L);lights.push(L);
+    const L=new T3.PointLight(0xffbd80,.55,14,1);L.position.set(cx,3.6,ZC);root.add(L);lights.push(L);
     kit={door:[e+.5,-2.1],inn:[e+1.7,-2.1],sink:[e+1.0,-3.8],coffee:[e+2.3,-3.8],micro:[e+3.5,-3.8],fridge:[fx,-3.8],seats,fd:{g:dg,k:0,t:0},mm:mmat,users:0};
   }
   /* Balkong ovanpå köket (våning 2:s nivå): trädäck, halvhög tät mur med glas ovanför, dörr från kontoret, utemöbler */
@@ -544,7 +553,7 @@ function taxiTex(){
   if(TAXI_TEX)return TAXI_TEX;
   const c=cv(128,48),g=c.getContext('2d');g.fillStyle='#121318';g.fillRect(0,0,128,48);
   g.fillStyle='#ffd34d';g.font='bold 30px Arial';g.textAlign='center';g.textBaseline='middle';g.fillText('TAXI',64,25);
-  return TAXI_TEX=new T3.CanvasTexture(c);
+  TAXI_TEX=new T3.CanvasTexture(c);TAXI_TEX.encoding=T3.sRGBEncoding;return TAXI_TEX;
 }
 function spawnCar(lane,z,s,forced){
   const type=forced||pickR(CAR_TYPES),c=type==='moto'?makeMoto(pickR(CAR_COLORS),lane):makeCar(type,pickR(CAR_COLORS),lane);
@@ -648,12 +657,13 @@ function signBoardPlain(text,width){
   const gr=g.createLinearGradient(0,0,0,H);const SC=SIGNC[VAR%SIGNC.length];gr.addColorStop(0,SC[0]);gr.addColorStop(1,SC[1]);g.fillStyle=gr;g.fillRect(0,0,W,H);
   g.strokeStyle=SC[2];g.lineWidth=10;g.strokeRect(10,10,W-20,H-20);
   for(let x=30;x<W-20;x+=40){g.fillStyle='#fff3c8';g.beginPath();g.arc(x,22,5,0,7);g.fill();g.beginPath();g.arc(x,H-22,5,0,7);g.fill();}
-  g.textAlign='center';g.textBaseline='middle';let fs=120;g.font='900 '+fs+'px "Arial Black",Arial,sans-serif';
-  while(g.measureText(text).width>W-110&&fs>30){fs-=6;g.font='900 '+fs+'px "Arial Black",Arial,sans-serif';}
-  g.shadowColor=SC[3];g.shadowBlur=24;g.fillStyle='#ffffff';g.fillText(text,W/2,H/2+4);
+  g.textAlign='center';g.textBaseline='middle';let fs=120;const sf=()=>g.font='800 '+fs+'px Figtree,Inter,"Arial Black",Arial,sans-serif';sf();
+  while(g.measureText(text).width>W-110&&fs>30){fs-=6;sf();}
+  g.shadowColor=SC[3];g.shadowBlur=10;g.fillStyle='#ffffff';g.fillText(text,W/2,H/2+4);g.shadowBlur=0;g.lineWidth=2;g.strokeStyle='rgba(0,0,0,.28)';g.strokeText(text,W/2,H/2+4);
   const h=width*H/W,grp=new T3.Group(),steel=M(0x8d939c,{metalness:.8,roughness:.35});
   box(width+.35,h+.35,.3,M(0x2a2f3a,{metalness:.6,roughness:.4}),0,0,-.05,grp);
-  const face=new T3.Mesh(new T3.PlaneGeometry(width,h),new T3.MeshBasicMaterial({map:new T3.CanvasTexture(c)}));face.position.z=.11;grp.add(face);
+  const st=new T3.CanvasTexture(c);st.encoding=T3.sRGBEncoding;if(renderer)st.anisotropy=Math.min(16,renderer.capabilities.getMaxAnisotropy());
+  const face=new T3.Mesh(new T3.PlaneGeometry(width,h),new T3.MeshBasicMaterial({map:st}));face.position.z=.11;grp.add(face);
   const postH=1.2;
   for(const sx of[-.38,0,.38]){cyl(.09,.09,postH+h/2,steel,sx*width,-(postH+h/2)/2-h/2+h/2-.0,-.15,grp,10);}
   for(const sx of[-.38,.38]){const br=box(.08,.08,1.8,steel,sx*width,-h/2-postH*.55,-.9,grp);br.rotation.x=.55;}
@@ -687,14 +697,14 @@ function drawLogoSign(g,W,H,text,kind,img,SC){
   }else{
     const sz=H-52;g.save();g.beginPath();g.roundRect?g.roundRect(34,26,sz,sz,18):g.rect(34,26,sz,sz);g.fillStyle='rgba(255,255,255,.10)';g.fill();g.clip();fit(34+10,26+10,sz-20,sz-20);g.restore();tx0=34+sz+34;tx1=W-50;
   }
-  g.textAlign='center';g.textBaseline='middle';let fs=110;const f=()=>g.font='900 '+fs+'px "Arial Black",Arial,sans-serif';f();
+  g.textAlign='center';g.textBaseline='middle';let fs=110;const f=()=>g.font='800 '+fs+'px Figtree,Inter,"Arial Black",Arial,sans-serif';f();
   while(g.measureText(text).width>tx1-tx0&&fs>26){fs-=6;f();}
-  g.shadowColor=SC[3];g.shadowBlur=22;g.fillStyle='#ffffff';g.fillText(text,(tx0+tx1)/2,H/2+4);g.shadowBlur=0;
+  g.shadowColor=SC[3];g.shadowBlur=10;g.fillStyle='#ffffff';g.fillText(text,(tx0+tx1)/2,H/2+4);g.shadowBlur=0;g.lineWidth=2;g.strokeStyle='rgba(0,0,0,.28)';g.strokeText(text,(tx0+tx1)/2,H/2+4);
 }
 function signBoard(text,width,logo){
   if(!logo||!logo.url)return signBoardPlain(text,width);
   const kind=logo.shape==='round'||logo.shape==='tri'?logo.shape:'rect',W=1024,H=256,c=cv(W,H),g=c.getContext('2d'),SC=SIGNC[VAR%SIGNC.length];
-  const tex=new T3.CanvasTexture(c);tex.anisotropy=4;
+  const tex=new T3.CanvasTexture(c);tex.encoding=T3.sRGBEncoding;tex.anisotropy=renderer?Math.min(16,renderer.capabilities.getMaxAnisotropy()):8;
   const paint=im=>{drawLogoSign(g,W,H,text,kind,im,SC);tex.needsUpdate=true;};
   const cached=LOGOIMG[logo.url];paint(cached&&cached.naturalWidth?cached:null);
   if(!(cached&&cached.naturalWidth))preloadLogo(logo.url).then(im=>{if(im)paint(im);});
@@ -834,7 +844,7 @@ function slotRows(y,people,perRow,x0,mons,w){ // två rader skrivbord, vända bo
 function wcDoor(y){
   box(.08,2.2,1.05,M(0x8a6a52),-BW/2+.05,y+1.1,-2.1,root);box(.1,.1,.1,metal,-BW/2+.12,y+1.05,-1.75,root);
   const c=cv(64,64),g=c.getContext('2d');g.fillStyle='#2f6fe0';g.fillRect(0,0,64,64);g.fillStyle='#fff';g.font='bold 30px Arial';g.textAlign='center';g.textBaseline='middle';g.fillText('WC',32,34);
-  const sg=new T3.Mesh(new T3.PlaneGeometry(.45,.45),new T3.MeshBasicMaterial({map:new T3.CanvasTexture(c)}));sg.position.set(-BW/2+.1,y+2.5,-2.1);sg.rotation.y=Math.PI/2;root.add(sg);
+  const sgt=new T3.CanvasTexture(c);sgt.encoding=T3.sRGBEncoding;const sg=new T3.Mesh(new T3.PlaneGeometry(.45,.45),new T3.MeshBasicMaterial({map:sgt}));sg.position.set(-BW/2+.1,y+2.5,-2.1);sg.rotation.y=Math.PI/2;root.add(sg);
 }
 function whiteboard(x,y,z){ // mobil whiteboard med post-its
   box(1.8,1.1,.05,M(0xf7f7f4),x,y+1.75,z,root);box(1.9,.06,.08,metal,x,y+1.18,z,root);
@@ -959,19 +969,22 @@ const hexOf=c=>'#'+c.getHexString();
 function daylight(h){const r=(x,a,b)=>Math.min(1,Math.max(0,(x-a)/(b-a)));return h<12?r(h,5,8):1-r(h,18,22);}
 function drawSky(d,w){
   const g=skyC.getContext('2d'),gr=g.createLinearGradient(0,0,0,160);
-  gr.addColorStop(0,hexOf(lerpC('#0a1230','#74b8ec',d).lerp(new T3.Color('#ff9a5a'),w*.5)));
-  gr.addColorStop(1,hexOf(lerpC('#1d2b52','#e1f1fa',d).lerp(new T3.Color('#ffc58a'),w*.7)));
+  // Varm dag: mjuk himmelsblå upptill som möter en gräddgul horisont, och en
+  // extra persika-ton kring solnedgången – samma färgkänsla som en stadskarta.
+  gr.addColorStop(0,hexOf(lerpC('#0a1230','#6fb2e0',d).lerp(new T3.Color('#ffb277'),w*.42)));
+  gr.addColorStop(.55,hexOf(lerpC('#16224a','#cfe8ee',d).lerp(new T3.Color('#ffd6a4'),w*.5)));
+  gr.addColorStop(1,hexOf(lerpC('#1d2b52','#fbe9c8',d).lerp(new T3.Color('#ffc58a'),w*.7)));
   g.fillStyle=gr;g.fillRect(0,0,256,160);
-  if(d>.3){g.fillStyle='rgba(255,255,255,'+(.85*d)+')';[[40,34,20],[62,38,16],[170,24,18],[196,30,14],[120,60,14]].forEach(([x,y,r])=>{g.beginPath();g.arc(x,y,r,0,7);g.fill();});}
+  if(d>.3){g.fillStyle='rgba(255,247,233,'+(.9*d)+')';[[40,34,20],[62,38,16],[170,24,18],[196,30,14],[120,60,14]].forEach(([x,y,r])=>{g.beginPath();g.arc(x,y,r,0,7);g.fill();});}
   else{g.fillStyle='rgba(255,255,255,'+(.95-d*2)+')';for(let i=0;i<34;i++)g.fillRect(rnd(i)*256,rnd(i*3)*90,2,2);g.fillStyle='#f4f1d8';g.beginPath();g.arc(206,30,9,0,7);g.fill();}
   // Staden är riktig 3D nu – himlen hålls ren och får bara en mjuk horisontdimma.
   const hz=g.createLinearGradient(0,128,0,160);
-  hz.addColorStop(0,'rgba(255,255,255,0)');hz.addColorStop(1,hexOf(lerpC('#141d36','#dbe9ef',d)));
+  hz.addColorStop(0,'rgba(255,255,255,0)');hz.addColorStop(1,hexOf(lerpC('#141d36','#f4e0bb',d)));
   g.fillStyle=hz;g.fillRect(0,128,256,32);
   SKY.needsUpdate=true;
 }
 function makeCityFace(i){
-  const c=cv(128,256),t=new T3.CanvasTexture(c);
+  const c=cv(128,256),t=new T3.CanvasTexture(c);t.encoding=T3.sRGBEncoding;
   t.wrapS=t.wrapT=T3.RepeatWrapping;
   if(renderer)t.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
   return {c,t,style:i,seed:i*11.7+2.3};
@@ -1006,7 +1019,7 @@ function drawCity(d){
   cityFaces.forEach(f=>{drawFacade(f,d);f.t.needsUpdate=true;});
   cityTex.forEach(t=>t.needsUpdate=true);
   const glow=Math.max(0,1-d*1.55);
-  cityMats.forEach(m=>{m.emissiveIntensity=glow*.55;});
+  cityMats.forEach(m=>{m.emissiveIntensity=glow*.16;});
 }
 /* ---------- väder: regn, snö, dimma och åska i kontorsscenen ---------- */
 const WXCLEAR={kind:'clear',c:0,snow:0,wet:0,fog:0,int:0,wind:0,flash:0,nextFlash:0};
@@ -1058,17 +1071,18 @@ function applyTime(){applyTimeBase();wxLook();}
 function applyTimeBase(){
   if(!hemi)return;
   const d=daylight(hourNow),w=1-Math.abs(2*d-1),g=bgC.getContext('2d'),gr=g.createLinearGradient(0,0,0,256);
-  gr.addColorStop(0,hexOf(lerpC('#050914','#7fbfee',d).lerp(new T3.Color('#ff8f5a'),w*.45)));
-  gr.addColorStop(.6,hexOf(lerpC('#101a3a','#c9e6f6',d).lerp(new T3.Color('#ffb98a'),w*.6)));
-  gr.addColorStop(1,hexOf(lerpC('#1a2547','#eef6f3',d)));
+  gr.addColorStop(0,hexOf(lerpC('#050914','#6eb0dc',d).lerp(new T3.Color('#ff9a5a'),w*.45)));
+  gr.addColorStop(.6,hexOf(lerpC('#101a3a','#dbe6df',d).lerp(new T3.Color('#ffb98a'),w*.6)));
+  gr.addColorStop(1,hexOf(lerpC('#1a2547','#fdf0d6',d)));
   g.fillStyle=gr;g.fillRect(0,0,4,256);bgT.needsUpdate=true;
   drawSky(d,w);
-  hemi.intensity=.3+.46*d;hemi.color.copy(lerpC('#6f86c8','#ffffff',d));hemi.groundColor.copy(lerpC('#20283f','#b9c4b0',d));
-  sunL.intensity=.7*d;sunL.color.copy(lerpC('#fff0d6','#ffb070',w));
-  const a=Math.min(1,Math.max(0,(hourNow-6)/14))*Math.PI;sunL.position.set(-34*Math.cos(a),34*Math.max(.25,Math.sin(a)),22);
-  lights.forEach(L=>{L.intensity=.36+1.04*(1-d);});
-  if(groundMat)groundMat.color.copy(lerpC('#26372f','#9cc58a',d));
-  drawCity(d);const nk=Math.max(0,1-d*1.4);beamMat.opacity=.75*nk;coneMat.opacity=.13*nk;glowMat.opacity=nk;tailMat.opacity=.85*nk;if(scene.fog)scene.fog.color.copy(lerpC('#101a3a','#c9e6f6',d).lerp(new T3.Color('#ffb98a'),w*.4));
+  hemi.intensity=.1+.28*d;hemi.color.copy(lerpC('#7089d0','#fff4e0',d));hemi.groundColor.copy(lerpC('#28324c','#b6a578',d));
+  fillL.intensity=.04+.1*d;fillL.color.copy(lerpC('#b9d4ff','#ffeed6',d));
+  sunL.intensity=.7*d;sunL.color.copy(lerpC('#ffd7a4','#ff9a55',w));
+  const a=Math.min(1,Math.max(0,(hourNow-6)/14))*Math.PI;sunL.position.set(-34*Math.cos(a),26*Math.max(.3,Math.sin(a)),30);
+  lights.forEach(L=>{L.intensity=.2+.72*(1-d);});
+  if(groundMat)groundMat.color.copy(lerpC('#26372f','#84a54c',d));
+  drawCity(d);const nk=Math.max(0,1-d*1.4);beamMat.opacity=.75*nk;coneMat.opacity=.13*nk;glowMat.opacity=nk;tailMat.opacity=.85*nk;if(scene.fog)scene.fog.color.copy(lerpC('#101a3a','#f0ddb9',d).lerp(new T3.Color('#ffb98a'),w*.4));
 }
 function setHour(h){hourNow=h;if(root)applyTime();}
 
@@ -1381,12 +1395,18 @@ function resize(){
 }
 function init(c,ov){
   canvas=c;overlay=ov;
-  renderer=new T3.WebGLRenderer({canvas,antialias:true});
-  renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=T3.PCFSoftShadowMap;
+  renderer=new T3.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2.4));renderer.shadowMap.enabled=true;renderer.shadowMap.type=T3.PCFSoftShadowMap;
+  // Filmatisk färg: sRGB-utdata och mjuk tone mapping ger renare färger och
+  // behåller detaljerna i både fönsterljus och skuggor.
+  renderer.outputEncoding=T3.sRGBEncoding;
+  renderer.toneMapping=T3.NoToneMapping;renderer.toneMappingExposure=1;
   scene=new T3.Scene();
-  bgC=cv(4,256);bgT=new T3.CanvasTexture(bgC);scene.background=bgT;
+  bgC=cv(4,256);bgT=new T3.CanvasTexture(bgC);bgT.encoding=T3.sRGBEncoding;scene.background=bgT;
   camera=new T3.OrthographicCamera(-10,10,10,-10,.1,500);
   hemi=new T3.HemisphereLight(0xffffff,0xb9c4b0,.95);scene.add(hemi);
+  // Mjukt ljus framifrån så att glasfasaden och interiören aldrig blir en svart silhuett.
+  fillL=new T3.DirectionalLight(0xd7e6ff,.3);fillL.position.set(26,18,42);scene.add(fillL);
   const sun=sunL=new T3.DirectionalLight(0xfff0d6,.8);sun.position.set(-12,34,22);sun.castShadow=true;
   sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-34,right:34,top:34,bottom:-34,near:1,far:140});sun.shadow.bias=-.0006;scene.add(sun);
   dark=M(0x22252e);metal=M(0x9aa0ab,{metalness:.5,roughness:.4});wood=M(0xc08850);woodD=M(0x7a4a2a);chairM=M(0x30343e);
@@ -1401,7 +1421,7 @@ function init(c,ov){
     BEAM_GEO=new T3.PlaneGeometry(7,2.4);BEAM_GEO.rotateX(-Math.PI/2);
     CONE_GEO=new T3.ConeGeometry(.75,4,18,1,true);coneMat=new T3.MeshBasicMaterial({color:0xfff0c8,transparent:true,opacity:0,blending:T3.AdditiveBlending,depthWrite:false,side:T3.DoubleSide});
   }
-  skyC=cv(256,160);SKY=new T3.CanvasTexture(skyC);scene.fog=new T3.Fog(0xc9e6f6,105,230);
+  skyC=cv(256,160);SKY=new T3.CanvasTexture(skyC);SKY.encoding=T3.sRGBEncoding;scene.fog=new T3.Fog(0xf0ddb9,105,230);
   {const c2=cv(64,64),g2=c2.getContext('2d'),r=g2.createRadialGradient(32,32,0,32,32,32);
     r.addColorStop(0,'rgba(255,255,255,1)');r.addColorStop(.35,'rgba(255,255,255,.55)');r.addColorStop(1,'rgba(255,255,255,0)');g2.fillStyle=r;g2.fillRect(0,0,64,64);GT=new T3.CanvasTexture(c2);}
   glowMat=new T3.SpriteMaterial({map:GT,color:0xfff1c8,transparent:true,opacity:0,blending:T3.AdditiveBlending,depthWrite:false});
@@ -1443,7 +1463,7 @@ function snapshot(tier,staff,label,w=640,h=440,variant=0,logo=null){
   const asp=w/h,cfg=TIERS[tier];
   const halfW=((cfg.BW+AWL+AWR)*Math.cos(az)+BD*Math.sin(az))/2+3,halfH=((cfg.floors*FH+3)*Math.cos(el)+BD*Math.sin(el))/2+2,hh=Math.max(halfH,halfW/asp);
   camera.left=-hh*asp;camera.right=hh*asp;camera.top=hh;camera.bottom=-hh;camera.updateProjectionMatrix();
-  renderer.render(scene,camera);const url=renderer.domElement.toDataURL('image/jpeg',.85);
+  renderer.render(scene,camera);const url=renderer.domElement.toDataURL('image/jpeg',.9);
   hourNow=h0;WX=wxKeep;if(wxObj)wxObj.visible=true;Object.assign({zoom,az,el},keep);resize();return url;
 }
 return {init,build,send,say,busy,snapshot,resize,setHour,daylight,pick:f=>{onPick=f;},phone:()=>phoneCall(),obst:()=>OBST,setWeather,sign:f=>{onSign=f;},zoomOut:f=>{onZoomOut=f;},preloadLogo,screen:f=>{onScreen=f;},select:id=>{selId=id;for(const k in agents)agents[k].tag.classList.toggle('on',k===id);},setStats:d=>{statsData=d;},visit,socialVisit,away:id=>agents[id]&&agents[id].away,pos:id=>{const g=agents[id],o=g&&(g.mover||g.p);return o?[+o.position.x.toFixed(2),+o.position.y.toFixed(2),+o.position.z.toFixed(2),g.away||'',g.seat?[g.seat.x,g.seat.y,g.seat.z,g.seat.facing]:null]:null;},toilet,kitchen,has:id=>!!agents[id],TIERS};

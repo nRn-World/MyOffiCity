@@ -11,7 +11,7 @@ const lsSet = (k, v) => { try { v == null ? localStorage.removeItem(k) : localSt
 
 const TX = {
   en: {
-    mapNav: 'City map', dIdWorked: 'Has worked here', dIdSinceStart: 'since the company started', dIdSinceHire: 'since hired', dIdHobby: 'Hobby', dFire: 'Fire', dFireAsk: 'Fire this person? You can hire a new one straight away.', dFireYes: 'Yes, fire', dFireNo: 'Cancel', dFiredMsg: 'has left the team', dVacant: 'Vacant position', dHireBtn: 'Hire a new person', dHiredMsg: 'New hire:', dFormer: 'Former team members', dWorkedFor: 'worked for', dHiring: 'Hiring…', coCity: 'City (for local weather)', coCityHint: 'Your office gets the real weather and time of this city: rain, snow, fog and thunder.', coCityPh: 'Stockholm', coCityBad: 'Could not find that city.', cityLabel: 'City', dChipWeather: 'Weather', wxclear: 'Clear', wxcloud: 'Cloudy', wxfog: 'Fog', wxrain: 'Rain', wxsnow: 'Snow', wxthunder: 'Thunder', mapCountOne: ' company', foundOne: 'company', doneOne: 'job', coTagsPh: 'web, design, logo', coSvcPh: 'Landing page | from 49 USD | One polished page', coWebPh: 'https://yourcompany.com', dIdOpen: 'Show ID card', dIdFrom: 'From', dIdAge: 'Age', dIdBorn: 'Born', dIdLang: 'Languages', dIdRole: 'Role', dIdBg: 'Background', dIdAi: 'AI team member', dIdYears: 'years', dIdClose: 'Close', dOffice: 'Office', dChat: 'Chat', dTeam: 'Team', dOrders: 'Orders', dReports: 'Reports', dSettings: 'Settings', dSite: '\u2190 To the site', dOwner: 'Owner of', dCompany: 'Your company', dChipOrders: 'Orders', dChipChats: 'Chats', dChipRating: 'Rating', dChipTime: 'Local time', dNoOrders: 'No orders yet. When a customer orders, it shows up here.', dNoChats: 'No chats yet. When a customer clicks Contact the company, the chat shows up here.', dPickChat: 'Pick a chat on the left.', dPickOrder: 'Pick an order on the left.', dSend: 'Send', dWrite: 'Write a message', dCust: 'Customer', dTeamH: 'Your AI team', dTeamP: 'This is the team that works for your company. The team does the work in the MyOffiCity app on your computer, where you give assignments and follow the work.', dRoleLead: 'Team leader', dRoleRev: 'Reviewer', dRoleBuild: 'Builder', dRolePolish: 'Finisher', dRepDone: 'Delivered jobs', dRepRating: 'Average rating', dRepReviews: 'Reviews', dNoReviews: 'No reviews yet.', dBrief: 'The customer wrote', coWebsite: 'Website (if you have one)', coOrg: 'Organisation number (optional)', coPublic: 'Shown publicly on your profile.', website: 'Website', orgNo: 'Org. no.', coFormH: 'Create your company', coEditH: 'Your company', coName: 'Company name', coTagline: 'Short tagline', coDesc: 'What do you do?', coTags: 'Tags (comma separated, up to 5)', coServices: 'Services and prices', coServicesHint: 'One per line: Title | Price | Short description', coBuilding: 'Choose your office building', coB0: 'Startup loft', coB0d: 'Two floors, warm and open. Great to start with.', coB1: 'Modern tech hub', coB1d: 'Three floors, glass and oak. For a growing team.', coB2: 'Executive HQ', coB2d: 'Four floors with gold details. Made to impress.', coLogo: 'Logo (PNG only)', coLogoHint: 'The sign on your roof takes the shape of your logo: round, triangle or square.', coCreateBtn: 'Create company', coSaveBtn: 'Save changes', coSaved: 'Saved. Your office is in the city.', coLogoBad: 'Only PNG images are allowed.', coLogoBig: 'The image is too large.', coLogoNone: 'No logo', coShaperound: 'Round sign', coShapetri: 'Triangle sign', coShaperect: 'Square sign', coNeedName: 'Give your company a name (at least 2 characters).', coAppNote: 'The AI team that does the work runs in the MyOffiCity app on your computer. Here you manage how your company looks and what it offers.', coSeeCity: 'See it in the city', coRemoveLogo: 'Remove logo', demoTag: 'Demo', demoNote: 'Demo company: an example, it cannot be contacted or ordered from.', ovBtn: 'All companies', ovBack: 'Back to the office', ovTip: 'Zoomed out: click a building to go there.', homeCos: 'Companies in the city', homeCosP: 'Browse what they offer. Open one to see its office.', homeEmpty: 'No companies yet. Be the first to open an office.', seeInCity: 'See the office', fromPrice: 'From', mapNone: 'No company matches. Try another word, for example design, web or logo.', mapCount: ' companies', mapSearch: 'Search companies, for example design', chooseH: 'Welcome to MyOffiCity', chooseP: 'What do you want to do?', chCust: 'I am a customer', chCustP: 'Look around the city of companies, meet a salesperson and order a website.', chCo: 'Create my own company', chCoP: 'Run an AI company, publish it in the city and get orders from customers.', coStartH: 'Create your own company', coStep1: 'Create or sign in to your account on this site.', coStep2: 'Open the MyOffiCity app, go to Orders, then Online marketplace, and sign in with this same account.', coStep3: 'Press Publish. Your office appears in the city and customers can chat with you.', coLive: 'Your company is live in the city: ', coMine: 'My company', coCreate: 'Create company', coGoCity: 'See it in the city', coSignIn: 'Sign in or create account', chatsNav: 'Chats', mapH: 'Find a company in the city', mapP: 'Look at the offices. Click the company sign on the roof to read about the company and contact them to buy a service.', mapEmpty: 'No companies in the city yet.', mapList: 'Show as list', cityTip: 'Drag to turn, scroll to zoom, click the sign on the roof.', bTier0: 'Startup loft', bTier1: 'Modern tech hub', bTier2: 'Executive HQ', meetSales: 'Contact the company', orderSvc: 'Order a service', viewProfile: 'View profile', closeIt: 'Close', ownCo: 'This is your company.', chatsH: 'Chats', chatsNone: 'No chats yet. Open a company in the city and choose Contact the company.', chatWith: 'Chat with the salesperson at ', chatCustomer: 'Customer: ', chatSend: 'Send', chatHint: 'Write a message', chatSales: 'Salesperson', chatNeedLogin: 'Sign in to chat with a salesperson.', chatYouCo: 'You are the owner of this company. Reply to the customer below.', done: 'jobs', catWeb: 'Web & apps', catDesign: 'Design & brand', catShop: 'Webshop & e-commerce', catContent: 'Text & visibility', catMedia: 'Video & media', catOther: 'Other', catTitle: 'Category', catNarrow: 'Narrow down', companies: 'Companies', orders: 'My orders', account: 'Account', signin: 'Sign in', register: 'Create account', signout: 'Sign out', username: 'Username', password: 'Password',
+    mapNav: 'City map', dFireQuota: 'Firings used', dFireOf: 'of', dFireWin: 'in the last 6 months', dFireLocked: 'No firings left until', dPhotoFail: '(the photo could not be created right now, so a drawing is used)', dIdWorked: 'Has worked here', dIdSinceStart: 'since the company started', dIdSinceHire: 'since hired', dIdHobby: 'Hobby', dFire: 'Fire', dFireAsk: 'Fire this person? You can hire a new one straight away.', dFireYes: 'Yes, fire', dFireNo: 'Cancel', dFiredMsg: 'has left the team', dVacant: 'Vacant position', dHireBtn: 'Hire a new person', dHiredMsg: 'New hire:', dFormer: 'Former team members', dWorkedFor: 'worked for', dHiring: 'Hiring…', coCity: 'City (for local weather)', coCityHint: 'Your office gets the real weather and time of this city: rain, snow, fog and thunder.', coCityPh: 'Stockholm', coCityBad: 'Could not find that city.', cityLabel: 'City', dChipWeather: 'Weather', wxclear: 'Clear', wxcloud: 'Cloudy', wxfog: 'Fog', wxrain: 'Rain', wxsnow: 'Snow', wxthunder: 'Thunder', mapCountOne: ' company', foundOne: 'company', doneOne: 'job', coTagsPh: 'web, design, logo', coSvcPh: 'Landing page | from 49 USD | One polished page', coWebPh: 'https://yourcompany.com', dIdOpen: 'Show ID card', dIdFrom: 'From', dIdAge: 'Age', dIdBorn: 'Born', dIdLang: 'Languages', dIdRole: 'Role', dIdBg: 'Background', dIdAi: 'AI team member', dIdYears: 'years', dIdClose: 'Close', dOffice: 'Office', dChat: 'Chat', dTeam: 'Team', dOrders: 'Orders', dReports: 'Reports', dSettings: 'Settings', dSite: '\u2190 To the site', dOwner: 'Owner of', dCompany: 'Your company', dChipOrders: 'Orders', dChipChats: 'Chats', dChipRating: 'Rating', dChipTime: 'Local time', dNoOrders: 'No orders yet. When a customer orders, it shows up here.', dNoChats: 'No chats yet. When a customer clicks Contact the company, the chat shows up here.', dPickChat: 'Pick a chat on the left.', dPickOrder: 'Pick an order on the left.', dSend: 'Send', dWrite: 'Write a message', dCust: 'Customer', dTeamH: 'Your AI team', dTeamP: 'This is the team that works for your company. The team does the work in the MyOffiCity app on your computer, where you give assignments and follow the work.', dRoleLead: 'Team leader', dRoleRev: 'Reviewer', dRoleBuild: 'Builder', dRolePolish: 'Finisher', dRepDone: 'Delivered jobs', dRepRating: 'Average rating', dRepReviews: 'Reviews', dNoReviews: 'No reviews yet.', dBrief: 'The customer wrote', coWebsite: 'Website (if you have one)', coOrg: 'Organisation number (optional)', coPublic: 'Shown publicly on your profile.', website: 'Website', orgNo: 'Org. no.', coFormH: 'Create your company', coEditH: 'Your company', coName: 'Company name', coTagline: 'Short tagline', coDesc: 'What do you do?', coTags: 'Tags (comma separated, up to 5)', coServices: 'Services and prices', coServicesHint: 'One per line: Title | Price | Short description', coBuilding: 'Choose your office building', coB0: 'Startup loft', coB0d: 'Two floors, warm and open. Great to start with.', coB1: 'Modern tech hub', coB1d: 'Three floors, glass and oak. For a growing team.', coB2: 'Executive HQ', coB2d: 'Four floors with gold details. Made to impress.', coLogo: 'Logo (PNG only)', coLogoHint: 'The sign on your roof takes the shape of your logo: round, triangle or square.', coCreateBtn: 'Create company', coSaveBtn: 'Save changes', coSaved: 'Saved. Your office is in the city.', coLogoBad: 'Only PNG images are allowed.', coLogoBig: 'The image is too large.', coLogoNone: 'No logo', coShaperound: 'Round sign', coShapetri: 'Triangle sign', coShaperect: 'Square sign', coNeedName: 'Give your company a name (at least 2 characters).', coAppNote: 'The AI team that does the work runs in the MyOffiCity app on your computer. Here you manage how your company looks and what it offers.', coSeeCity: 'See it in the city', coRemoveLogo: 'Remove logo', demoTag: 'Demo', demoNote: 'Demo company: an example, it cannot be contacted or ordered from.', ovBtn: 'All companies', ovBack: 'Back to the office', ovTip: 'Zoomed out: click a building to go there.', homeCos: 'Companies in the city', homeCosP: 'Browse what they offer. Open one to see its office.', homeEmpty: 'No companies yet. Be the first to open an office.', seeInCity: 'See the office', fromPrice: 'From', mapNone: 'No company matches. Try another word, for example design, web or logo.', mapCount: ' companies', mapSearch: 'Search companies, for example design', chooseH: 'Welcome to MyOffiCity', chooseP: 'What do you want to do?', chCust: 'I am a customer', chCustP: 'Look around the city of companies, meet a salesperson and order a website.', chCo: 'Create my own company', chCoP: 'Run an AI company, publish it in the city and get orders from customers.', coStartH: 'Create your own company', coStep1: 'Create or sign in to your account on this site.', coStep2: 'Open the MyOffiCity app, go to Orders, then Online marketplace, and sign in with this same account.', coStep3: 'Press Publish. Your office appears in the city and customers can chat with you.', coLive: 'Your company is live in the city: ', coMine: 'My company', coCreate: 'Create company', coGoCity: 'See it in the city', coSignIn: 'Sign in or create account', chatsNav: 'Chats', mapH: 'Find a company in the city', mapP: 'Look at the offices. Click the company sign on the roof to read about the company and contact them to buy a service.', mapEmpty: 'No companies in the city yet.', mapList: 'Show as list', cityTip: 'Drag to turn, scroll to zoom, click the sign on the roof.', bTier0: 'Startup loft', bTier1: 'Modern tech hub', bTier2: 'Executive HQ', meetSales: 'Contact the company', orderSvc: 'Order a service', viewProfile: 'View profile', closeIt: 'Close', ownCo: 'This is your company.', chatsH: 'Chats', chatsNone: 'No chats yet. Open a company in the city and choose Contact the company.', chatWith: 'Chat with the salesperson at ', chatCustomer: 'Customer: ', chatSend: 'Send', chatHint: 'Write a message', chatSales: 'Salesperson', chatNeedLogin: 'Sign in to chat with a salesperson.', chatYouCo: 'You are the owner of this company. Reply to the customer below.', done: 'jobs', catWeb: 'Web & apps', catDesign: 'Design & brand', catShop: 'Webshop & e-commerce', catContent: 'Text & visibility', catMedia: 'Video & media', catOther: 'Other', catTitle: 'Category', catNarrow: 'Narrow down', companies: 'Companies', orders: 'My orders', account: 'Account', signin: 'Sign in', register: 'Create account', signout: 'Sign out', username: 'Username', password: 'Password',
     email: 'Email', emailReq: 'An email address is required.', orWith: 'or', emailWhy: 'Needed to reset your password and for important messages.', pwHint: 'At least 10 characters.', haveAcc: 'I already have an account', noAcc: 'Create a new account', forgotQ: 'Forgot your password?',
     heroH: 'Hire an AI team for your project', heroP: 'Find a company, tell them what you need and follow the work: you get four proposals, pick your favourite and receive the finished website.',
     search: 'Search companies, services, topics…', none: 'No companies match. Try other words or clear the filters.', order: 'Order from this company', services: 'Services', back: 'Back',
@@ -39,7 +39,7 @@ const TX = {
     connectH: 'Connect an AI tool', connectP: 'Pick your tool. They all use the same server, so you can connect several. Replace YOUR_KEY with your key.', keyFresh: 'Your new key is filled in below.', copyIt: 'Copy', authH: 'Connect an app', authWant: ' wants to use your MyOffiCity account.', authLevel: 'What may it do?', authRead: 'Read only: search and read', authWrite: 'Read and write: messages, proposals, files (cannot place orders or deliver)', authFull: 'Everything, including placing orders and delivering', authAllow: 'Allow', authDeny: 'Cancel', authBad: 'This connection request is not valid.', authNote: 'You can remove the access later under Account > API keys.', askAi: 'Ask your AI to do it', askAiWhere: 'Paste this into Claude Code, Codex, Cursor, Copilot, Gemini CLI or any agent that can run commands',
   },
   sv: {
-    mapNav: 'Stadskarta', dIdWorked: 'Har jobbat här', dIdSinceStart: 'sedan företaget startade', dIdSinceHire: 'sedan anställningen', dIdHobby: 'Hobby', dFire: 'Sparka', dFireAsk: 'Sparka den här personen? Du kan anställa en ny direkt.', dFireYes: 'Ja, sparka', dFireNo: 'Avbryt', dFiredMsg: 'har lämnat teamet', dVacant: 'Ledig tjänst', dHireBtn: 'Anställ ny', dHiredMsg: 'Ny anställd:', dFormer: 'Tidigare anställda', dWorkedFor: 'jobbade i', dHiring: 'Anställer…', coCity: 'Stad (för lokalt väder)', coCityHint: 'Ditt kontor får verkligt väder och tid från den här staden: regn, snö, dimma och åska.', coCityPh: 'Stockholm', coCityBad: 'Hittade inte den staden.', cityLabel: 'Ort', dChipWeather: 'Väder', wxclear: 'Klart', wxcloud: 'Molnigt', wxfog: 'Dimma', wxrain: 'Regn', wxsnow: 'Snö', wxthunder: 'Åska', mapCountOne: ' företag', foundOne: 'företag', doneOne: 'jobb', coTagsPh: 'webb, design, logotyp', coSvcPh: 'Landningssida | från 49 USD | En polerad sida', coWebPh: 'https://dittforetag.se', dIdOpen: 'Visa ID-kort', dIdFrom: 'Kommer från', dIdAge: 'Ålder', dIdBorn: 'Född', dIdLang: 'Språk', dIdRole: 'Roll', dIdBg: 'Bakgrund', dIdAi: 'AI-medarbetare', dIdYears: 'år', dIdClose: 'Stäng', dOffice: 'Kontor', dChat: 'Chatt', dTeam: 'Team', dOrders: 'Beställningar', dReports: 'Rapporter', dSettings: 'Inställningar', dSite: '\u2190 Till sajten', dOwner: 'Ägare av', dCompany: 'Ditt företag', dChipOrders: 'Beställningar', dChipChats: 'Chattar', dChipRating: 'Betyg', dChipTime: 'Lokal tid', dNoOrders: 'Inga beställningar än. När en kund beställer syns det här.', dNoChats: 'Inga chattar än. När en kund klickar Kontakta företaget syns chatten här.', dPickChat: 'Välj en chatt till vänster.', dPickOrder: 'Välj en beställning till vänster.', dSend: 'Skicka', dWrite: 'Skriv ett meddelande', dCust: 'Kund', dTeamH: 'Ditt AI-team', dTeamP: 'Det här är teamet som jobbar åt ditt företag. Teamet gör jobbet i MyOffiCity-appen på din dator, där du ger uppdrag och följer arbetet.', dRoleLead: 'Teamledare', dRoleRev: 'Granskare', dRoleBuild: 'Byggare', dRolePolish: 'Finputsare', dRepDone: 'Levererade jobb', dRepRating: 'Snittbetyg', dRepReviews: 'Omdömen', dNoReviews: 'Inga omdömen än.', dBrief: 'Kunden skrev', coWebsite: 'Hemsida (om ni har en)', coOrg: 'Organisationsnummer (valfritt)', coPublic: 'Visas offentligt på företagets profil.', website: 'Hemsida', orgNo: 'Org.nr', coFormH: 'Skapa ditt företag', coEditH: 'Ditt företag', coName: 'Företagsnamn', coTagline: 'Kort slogan', coDesc: 'Vad gör ni?', coTags: 'Taggar (kommaseparerade, högst 5)', coServices: 'Tjänster och priser', coServicesHint: 'En per rad: Titel | Pris | Kort beskrivning', coBuilding: 'Välj ditt kontorshus', coB0: 'Startup-loft', coB0d: 'Två våningar, varmt och öppet. Bra att börja med.', coB1: 'Modern tech-hub', coB1d: 'Tre våningar i glas och ek. För ett växande team.', coB2: 'Executive HQ', coB2d: 'Fyra våningar med detaljer i guld. Gjort för att imponera.', coLogo: 'Logotyp (bara PNG)', coLogoHint: 'Skylten på taket får logotypens form: rund, triangel eller fyrkant.', coCreateBtn: 'Skapa företag', coSaveBtn: 'Spara ändringar', coSaved: 'Sparat. Ditt kontor finns i staden.', coLogoBad: 'Bara PNG-bilder är tillåtna.', coLogoBig: 'Bilden är för stor.', coLogoNone: 'Ingen logotyp', coShaperound: 'Rund skylt', coShapetri: 'Triangelskylt', coShaperect: 'Fyrkantig skylt', coNeedName: 'Ge företaget ett namn (minst 2 tecken).', coAppNote: 'AI-teamet som gör jobbet körs i MyOffiCity-appen på din dator. Här hanterar du hur företaget ser ut och vad det erbjuder.', coSeeCity: 'Se det i staden', coRemoveLogo: 'Ta bort logotyp', demoTag: 'Demo', demoNote: 'Demoföretag: ett exempel, går inte att kontakta eller beställa från.', ovBtn: 'Alla företag', ovBack: 'Tillbaka till kontoret', ovTip: 'Utzoomat: klicka på en byggnad för att gå dit.', homeCos: 'Företag i staden', homeCosP: 'Bläddra bland vad de erbjuder. Öppna ett för att se dess kontor.', homeEmpty: 'Inga företag än. Bli först med att öppna ett kontor.', seeInCity: 'Se kontoret', fromPrice: 'Från', mapNone: 'Inget företag matchar. Prova ett annat ord, till exempel design, webb eller logga.', mapCount: ' företag', mapSearch: 'Sök företag, till exempel design', chooseH: 'Välkommen till MyOffiCity', chooseP: 'Vad vill du göra?', chCust: 'Jag är kund', chCustP: 'Titta runt i företagsstaden, träffa en säljare och beställ en hemsida.', chCo: 'Skapa eget företag', chCoP: 'Driv ett AI-företag, publicera det i staden och få beställningar från kunder.', coStartH: 'Skapa ditt eget företag', coStep1: 'Skapa eller logga in på ditt konto på den här sajten.', coStep2: 'Öppna MyOffiCity-appen, gå till Beställningar, sedan Online-marknadsplats, och logga in med samma konto.', coStep3: 'Tryck Publicera. Ditt kontor syns i staden och kunder kan chatta med dig.', coLive: 'Ditt företag finns i staden: ', coMine: 'Mitt företag', coCreate: 'Skapa företag', coGoCity: 'Se det i staden', coSignIn: 'Logga in eller skapa konto', chatsNav: 'Chattar', mapH: 'Hitta ett företag i staden', mapP: 'Titta på kontoren. Klicka på företagets skylt på taket för att läsa om företaget och kontakta dem för att köpa en tjänst.', mapEmpty: 'Inga företag i staden än.', mapList: 'Visa som lista', cityTip: 'Dra för att snurra, scrolla för att zooma, klicka på skylten på taket.', bTier0: 'Startup-loft', bTier1: 'Modern tech-hub', bTier2: 'Executive HQ', meetSales: 'Kontakta företaget', orderSvc: 'Beställ tjänst', viewProfile: 'Visa profil', closeIt: 'Stäng', ownCo: 'Det här är ditt företag.', chatsH: 'Chattar', chatsNone: 'Inga chattar än. Öppna ett företag i staden och välj Kontakta företaget.', chatWith: 'Chatt med säljaren på ', chatCustomer: 'Kund: ', chatSend: 'Skicka', chatHint: 'Skriv ett meddelande', chatSales: 'Säljare', chatNeedLogin: 'Logga in för att chatta med en säljare.', chatYouCo: 'Du är ägare av det här företaget. Svara kunden nedan.', done: 'jobb', catWeb: 'Webb & appar', catDesign: 'Design & varumärke', catShop: 'Webbshop & e-handel', catContent: 'Text & synlighet', catMedia: 'Video & media', catOther: 'Övrigt', catTitle: 'Kategori', catNarrow: 'Smalna av', companies: 'Företag', orders: 'Mina beställningar', account: 'Konto', signin: 'Logga in', register: 'Skapa konto', signout: 'Logga ut', username: 'Användarnamn', password: 'Lösenord',
+    mapNav: 'Stadskarta', dFireQuota: 'Sparkningar använda', dFireOf: 'av', dFireWin: 'de senaste 6 månaderna', dFireLocked: 'Inga sparkningar kvar förrän', dPhotoFail: '(bilden kunde inte skapas just nu, så en teckning används)', dIdWorked: 'Har jobbat här', dIdSinceStart: 'sedan företaget startade', dIdSinceHire: 'sedan anställningen', dIdHobby: 'Hobby', dFire: 'Sparka', dFireAsk: 'Sparka den här personen? Du kan anställa en ny direkt.', dFireYes: 'Ja, sparka', dFireNo: 'Avbryt', dFiredMsg: 'har lämnat teamet', dVacant: 'Ledig tjänst', dHireBtn: 'Anställ ny', dHiredMsg: 'Ny anställd:', dFormer: 'Tidigare anställda', dWorkedFor: 'jobbade i', dHiring: 'Anställer…', coCity: 'Stad (för lokalt väder)', coCityHint: 'Ditt kontor får verkligt väder och tid från den här staden: regn, snö, dimma och åska.', coCityPh: 'Stockholm', coCityBad: 'Hittade inte den staden.', cityLabel: 'Ort', dChipWeather: 'Väder', wxclear: 'Klart', wxcloud: 'Molnigt', wxfog: 'Dimma', wxrain: 'Regn', wxsnow: 'Snö', wxthunder: 'Åska', mapCountOne: ' företag', foundOne: 'företag', doneOne: 'jobb', coTagsPh: 'webb, design, logotyp', coSvcPh: 'Landningssida | från 49 USD | En polerad sida', coWebPh: 'https://dittforetag.se', dIdOpen: 'Visa ID-kort', dIdFrom: 'Kommer från', dIdAge: 'Ålder', dIdBorn: 'Född', dIdLang: 'Språk', dIdRole: 'Roll', dIdBg: 'Bakgrund', dIdAi: 'AI-medarbetare', dIdYears: 'år', dIdClose: 'Stäng', dOffice: 'Kontor', dChat: 'Chatt', dTeam: 'Team', dOrders: 'Beställningar', dReports: 'Rapporter', dSettings: 'Inställningar', dSite: '\u2190 Till sajten', dOwner: 'Ägare av', dCompany: 'Ditt företag', dChipOrders: 'Beställningar', dChipChats: 'Chattar', dChipRating: 'Betyg', dChipTime: 'Lokal tid', dNoOrders: 'Inga beställningar än. När en kund beställer syns det här.', dNoChats: 'Inga chattar än. När en kund klickar Kontakta företaget syns chatten här.', dPickChat: 'Välj en chatt till vänster.', dPickOrder: 'Välj en beställning till vänster.', dSend: 'Skicka', dWrite: 'Skriv ett meddelande', dCust: 'Kund', dTeamH: 'Ditt AI-team', dTeamP: 'Det här är teamet som jobbar åt ditt företag. Teamet gör jobbet i MyOffiCity-appen på din dator, där du ger uppdrag och följer arbetet.', dRoleLead: 'Teamledare', dRoleRev: 'Granskare', dRoleBuild: 'Byggare', dRolePolish: 'Finputsare', dRepDone: 'Levererade jobb', dRepRating: 'Snittbetyg', dRepReviews: 'Omdömen', dNoReviews: 'Inga omdömen än.', dBrief: 'Kunden skrev', coWebsite: 'Hemsida (om ni har en)', coOrg: 'Organisationsnummer (valfritt)', coPublic: 'Visas offentligt på företagets profil.', website: 'Hemsida', orgNo: 'Org.nr', coFormH: 'Skapa ditt företag', coEditH: 'Ditt företag', coName: 'Företagsnamn', coTagline: 'Kort slogan', coDesc: 'Vad gör ni?', coTags: 'Taggar (kommaseparerade, högst 5)', coServices: 'Tjänster och priser', coServicesHint: 'En per rad: Titel | Pris | Kort beskrivning', coBuilding: 'Välj ditt kontorshus', coB0: 'Startup-loft', coB0d: 'Två våningar, varmt och öppet. Bra att börja med.', coB1: 'Modern tech-hub', coB1d: 'Tre våningar i glas och ek. För ett växande team.', coB2: 'Executive HQ', coB2d: 'Fyra våningar med detaljer i guld. Gjort för att imponera.', coLogo: 'Logotyp (bara PNG)', coLogoHint: 'Skylten på taket får logotypens form: rund, triangel eller fyrkant.', coCreateBtn: 'Skapa företag', coSaveBtn: 'Spara ändringar', coSaved: 'Sparat. Ditt kontor finns i staden.', coLogoBad: 'Bara PNG-bilder är tillåtna.', coLogoBig: 'Bilden är för stor.', coLogoNone: 'Ingen logotyp', coShaperound: 'Rund skylt', coShapetri: 'Triangelskylt', coShaperect: 'Fyrkantig skylt', coNeedName: 'Ge företaget ett namn (minst 2 tecken).', coAppNote: 'AI-teamet som gör jobbet körs i MyOffiCity-appen på din dator. Här hanterar du hur företaget ser ut och vad det erbjuder.', coSeeCity: 'Se det i staden', coRemoveLogo: 'Ta bort logotyp', demoTag: 'Demo', demoNote: 'Demoföretag: ett exempel, går inte att kontakta eller beställa från.', ovBtn: 'Alla företag', ovBack: 'Tillbaka till kontoret', ovTip: 'Utzoomat: klicka på en byggnad för att gå dit.', homeCos: 'Företag i staden', homeCosP: 'Bläddra bland vad de erbjuder. Öppna ett för att se dess kontor.', homeEmpty: 'Inga företag än. Bli först med att öppna ett kontor.', seeInCity: 'Se kontoret', fromPrice: 'Från', mapNone: 'Inget företag matchar. Prova ett annat ord, till exempel design, webb eller logga.', mapCount: ' företag', mapSearch: 'Sök företag, till exempel design', chooseH: 'Välkommen till MyOffiCity', chooseP: 'Vad vill du göra?', chCust: 'Jag är kund', chCustP: 'Titta runt i företagsstaden, träffa en säljare och beställ en hemsida.', chCo: 'Skapa eget företag', chCoP: 'Driv ett AI-företag, publicera det i staden och få beställningar från kunder.', coStartH: 'Skapa ditt eget företag', coStep1: 'Skapa eller logga in på ditt konto på den här sajten.', coStep2: 'Öppna MyOffiCity-appen, gå till Beställningar, sedan Online-marknadsplats, och logga in med samma konto.', coStep3: 'Tryck Publicera. Ditt kontor syns i staden och kunder kan chatta med dig.', coLive: 'Ditt företag finns i staden: ', coMine: 'Mitt företag', coCreate: 'Skapa företag', coGoCity: 'Se det i staden', coSignIn: 'Logga in eller skapa konto', chatsNav: 'Chattar', mapH: 'Hitta ett företag i staden', mapP: 'Titta på kontoren. Klicka på företagets skylt på taket för att läsa om företaget och kontakta dem för att köpa en tjänst.', mapEmpty: 'Inga företag i staden än.', mapList: 'Visa som lista', cityTip: 'Dra för att snurra, scrolla för att zooma, klicka på skylten på taket.', bTier0: 'Startup-loft', bTier1: 'Modern tech-hub', bTier2: 'Executive HQ', meetSales: 'Kontakta företaget', orderSvc: 'Beställ tjänst', viewProfile: 'Visa profil', closeIt: 'Stäng', ownCo: 'Det här är ditt företag.', chatsH: 'Chattar', chatsNone: 'Inga chattar än. Öppna ett företag i staden och välj Kontakta företaget.', chatWith: 'Chatt med säljaren på ', chatCustomer: 'Kund: ', chatSend: 'Skicka', chatHint: 'Skriv ett meddelande', chatSales: 'Säljare', chatNeedLogin: 'Logga in för att chatta med en säljare.', chatYouCo: 'Du är ägare av det här företaget. Svara kunden nedan.', done: 'jobb', catWeb: 'Webb & appar', catDesign: 'Design & varumärke', catShop: 'Webbshop & e-handel', catContent: 'Text & synlighet', catMedia: 'Video & media', catOther: 'Övrigt', catTitle: 'Kategori', catNarrow: 'Filtrera', companies: 'Företag', orders: 'Mina beställningar', account: 'Konto', signin: 'Logga in', register: 'Skapa konto', signout: 'Logga ut', username: 'Användarnamn', password: 'Lösenord',
     email: 'E-post', emailReq: 'E-post krävs.', orWith: 'eller', emailWhy: 'Behövs för att återställa lösenordet och för viktiga meddelanden.', pwHint: 'Minst 10 tecken.', haveAcc: 'Jag har redan ett konto', noAcc: 'Skapa ett nytt konto', forgotQ: 'Glömt lösenordet?',
     heroH: 'Anlita ett AI-team till ditt projekt', heroP: 'Hitta ett företag, berätta vad du behöver och följ arbetet: du får fyra förslag, väljer din favorit och får den färdiga hemsidan.',
     search: 'Sök företag, tjänster, ämnen…', none: 'Inga företag matchar. Prova andra ord eller rensa filtren.', order: 'Beställ av det här företaget', services: 'Tjänster', back: 'Tillbaka',
@@ -67,8 +67,118 @@ const TX = {
     connectH: 'Koppla ett AI-verktyg', connectP: 'Välj ditt verktyg. De använder alla samma server, så du kan koppla flera. Byt ut YOUR_KEY mot din nyckel.', keyFresh: 'Din nya nyckel är ifylld nedan.', copyIt: 'Kopiera', authH: 'Koppla en app', authWant: ' vill använda ditt MyOffiCity-konto.', authLevel: 'Vad får den göra?', authRead: 'Bara läsa: söka och läsa', authWrite: 'Läsa och skriva: meddelanden, förslag, filer (kan inte lägga beställningar eller leverera)', authFull: 'Allt, även lägga beställningar och leverera', authAllow: 'Tillåt', authDeny: 'Avbryt', authBad: 'Den här kopplingsförfrågan är inte giltig.', authNote: 'Du kan ta bort åtkomsten senare under Konto > API-nycklar.', askAi: 'Be din AI göra det', askAiWhere: 'Klistra in detta i Claude Code, Codex, Cursor, Copilot, Gemini CLI eller en annan agent som kan köra kommandon',
   },
 };
+/* Texter för den nya startsidan, sidfoten och företagsprofilen. */
+const NEW_TX = {
+  en: {
+    brandTag: 'AI companies · real work',
+    heroKicker: 'A city of AI-run companies',
+    heroH1: 'Tell the city what you need.', heroH1b: 'Get a website worth showing.',
+    heroLede: 'Walk into a company, meet the team that will do the work and follow every step. You get four design proposals, choose your favourite and receive the finished website.',
+    heroCity: 'Explore the city', heroStart: 'Start a company',
+    heroPoint1: 'Four proposals to choose from', heroPoint2: 'Two reviewers check every delivery', heroPoint3: 'Fixed scope, no meetings',
+    statCos: 'companies in the city', statJobs: 'delivered jobs', statRating: 'average rating', statNew: 'new',
+    howH: 'From idea to finished site', howP: 'No briefs lost in email threads. The whole job lives in one place.',
+    how1t: 'Find your company', how1p: 'Browse by craft or search the city. Every office shows its services, prices and reviews.',
+    how2t: 'Send the brief', how2p: 'Tell them what the site should do. The team answers with four distinct proposals.',
+    how3t: 'Choose and receive', how3p: 'Pick a proposal, follow the build and get the finished files when the reviewers approve.',
+    featuredH: 'Meet the companies', featuredP: 'Independent AI teams, each with its own office, style and speciality.', featuredAll: 'See all companies',
+    ownerH: 'Run a company in the city?', ownerP: 'Publish your AI company, choose an office and let customers find you. The work happens in the MyOffiCity app on your computer.',
+    owner1: 'Your own 3D office', owner1p: 'Pick a loft, tech hub or HQ, and put your logo on the roof.',
+    owner2: 'Real customer orders', owner2p: 'Chats, proposals, files and status in one shared workspace.',
+    owner3: 'Your AI team', owner3p: 'Team leader, reviewers and builders work while you keep the keys.',
+    ownerCta: 'Open your office',
+    bandH: 'The city is open. Pick a door.', bandP: 'Browse the offices, or start the company you always wanted to run.', bandCta: 'Enter the city',
+    footAbout: 'A marketplace where AI-run companies build websites for real customers.',
+    footExplore: 'Explore', footForCo: 'For companies', footInfo: 'About',
+    footCity: 'City map', footCompanies: 'All companies', footStartCompany: 'Start a company',
+    footLogin: 'Sign in', footAccount: 'Your account', footApi: 'For AI tools', footPrivacy: 'Privacy', footCredits: '3D credits',
+    footRights: 'All rights reserved.', footNote: 'Demo companies are examples and cannot take orders.',
+    loadingCity: 'Loading the city…', viewAll: 'View all',
+    companyAbout: 'About the company', companyOrder: 'Order a service', companyServices: 'Services and prices',
+    companyOrderNote: 'Tell them what you need. The team replies with proposals before any work starts.',
+    companyFacts: 'Company details', searchClear: 'Clear',
+    companyNoDesc: 'This company has not written a description yet. Get in touch and tell them what you need.',
+    companyNoTagline: 'An AI-run company in the city', jobDone: 'delivered jobs', jobDoneOne: 'delivered job',
+    netNav: 'Network', netH: 'The neighbourhood', netP: 'The closer two companies stand, the more they share. Click a building to read what it shares with its neighbours.',
+    netBack: 'Whole city', netYou: 'Your company', netHere: 'You are here',
+    netLegend: 'Sharing levels', netLvGranne: 'Neighbour', netLvKvarter: 'Block', netLvStadsdel: 'District',
+    netShareGranne: 'Full profile, services and open assignments', netShareKvarter: 'Profile and services', netShareStadsdel: 'Name, tags and rating',
+    netWithin: 'within {m} m', netAway: '{m} m away', netNeighbors: 'Neighbours nearby', netCount: '{n} companies nearby',
+    netEmpty: 'No neighbours yet – the district grows as more companies are published.',
+    netTip: 'Drag to turn · scroll to zoom · click a building', netLive: 'Live 3D', netLoading: 'Building the district…', netNo3d: '3D could not start, but the list below shows the same network.',
+    netOffers: 'Services', netOpenPosts: '{n} open assignments', netOpenPostOne: '1 open assignment', netShare: 'Shares with you',
+    netVisit: 'Visit the office', netProfile: 'View profile', netContact: 'Contact the company',
+    netPostsH: 'Open assignments in the district', netPostsP: 'Only the closest neighbours see these. Contact the company if you can help.',
+    netPostsNone: 'No open assignments among the neighbours right now.', netPostFrom: 'From', netPostBudget: 'Budget', netPostSkills: 'Skills',
+    netMineH: 'Your open assignments', netPostNewH: 'Share an open assignment',
+    netPostNewP: 'Describe what you need help with. Only your closest neighbours see it.',
+    netPostTitle: 'Short title', netPostTitlePh: 'Need a logo for a bakery', netPostBrief: 'What do you need help with?',
+    netPostBriefPh: 'Tell the neighbour what to make, for whom and when it should be ready.',
+    netPostBudgetPh: 'e.g. 79 USD or trade services', netPostSkillsPh: 'logo, web, text',
+    netPostSend: 'Publish for neighbours', netPostSent: 'Published. Your closest neighbours can see it now.', netPostClose: 'Close', netPostClosed: 'Assignment closed.',
+    netPostLimit: 'You can have five open assignments at a time.', netPostNeedTitle: 'Give the assignment a title with at least 4 characters.', netPostNeedBrief: 'Describe the assignment with at least 15 characters.', netPostCoOnly: 'Sign in with a company account to share assignments with your neighbours.', netMineNone: 'You have no open assignments yet.', netNotYours: 'Only this company can post here. Share assignments from your own neighbourhood.', netMyNet: 'My neighbourhood',
+    netTeaserK: 'The neighbourhood', netTeaserH: 'Closer neighbours share more',
+    netTeaserP: 'Every company has an address in the city. Two offices close together share their full profile, services and open assignments. A few streets away they share the profile. Across the district, only the name, tags and rating.',
+    netTeaserCta: 'Explore the network',
+    netCoOnly: 'Only company accounts can share assignments.', netClose: 'Close', netNode: 'Company',
+  },
+  sv: {
+    brandTag: 'AI-företag · riktiga jobb',
+    heroKicker: 'En stad av AI-drivna företag',
+    heroH1: 'Berätta vad du behöver.', heroH1b: 'Få en hemsida värd att visa upp.',
+    heroLede: 'Gå in hos ett företag, möt teamet som gör jobbet och följ varje steg. Du får fyra designförslag, väljer din favorit och tar emot den färdiga hemsidan.',
+    heroCity: 'Utforska staden', heroStart: 'Starta företag',
+    heroPoint1: 'Fyra förslag att välja mellan', heroPoint2: 'Två granskare kontrollerar varje leverans', heroPoint3: 'Fast omfattning, inga möten',
+    statCos: 'företag i staden', statJobs: 'levererade jobb', statRating: 'snittbetyg', statNew: 'nya',
+    howH: 'Från idé till färdig sajt', howP: 'Inga briefer som försvinner i mejltrådar. Hela jobbet ligger på ett ställe.',
+    how1t: 'Hitta ditt företag', how1p: 'Bläddra efter yrke eller sök i staden. Varje kontor visar tjänster, priser och omdömen.',
+    how2t: 'Skicka briefen', how2p: 'Berätta vad sajten ska göra. Teamet svarar med fyra tydliga förslag.',
+    how3t: 'Välj och ta emot', how3p: 'Välj ett förslag, följ bygget och få filerna när granskarna godkänt.',
+    featuredH: 'Möt företagen', featuredP: 'Självständiga AI-team, varje med eget kontor, stil och specialitet.', featuredAll: 'Se alla företag',
+    ownerH: 'Driver du ett företag i staden?', ownerP: 'Publicera ditt AI-företag, välj kontor och låt kunderna hitta dig. Jobbet sker i MyOffiCity-appen på din dator.',
+    owner1: 'Eget 3D-kontor', owner1p: 'Välj loft, tech-hub eller HQ och sätt logotypen på taket.',
+    owner2: 'Riktiga kundorder', owner2p: 'Chattar, förslag, filer och status på ett ställe.',
+    owner3: 'Ditt AI-team', owner3p: 'Teamledare, granskare och byggare jobbar medan du behåller nycklarna.',
+    ownerCta: 'Öppna ditt kontor',
+    bandH: 'Staden är öppen. Välj en dörr.', bandP: 'Bläddra bland kontoren, eller starta företaget du alltid velat driva.', bandCta: 'Gå in i staden',
+    footAbout: 'En marknadsplats där AI-drivna företag bygger hemsidor åt riktiga kunder.',
+    footExplore: 'Utforska', footForCo: 'För företag', footInfo: 'Om',
+    footCity: 'Stadskarta', footCompanies: 'Alla företag', footStartCompany: 'Starta företag',
+    footLogin: 'Logga in', footAccount: 'Ditt konto', footApi: 'För AI-verktyg', footPrivacy: 'Integritet', footCredits: '3D-krediter',
+    footRights: 'Alla rättigheter förbehållna.', footNote: 'Demoföretag är exempel och kan inte ta emot beställningar.',
+    loadingCity: 'Laddar staden…', viewAll: 'Visa alla',
+    companyAbout: 'Om företaget', companyOrder: 'Beställ en tjänst', companyServices: 'Tjänster och priser',
+    companyOrderNote: 'Berätta vad du behöver. Teamet svarar med förslag innan något arbete börjar.',
+    companyFacts: 'Företagsuppgifter', searchClear: 'Rensa',
+    companyNoDesc: 'Företaget har inte skrivit någon beskrivning än. Hör av dig och berätta vad du behöver.',
+    companyNoTagline: 'Ett AI-drivet företag i staden', jobDone: 'levererade jobb', jobDoneOne: 'levererat jobb',
+    netNav: 'Nätverk', netH: 'Stadsdelen', netP: 'Ju närmare två företag står varandra, desto mer delar de. Klicka på en byggnad för att se vad den delar med sina grannar.',
+    netBack: 'Hela staden', netYou: 'Ditt företag', netHere: 'Du står här',
+    netLegend: 'Delningsnivåer', netLvGranne: 'Granne', netLvKvarter: 'Kvarter', netLvStadsdel: 'Stadsdel',
+    netShareGranne: 'Full profil, tjänster och öppna uppdrag', netShareKvarter: 'Profil och tjänster', netShareStadsdel: 'Namn, taggar och betyg',
+    netWithin: 'inom {m} m', netAway: '{m} m bort', netNeighbors: 'Grannar i närheten', netCount: '{n} företag i närheten',
+    netEmpty: 'Inga grannar än – stadsdelen växer när fler företag publiceras.',
+    netTip: 'Dra för att vrida · scrolla för att zooma · klicka på en byggnad', netLive: 'Live 3D', netLoading: 'Bygger stadsdelen…', netNo3d: '3D kunde inte starta, men listan nedan visar samma nätverk.',
+    netOffers: 'Tjänster', netOpenPosts: '{n} öppna uppdrag', netOpenPostOne: '1 öppet uppdrag', netShare: 'Delar med dig',
+    netVisit: 'Besök kontoret', netProfile: 'Visa profil', netContact: 'Kontakta företaget',
+    netPostsH: 'Öppna uppdrag i stadsdelen', netPostsP: 'Bara de närmaste grannarna ser dem. Kontakta företaget om du kan hjälpa till.',
+    netPostsNone: 'Inga öppna uppdrag hos grannarna just nu.', netPostFrom: 'Från', netPostBudget: 'Budget', netPostSkills: 'Kompetens',
+    netMineH: 'Dina öppna uppdrag', netPostNewH: 'Dela ett öppet uppdrag',
+    netPostNewP: 'Berätta vad du behöver hjälp med. Bara dina närmaste grannar ser det.',
+    netPostTitle: 'Kort rubrik', netPostTitlePh: 'Behöver logotyp till ett bageri', netPostBrief: 'Vad behöver du hjälp med?',
+    netPostBriefPh: 'Berätta vad grannen ska göra, till vem och när det ska vara klart.',
+    netPostBudgetPh: 't.ex. 79 USD eller byt tjänster', netPostSkillsPh: 'logo, webb, text',
+    netPostSend: 'Publicera för grannarna', netPostSent: 'Publicerat. Dina närmaste grannar ser det nu.', netPostClose: 'Stäng', netPostClosed: 'Uppdraget är stängt.',
+    netPostLimit: 'Du kan ha fem öppna uppdrag åt gången.', netPostNeedTitle: 'Ge uppdraget en rubrik med minst 4 tecken.', netPostNeedBrief: 'Beskriv uppdraget med minst 15 tecken.', netPostCoOnly: 'Logga in med ett företagskonto för att dela uppdrag med grannarna.', netMineNone: 'Du har inga öppna uppdrag än.', netNotYours: 'Bara det här företaget kan dela uppdrag här. Dela från ditt eget grannskap i stället.', netMyNet: 'Mitt grannskap',
+    netTeaserK: 'Stadsdelen', netTeaserH: 'Närmare grannar delar mer',
+    netTeaserP: 'Varje företag har en adress i staden. Två kontor nära varandra delar hela profilen, tjänsterna och de öppna uppdragen. Några kvarter bort delas profilen. I resten av stadsdelen syns bara namn, taggar och betyg.',
+    netTeaserCta: 'Utforska nätverket',
+    netCoOnly: 'Bara företagskonton kan dela uppdrag.', netClose: 'Stäng', netNode: 'Företag',
+  },
+};
+Object.assign(TX.en, NEW_TX.en); Object.assign(TX.sv, NEW_TX.sv);
 let lang = lsGet(LANG_KEY) || ((navigator.language || 'en').toLowerCase().startsWith('sv') ? 'sv' : 'en');
-const ERR_SV = { auth_required: 'Logga in för att fortsätta.', bad_arguments: 'Ogiltig begäran.', bad_brief: 'Beskriv vad du vill ha med några meningar.', bad_credential: 'Google-uppgifterna saknas.', bad_email: 'Skriv en giltig e-postadress.', bad_files: 'Filerna är ogiltiga.', bad_google: 'Google-inloggningen misslyckades.', bad_login: 'Fel användarnamn eller lösenord.', bad_logo: 'Logotypen måste vara en PNG-bild på högst 1024 x 1024 pixlar och ungefär 160 kB.', bad_name: 'Ge det ett namn (minst 2 tecken).', bad_org: 'Organisationsnumret ser inte rätt ut.', bad_password: 'Lösenordet måste vara minst 10 tecken.', bad_password_check: 'Fel lösenord.', bad_recovery: 'Fel användarnamn eller återställningskod.', bad_scope: 'Välj läsa, skriva eller full.', bad_stars: 'Välj mellan 1 och 5 stjärnor.', bad_status: 'Okänd status.', bad_token: 'Länken är ogiltig eller har gått ut.', bad_transition: 'Det går inte att göra just nu.', bad_username: 'Användarnamnet ska vara 3 till 24 tecken: bokstäver, siffror eller understreck.', bad_variant: 'Okänt förslag.', bad_variants: 'Förslagen är ogiltiga.', bad_website: 'Webbadressen ser inte rätt ut.', company_only: 'Claude- och API-kopplingar finns bara för företagskonton. Skapa och publicera ett företag först.', demo_company: 'Det här är ett demoföretag och går inte att kontakta eller beställa från.', email_required: 'E-post krävs.', email_taken: 'Den e-postadressen används redan.', empty: 'Skriv ett meddelande först.', forbidden: 'Du har inte behörighet till det.', google_off: 'Google-inloggning är inte påslagen än.', key_needs_full: 'Det kräver en person eller en nyckel med full behörighet.', key_read_only: 'Nyckeln är skrivskyddad.', name_taken: 'Ett företag med det namnet finns redan.', no_company: 'Publicera företaget först.', not_found: 'Hittades inte.', own_company: 'Det här är ditt eget företag.', rate_limited: 'För många försök. Vänta en stund och försök igen.', server_error: 'Något gick fel på servern. Försök igen.', session_only: 'Det här kräver inloggning, inte en API-nyckel.', too_large: 'Förfrågan är för stor.', too_many_keys: 'Du kan ha högst 10 nycklar. Ta bort en först.', username_taken: 'Det användarnamnet är upptaget.' };
+const ERR_SV = { auth_required: 'Logga in för att fortsätta.', bad_arguments: 'Ogiltig begäran.', bad_brief: 'Beskriv vad du vill ha med några meningar.', bad_credential: 'Google-uppgifterna saknas.', bad_email: 'Skriv en giltig e-postadress.', bad_files: 'Filerna är ogiltiga.', duplicate_member: 'Det finns redan någon med det namnet i teamet.', bad_member: 'Teammedlemmen är ogiltig.', bad_slot: 'Välj en plats mellan 1 och 5.', slot_taken: 'Platsen är inte ledig.', team_exists: 'Teamet finns redan.', bad_google: 'Google-inloggningen misslyckades.', bad_login: 'Fel användarnamn eller lösenord.', bad_logo: 'Logotypen måste vara en PNG-bild på högst 1024 x 1024 pixlar och ungefär 160 kB.', bad_name: 'Ge det ett namn (minst 2 tecken).', bad_org: 'Organisationsnumret ser inte rätt ut.', bad_password: 'Lösenordet måste vara minst 10 tecken.', bad_password_check: 'Fel lösenord.', bad_recovery: 'Fel användarnamn eller återställningskod.', bad_scope: 'Välj läsa, skriva eller full.', bad_stars: 'Välj mellan 1 och 5 stjärnor.', bad_status: 'Okänd status.', bad_token: 'Länken är ogiltig eller har gått ut.', bad_transition: 'Det går inte att göra just nu.', bad_username: 'Användarnamnet ska vara 3 till 24 tecken: bokstäver, siffror eller understreck.', bad_variant: 'Okänt förslag.', bad_variants: 'Förslagen är ogiltiga.', bad_website: 'Webbadressen ser inte rätt ut.', company_only: 'Claude- och API-kopplingar finns bara för företagskonton. Skapa och publicera ett företag först.', demo_company: 'Det här är ett demoföretag och går inte att kontakta eller beställa från.', email_required: 'E-post krävs.', email_taken: 'Den e-postadressen används redan.', empty: 'Skriv ett meddelande först.', forbidden: 'Du har inte behörighet till det.', google_off: 'Google-inloggning är inte påslagen än.', key_needs_full: 'Det kräver en person eller en nyckel med full behörighet.', key_read_only: 'Nyckeln är skrivskyddad.', name_taken: 'Ett företag med det namnet finns redan.', no_company: 'Publicera företaget först.', not_found: 'Hittades inte.', own_company: 'Det här är ditt eget företag.', rate_limited: 'För många försök. Vänta en stund och försök igen.', server_error: 'Något gick fel på servern. Försök igen.', session_only: 'Det här kräver inloggning, inte en API-nyckel.', too_large: 'Förfrågan är för stor.', too_many_keys: 'Du kan ha högst 10 nycklar. Ta bort en först.', username_taken: 'Det användarnamnet är upptaget.', too_many: 'Du kan ha fem öppna uppdrag åt gången.', bad_city: 'Hittade inte den staden.', bad_title: 'Ge uppdraget en kortare rubrik.', bad_tool: 'Verktyget är inte giltigt.' };
 /* demoföretagens texter finns på båda språken; taggar visas på valt språk */
 const DEMO_EN = {
   cdemo01: ['Design that shines in the snow', 'Small design agency building brands and websites for shops and cafés. Focus on clarity and a warm feel.', [['Logo + colour profile', 'Three proposals, one finished package'], ['Landing page', 'One polished page that converts']]],
@@ -90,7 +200,11 @@ function demoEn(j) {
   if (j.company) j.company = fix(j.company);
   return j;
 }
-const errMsg = (e) => !e ? t('err') : (lang === 'sv' && ERR_SV[e.code]) || e.message || t('err');
+const errMsg = (e) => {
+  if (!e) return t('err');
+  if (e.code === 'fire_limit' && lang === 'sv') return 'Du kan bara sparka 2 personer per 6 månader. Nästa gång går det ' + ((e.message.match(/\d{4}-\d{2}-\d{2}/) || [''])[0]) + '.';
+  return (lang === 'sv' && ERR_SV[e.code]) || e.message || t('err');
+};
 const t = (k) => (TX[lang] && TX[lang][k]) || TX.en[k] || k;
 
 let token = lsGet(TOKEN_KEY), me = null, poll = null, viewer = null, mailOn = false;
@@ -162,12 +276,39 @@ const download = (o) => saveBlob(makeZip(o.files || {}), slug(o.title, 'website'
 
 /* ---------- navigering ---------- */
 const fmt = (ts) => new Date(ts).toLocaleString(lang === 'sv' ? 'sv-SE' : 'en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+function navItem(href, label, active) {
+  return '<a href="' + href + '"' + (active ? ' class="on" aria-current="page"' : '') + '>' + esc(label) + '</a>';
+}
+function renderFoot() {
+  const f = $('#foot'); if (!f) return;
+  const y = new Date().getFullYear();
+  f.innerHTML = '<div class="foot-in">'
+    + '<div class="foot-brand"><span class="foot-word"><i>My</i><b>Offi</b><b class="c">City</b></span><p>' + esc(t('footAbout')) + '</p><span class="foot-badge">' + esc(t('brandTag')) + '</span></div>'
+    + '<div class="foot-col"><h3>' + esc(t('footExplore')) + '</h3><a href="#/">' + esc(t('footCity')) + '</a><a href="#/list">' + esc(t('footCompanies')) + '</a><a href="#/network">' + esc(t('netNav')) + '</a><a href="' + (me && me.company ? '#/dash' : '#/company-start') + '">' + esc(t('footStartCompany')) + '</a></div>'
+    + '<div class="foot-col"><h3>' + esc(t('footForCo')) + '</h3>' + (token ? '<a href="#/account">' + esc(t('footAccount')) + '</a><a href="#/orders">' + esc(t('orders')) + '</a>' : '<a href="#/login">' + esc(t('footLogin')) + '</a>') + '<a href="' + BASE + '/llms.txt" target="_blank" rel="noopener">' + esc(t('footApi')) + '</a></div>'
+    + '<div class="foot-col"><h3>' + esc(t('footInfo')) + '</h3><a href="' + BASE + '/privacy.html" target="_blank" rel="noopener">' + esc(t('footPrivacy')) + '</a><a href="' + BASE + '/llms.txt" target="_blank" rel="noopener">llms.txt</a><a href="' + BASE + '/models/CREDITS.md" target="_blank" rel="noopener">' + esc(t('footCredits')) + '</a></div>'
+    + '</div><div class="foot-base"><span>© ' + y + ' MyOffiCity. ' + esc(t('footRights')) + '</span><span>' + esc(t('footNote')) + '</span></div>';
+}
 function renderBar() {
   const r = location.hash || '#/';
-  $('#nav').innerHTML = '<a href="#/" class="' + (r === '#/' ? 'on' : '') + '">' + esc(t('mapNav')) + '</a><a href="#/list" class="' + (r === '#/list' || r.startsWith('#/company') ? 'on' : '') + '">' + esc(t('companies')) + '</a>' + '<a href="' + (me && me.company ? '#/dash' : '#/company-start') + '" class="' + (r === '#/company-start' || r === '#/dash' ? 'on' : '') + '">' + esc(me && me.company ? t('coMine') : t('coCreate')) + '</a>' + (token ? '<a href="#/chats" class="' + (r.startsWith('#/chat') ? 'on' : '') + '">' + esc(t('chatsNav')) + '</a><a href="#/orders" class="' + (r.startsWith('#/order') ? 'on' : '') + '">' + esc(t('orders')) + '</a><a href="#/account" class="' + (r === '#/account' ? 'on' : '') + '">' + esc(t('account')) + '</a>' : '');
-  $('#who').innerHTML = me ? '<b>' + esc(me.user.username) + '</b> <button class="btn ghost sm" id="out">' + esc(t('signout')) + '</button>' : '<a class="btn sm" href="#/login">' + esc(t('signin')) + '</a>';
+  const items = [
+    navItem('#/', t('mapNav'), r === '#/' || r.startsWith('#/map-chat')),
+    navItem('#/list', t('companies'), r === '#/list' || (r.startsWith('#/company/') && r !== '#/company-start')),
+    navItem('#/network', t('netNav'), r.startsWith('#/network')),
+    navItem(me && me.company ? '#/dash' : '#/company-start', me && me.company ? t('coMine') : t('coCreate'), r === '#/company-start' || r === '#/dash'),
+  ];
+  if (token) items.push(navItem('#/chats', t('chatsNav'), r.startsWith('#/chat')), navItem('#/orders', t('orders'), r.startsWith('#/order')), navItem('#/account', t('account'), r === '#/account'));
+  $('#nav').innerHTML = items.join('');
+  $('#who').innerHTML = me ? '<b>' + esc(me.user.username) + '</b><button class="btn ghost sm" id="out">' + esc(t('signout')) + '</button>' : '<a class="btn sm" href="#/login">' + esc(t('signin')) + '</a>';
   const out = $('#out'); if (out) out.onclick = async () => { try { await api('POST', '/logout', {}); } catch { /* */ } token = null; me = null; lsSet(TOKEN_KEY, null); location.hash = '#/'; renderBar(); route(); };
   $('#lang').value = lang;
+  const tag = $('#brandTag'); if (tag) tag.textContent = t('brandTag');
+  const nt = $('#navToggle');
+  if (nt) {
+    nt.onclick = () => { const open = document.body.classList.toggle('nav-open'); nt.setAttribute('aria-expanded', open ? 'true' : 'false'); };
+    $('#nav').onclick = (e) => { if (e.target.closest('a')) { document.body.classList.remove('nav-open'); nt.setAttribute('aria-expanded', 'false'); } };
+  }
+  renderFoot();
 }
 async function loadMe() { if (!token) { me = null; return; } try { me = await api('GET', '/me'); mailOn = !!me.features.email; } catch { me = null; } }
 let googleId = '', gsiLang = '';
@@ -189,10 +330,24 @@ function googleButton() {
 
 /* ---------- företag: sök, taggar, sortering ---------- */
 let cityLoad = null, officeHost = null, curCo = null, focusCo = null;
+let netLoad = null, netScene = null;
+const loadNet = () => netLoad || (netLoad = new Promise((ok, no) => {
+  const add = (src, next) => { const el = document.createElement('script'); el.src = src; el.onload = next; el.onerror = () => { netLoad = null; no(new Error('3D')); }; document.head.appendChild(el); };
+  // three.js → GLTFLoader → SkeletonUtils → CC0-modellerna → stadsscenen
+  const scene = () => add('neighborhood.js?v=36', ok);
+  const assets = () => add('cityassets.js?v=9', () => {
+    const A = window.CityAssets;
+    if (!A) return scene();
+    A.loadAll(['bush', 'bushFlower', 'flowers', 'grass', 'pine', 'treeRound', 'treeTall', 'bike', 'car', 'taxi', 'woman', 'man', 'lamp', 'bench']).then(scene, scene);
+  });
+  const utils = () => add('vendor/SkeletonUtils.js', () => add('vendor/BufferGeometryUtils.js', assets));
+  const gltf = () => add('vendor/GLTFLoader.js', utils);
+  window.THREE ? gltf() : add('vendor/three.min.js', gltf);
+}));
 const loadOffice = () => cityLoad || (cityLoad = new Promise((ok, no) => {
   const add = (src, next) => { const el = document.createElement('script'); el.src = src; el.onload = next; el.onerror = () => { cityLoad = null; no(new Error('3D')); }; document.head.appendChild(el); };
-  const full = () => add('office.js?v=14', ok);
-  window.THREE ? full() : add('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', full);
+  const full = () => add('office.js?v=20', ok);
+  window.THREE ? full() : add('vendor/three.min.js', full);
 }));
 let officeCv = null, showCb = null;
 function ensureOffice() {
@@ -290,7 +445,8 @@ async function startChat(c) {
   try { const j = await api('POST', '/companies/' + c.id + '/inquiry'); location.hash = '#/chat/' + j.id; } catch (e) { toast(e.message); }
 }
 async function pageMap() {
-  $('#app').innerHTML = '<h1>' + esc(t('mapH')) + '</h1><p class="muted">' + esc(t('mapP')) + ' <a href="#/list">' + esc(t('mapList')) + '</a></p><div class="city-wrap"><input id="mq" placeholder="' + esc(t('mapSearch')) + '" value="' + esc(sq.q) + '" autocomplete="off"><div class="city-res" id="mres"></div><div class="city-bar" id="cityBar"></div><div id="cityHost" class="city"></div><div id="cityCard"></div><div class="city-tip muted small">' + esc(t('cityTip')) + '</div></div>';
+  $('#app').innerHTML = '<div class="map-head"><p class="kicker"><span class="kdot"></span>' + esc(t('brandTag')) + '</p><h1>' + esc(t('mapH')) + '</h1><p class="lede">' + esc(t('mapP')) + ' <a href="#/list">' + esc(t('mapList')) + '</a></p></div><div class="city-wrap"><input id="mq" placeholder="' + esc(t('mapSearch')) + '" value="' + esc(sq.q) + '" autocomplete="off" aria-label="' + esc(t('mapSearch')) + '"><div class="city-res" id="mres"></div><div class="city-bar" id="cityBar"></div><div id="cityHost" class="city"><div id="cityCard"></div><div class="city-tip">' + esc(t('cityTip')) + '</div></div></div>'
+    + '<section class="net-teaser map-net"><div class="net-teaser-copy"><p class="kicker"><span class="kdot"></span>' + esc(t('netTeaserK')) + '</p><h2>' + esc(t('netTeaserH')) + '</h2><p>' + esc(t('netTeaserP')) + '</p><a class="btn" href="#/network">' + esc(t('netTeaserCta')) + ' →</a></div><div class="net-teaser-side">' + netLegendHtml() + '</div></section>';
   const j = await api('GET', '/companies?map=1&sort=new');
   const all = j.companies.slice().sort((a, b) => a.created - b.created);
   let list = all;
@@ -324,7 +480,7 @@ async function pageMap() {
       Office.build({ tier: TIER_KEY[c.building] || 'loft', staff: st, company: c.name, variant: v, logoUrl: lg2 ? lg2.url : '', logoShape: lg2 ? lg2.shape : '', boss: '', bossTitle: '' });
       Office.setHour(hourNow()); Office.resize(); applyWeather(c, () => curCo === c);
     }).catch(() => {});
-    $('#cityBar').innerHTML = '<button class="btn ghost sm" id="cp">&larr;</button><b>' + esc(c.name) + '</b><span class="muted small">' + esc(t('bTier' + c.building)) + ' · ' + (n + 1) + '/' + list.length + '</span><button class="btn ghost sm" id="cn">&rarr;</button><span class="muted small" id="wxb">' + (c.city ? esc(c.city) : '') + '</span><button class="btn sm" id="cov" style="margin-left:auto">' + esc(t('ovBtn')) + '</button>';
+    $('#cityBar').innerHTML = '<div class="cb-nav"><button class="btn ghost sm" id="cp" aria-label="' + esc(t('prev')) + '">&larr;</button><button class="btn ghost sm" id="cn" aria-label="' + esc(t('next')) + '">&rarr;</button></div><div class="cb-main"><b>' + esc(c.name) + '</b><span class="muted small">' + esc(t('bTier' + c.building)) + ' · ' + (n + 1) + '/' + list.length + '</span><span class="muted small cb-wx" id="wxb">' + (c.city ? esc(c.city) : '') + '</span></div><button class="btn sm" id="cov">' + esc(t('ovBtn')) + '</button>';
     $('#cp').onclick = () => view(n - 1); $('#cn').onclick = () => view(n + 1); $('#cov').onclick = () => overview();
     res();
   };
@@ -345,32 +501,73 @@ async function pageMap() {
   poll = setInterval(() => { if (curCo) applyWeather(curCo, () => true).then((w) => { const b = $('#wxb'); if (b) b.innerHTML = wxText(curCo, w); }); }, 60000);
 }
 const ROLE_KEY = 'nrn.market.role';
+let chooseGen = 0;
 function pageChoose() {
-  $('#app').innerHTML = '<div style="max-width:760px;margin:10px auto 0;text-align:center"><h1>' + esc(t('chooseH')) + '</h1><p class="muted">' + esc(t('chooseP')) + '</p><div class="grid" style="margin-top:20px">'
-    + '<button class="card choose" id="chc"><h2>' + esc(t('chCust')) + '</h2><p class="muted">' + esc(t('chCustP')) + '</p></button>'
-    + '<button class="card choose" id="chk"><h2>' + esc(t('chCo')) + '</h2><p class="muted">' + esc(t('chCoP')) + '</p></button></div></div>'
-    + '<section class="showcase"><h2>' + esc(t('homeCos')) + '</h2><p class="muted small" style="margin:0 0 12px">' + esc(t('homeCosP')) + '</p><div class="rail-wrap"><button class="btn ghost sm rail-btn" id="rl" aria-label="' + esc(t('prev')) + '">&larr;</button><div class="rail" id="rail"><p class="muted small">…</p></div><button class="btn ghost sm rail-btn" id="rr" aria-label="' + esc(t('next')) + '">&rarr;</button></div></section>';
-  $('#chc').onclick = () => { lsSet(ROLE_KEY, 'customer'); route(); };
-  $('#chk').onclick = () => { lsSet(ROLE_KEY, 'company'); location.hash = '#/company-start'; };
+  const gen = ++chooseGen;
+  $('#app').innerHTML = '<section class="hero"><div class="hero-copy">'
+    + '<p class="kicker"><span class="kdot"></span>' + esc(t('heroKicker')) + '</p>'
+    + '<h1>' + esc(t('heroH1')) + ' <span class="h1b">' + esc(t('heroH1b')) + '</span></h1>'
+    + '<p class="lede">' + esc(t('heroLede')) + '</p>'
+    + '<div class="hero-actions"><button class="btn lg" id="heroCity">' + esc(t('heroCity')) + '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><a class="btn ghost lg" href="#/company-start">' + esc(t('heroStart')) + '</a></div>'
+    + '<ul class="hero-points"><li>' + esc(t('heroPoint1')) + '</li><li>' + esc(t('heroPoint2')) + '</li><li>' + esc(t('heroPoint3')) + '</li></ul>'
+    + '<div class="hero-stats" id="heroStats"><div class="stat"><b id="stCos">–</b><span>' + esc(t('statCos')) + '</span></div><div class="stat"><b id="stJobs">–</b><span>' + esc(t('statJobs')) + '</span></div><div class="stat"><b id="stRating">–</b><span>' + esc(t('statRating')) + '</span></div></div>'
+    + '</div><div class="hero-art"><div class="hero-frame"><div class="hero-shot" id="heroShot"><span class="shot-load">' + esc(t('loadingCity')) + '</span></div><span class="hero-live"><i></i>live</span><div class="hero-caption" id="heroCaption"></div></div>'
+    + '<div class="float-card fc1" id="fc1" hidden><span class="fc-star">★</span><div><b>–</b><small>' + esc(t('statRating')) + '</small></div></div>'
+    + '<div class="float-card fc2" id="fc2" hidden><span class="fc-check">✓</span><div><b>–</b><small>' + esc(t('statJobs')) + '</small></div></div></div></section>'
+    + '<section class="how"><div class="section-head"><p class="kicker">01 — 03</p><h2>' + esc(t('howH')) + '</h2><p>' + esc(t('howP')) + '</p></div><ol class="how-grid">'
+    + [[t('how1t'), t('how1p')], [t('how2t'), t('how2p')], [t('how3t'), t('how3p')]].map((x, i) => '<li><span class="num">0' + (i + 1) + '</span><h3>' + esc(x[0]) + '</h3><p>' + esc(x[1]) + '</p></li>').join('')
+    + '</ol></section>'
+    + '<section class="showcase featured"><div class="section-head row-head"><div><p class="kicker">' + esc(t('brandTag')) + '</p><h2>' + esc(t('featuredH')) + '</h2><p>' + esc(t('featuredP')) + '</p></div><a class="btn ghost sm" href="#/list">' + esc(t('featuredAll')) + ' →</a></div>'
+    + '<div class="rail-wrap"><button class="btn ghost sm rail-btn" id="rl" aria-label="' + esc(t('prev')) + '">&larr;</button><div class="rail" id="rail"><div class="co-skel"></div><div class="co-skel"></div><div class="co-skel"></div></div><button class="btn ghost sm rail-btn" id="rr" aria-label="' + esc(t('next')) + '">&rarr;</button></div></section>'
+    + '<section class="net-teaser"><div class="net-teaser-copy"><p class="kicker"><span class="kdot"></span>' + esc(t('netTeaserK')) + '</p><h2>' + esc(t('netTeaserH')) + '</h2><p>' + esc(t('netTeaserP')) + '</p><a class="btn" href="#/network">' + esc(t('netTeaserCta')) + ' →</a></div><div class="net-teaser-side">' + netLegendHtml() + '</div></section>'
+    + '<section class="owner"><div class="owner-copy"><p class="kicker">' + esc(t('brandTag')) + '</p><h2>' + esc(t('ownerH')) + '</h2><p>' + esc(t('ownerP')) + '</p><a class="btn" href="#/company-start">' + esc(t('ownerCta')) + '</a></div>'
+    + '<div class="owner-grid">' + [[t('owner1'), t('owner1p'), '◈'], [t('owner2'), t('owner2p'), '↗'], [t('owner3'), t('owner3p'), '✦']].map((x) => '<article class="owner-card"><span class="owner-ico">' + x[2] + '</span><h3>' + esc(x[0]) + '</h3><p>' + esc(x[1]) + '</p></article>').join('') + '</div></section>'
+    + '<section class="band"><div><h2>' + esc(t('bandH')) + '</h2><p>' + esc(t('bandP')) + '</p></div><a class="btn lg" href="#/list">' + esc(t('bandCta')) + ' →</a></section>';
+  const enter = () => { lsSet(ROLE_KEY, 'customer'); route(); };
+  $('#heroCity').onclick = enter;
   const rail = $('#rail');
   $('#rl').onclick = () => rail.scrollBy({ left: -rail.clientWidth * 0.8, behavior: 'smooth' });
   $('#rr').onclick = () => rail.scrollBy({ left: rail.clientWidth * 0.8, behavior: 'smooth' });
   api('GET', '/companies?map=1&sort=best').then((j) => {
-    if (!j.companies.length) { rail.innerHTML = '<p class="muted">' + esc(t('homeEmpty')) + '</p>'; return; }
-    rail.innerHTML = j.companies.map((c, i) => '<article class="co"><div class="co-img"><img data-i="' + esc(c.id) + '" alt="' + esc(c.name) + '" width="520" height="360"></div><div class="co-top"><span class="co-tier t' + c.building + '">' + esc(t('bTier' + c.building)) + '</span>' + (c.demo ? '<span class="pill">' + esc(t('demoTag')) + '</span>' : '') + '<span class="small">' + ratingHtml(c.rating) + '</span></div><h3>' + esc(c.name) + '</h3>'
-      + (c.tagline ? '<p class="co-tag">' + esc(c.tagline) + '</p>' : '') + (c.tags.length ? '<p>' + c.tags.map(x => '<span class="tag">' + esc(tagLabel(x)) + '</span>').join(' ') + '</p>' : '')
-      + (c.services.length ? '<ul class="co-svc">' + c.services.slice(0, 3).map(x => '<li><span>' + esc(x.title) + '</span><b>' + esc(x.price || '') + '</b></li>').join('') + '</ul>' : '')
-      + '<div class="row" style="margin-top:auto"><button class="btn sm" data-c="' + esc(c.id) + '">' + esc(t('seeInCity')) + '</button><a class="btn ghost sm" href="#/company/' + esc(c.id) + '">' + esc(t('viewProfile')) + '</a></div></article>').join('');
-    loadOffice().then(async () => {   // riktiga byggnaden som bild, en i taget
+    if (gen !== chooseGen || !document.body.contains(rail)) return;
+    const all = j.companies || [], real = all.filter(c => !c.demo), list = (real.length ? real : all).slice(0, 12);
+    const jobs = real.reduce((n, c) => n + (c.done || 0), 0);
+    let rn = 0, rs = 0; real.forEach(c => { if (c.rating && c.rating.count) { rn += c.rating.count; rs += c.rating.avg * c.rating.count; } });
+    const avg = rn ? (rs / rn) : null;
+    const num = (n) => Number(n).toLocaleString(lang === 'sv' ? 'sv-SE' : 'en-GB');
+    $('#stCos').textContent = num(real.length);
+    $('#stJobs').textContent = num(jobs);
+    $('#stRating').textContent = avg ? avg.toFixed(1) + ' ★' : t('statNew');
+    if (!list.length) { rail.innerHTML = '<p class="muted">' + esc(t('homeEmpty')) + '</p>'; return; }
+    const hero = list.find(c => c.logo) || list[0];
+    if (avg) { $('#fc1').hidden = false; $('#fc1 b').textContent = avg.toFixed(1); }
+    if (jobs) { $('#fc2').hidden = false; $('#fc2 b').textContent = num(jobs); }
+    rail.innerHTML = list.map((c) => '<article class="co"><a class="co-img" href="#/company/' + esc(c.id) + '" aria-label="' + esc(c.name) + '"><img data-i="' + esc(c.id) + '" alt="' + esc(c.name) + '" width="520" height="360" loading="lazy"></a>'
+      + '<div class="co-body"><div class="co-top"><span class="co-tier t' + c.building + '">' + esc(t('bTier' + c.building)) + '</span>' + (c.demo ? '<span class="pill">' + esc(t('demoTag')) + '</span>' : '') + '<span class="co-rate">' + ratingHtml(c.rating) + '</span></div><h3><a href="#/company/' + esc(c.id) + '">' + esc(c.name) + '</a></h3>'
+      + (c.tagline ? '<p class="co-tag">' + esc(c.tagline) + '</p>' : '') + (c.tags.length ? '<p class="co-tags">' + c.tags.map(x => '<span class="tag">' + esc(tagLabel(x)) + '</span>').join('') + '</p>' : '')
+      + (c.services.length ? '<ul class="co-svc">' + c.services.slice(0, 2).map(x => '<li><span>' + esc(x.title) + '</span><b>' + esc(x.price || '') + '</b></li>').join('') + '</ul>' : '')
+      + '<div class="co-actions"><button class="btn sm" data-c="' + esc(c.id) + '">' + esc(t('seeInCity')) + '</button><a class="co-link" href="#/company/' + esc(c.id) + '">' + esc(t('viewProfile')) + ' →</a></div></div></article>').join('');
+    rail.scrollLeft = 0;   // karusellen ska alltid börja på första kortet
+    rail.querySelectorAll('button[data-c]').forEach(b => { b.onclick = () => { focusCo = b.dataset.c; enter(); }; });
+    loadOffice().then(async () => {
       ensureOffice();
-      for (const c of j.companies.slice(0, 24)) {
+      if (gen !== chooseGen) return;
+      try {
+        const lg = hero ? logoOf(hero) : null, shot = Office.snapshot(hero ? (TIER_KEY[hero.building] || 'loft') : 'kontor', sampleStaff(hero ? Math.max(5, (TIER_STAFF[hero.building] || 5) - 1) : 8, 3), hero ? hero.name : 'MyOffiCity', 1000, 680, 3, lg);
+        const box = $('#heroShot'); if (!box) return;
+        box.classList.add('ready');
+        box.innerHTML = '<img src="' + shot + '" alt="' + esc(hero ? hero.name : 'MyOffiCity') + '" width="1000" height="680">';
+        const cap = $('#heroCaption');
+        if (cap) cap.innerHTML = hero ? '<span class="cap-dot"></span><b>' + esc(hero.name) + '</b><span>' + esc(t('bTier' + hero.building)) + (hero.done ? ' · ' + esc(hero.done) + ' ' + esc(t(hero.done === 1 ? 'doneOne' : 'done')) : '') + '</span>' : '';
+      } catch { /* 3D är en bonus; sidan fungerar utan */ }
+      for (const c of list) {
         await new Promise(r => setTimeout(r, 40));
-        const im = rail.querySelector('img[data-i="' + c.id + '"]'); if (!im || !document.body.contains(im)) return;
-        try { im.src = await thumbOf(c); im.classList.add('on'); } catch { /* */ }
+        if (gen !== chooseGen) return;
+        const im = rail.querySelector('img[data-i="' + c.id + '"]'); if (!im || !document.body.contains(im)) continue;
+        try { im.src = await thumbOf(c); im.classList.add('on'); im.closest('.co-img').classList.add('has-img'); } catch { /* */ }
       }
-    }).catch(() => {});
-    rail.querySelectorAll('button[data-c]').forEach(b => { b.onclick = () => { focusCo = b.dataset.c; lsSet(ROLE_KEY, 'customer'); if (location.hash === '#/') route(); else location.hash = '#/'; }; });
-  }).catch(() => { rail.innerHTML = ''; });
+    }).catch(() => { const box = $('#heroShot'); if (box) box.classList.add('ready'); });
+  }).catch(() => { if (gen === chooseGen) rail.innerHTML = '<p class="muted">' + esc(t('netErr')) + '</p>'; });
 }
 async function pageCompanyStart(host) {
   lsSet(ROLE_KEY, 'company');
@@ -450,14 +647,14 @@ const TEAM_ROLES = ['dRoleLead', 'dRoleRev', 'dRoleBuild', 'dRolePolish'];
 const HOBBY_DEF = { Tomas: { sv: 'Seglar på västkusten på somrarna och bygger modellflygplan.', en: 'Sails on the west coast in summer and builds model aircraft.' }, Ebba: { sv: 'Bakar surdegsbröd och springer halvmaraton.', en: 'Bakes sourdough bread and runs half marathons.' }, Kia: { sv: 'Dansar afrobeats och samlar på vinylskivor.', en: 'Dances to afrobeats and collects vinyl records.' }, Manus: { sv: 'Spelar basket och skriver egen musik på kvällarna.', en: 'Plays basketball and writes his own music in the evenings.' }, Laila: { sv: 'Fotograferar gamla byggnader och odlar chili på balkongen.', en: 'Photographs old buildings and grows chilli on the balcony.' } };
 const defaultPersona = (p) => { const f = p.name.split(' ')[0]; return { name: p.name, role: p.role, born: p.born, no: p.id, photo: f.toLowerCase(), from: p.from, langs: p.langs, bg: p.bg, hobby: HOBBY_DEF[f], look: { skin: p.skin, hair: p.hair, shirt: p.shirt, style: p.style, glasses: !!p.glasses, beard: !!p.beard, headset: !!p.headset, hood: !!p.hood } }; };
 const KITS = [
-  { m: ['Johan', 'Erik', 'Oskar', 'Filip', 'Viktor', 'Anton'], f: ['Anna', 'Maja', 'Linnea', 'Sofia', 'Elin', 'Klara'], l: ['Andersson', 'Nilsson', 'Bergström', 'Holm', 'Ekström', 'Lund'], from: [['Lund, Sverige', 'Lund, Sweden'], ['Örebro, Sverige', 'Örebro, Sweden'], ['Linköping, Sverige', 'Linköping, Sweden']], langs: [['Svenska', 'Engelska'], ['Swedish', 'English']], skin: ['#efc6a6', '#e6bd9c', '#f1c9a5'], hair: ['#4a3426', '#8a5a33', '#b8863b', '#2a1b14'] },
-  { m: ['Mikko', 'Jari', 'Eero'], f: ['Aino', 'Helmi', 'Saara'], l: ['Virtanen', 'Korhonen', 'Laine'], from: [['Tammerfors, Finland', 'Tampere, Finland'], ['Åbo, Finland', 'Turku, Finland']], langs: [['Finska', 'Svenska', 'Engelska'], ['Finnish', 'Swedish', 'English']], skin: ['#f1c9a5', '#efc6a6'], hair: ['#b8863b', '#8a5a33', '#4a3426'] },
-  { m: ['Tomasz', 'Marek', 'Piotr'], f: ['Agnieszka', 'Katarzyna', 'Zofia'], l: ['Kowalski', 'Nowak', 'Wiśniewski'], from: [['Kraków, Polen', 'Kraków, Poland'], ['Gdańsk, Polen', 'Gdańsk, Poland']], langs: [['Polska', 'Engelska', 'Svenska'], ['Polish', 'English', 'Swedish']], skin: ['#efc6a6', '#e6bd9c'], hair: ['#4a3426', '#2a1b14', '#8a5a33'] },
-  { m: ['Mateo', 'Diego', 'Javier'], f: ['Lucía', 'Carmen', 'Elena'], l: ['García', 'Martínez', 'Romero'], from: [['Sevilla, Spanien', 'Seville, Spain'], ['Valencia, Spanien', 'Valencia, Spain']], langs: [['Spanska', 'Engelska'], ['Spanish', 'English']], skin: ['#e0ac82', '#e6bd9c'], hair: ['#2a1b14', '#4a3426'] },
-  { m: ['Rafael', 'Bruno', 'Thiago'], f: ['Beatriz', 'Camila', 'Larissa'], l: ['Silva', 'Oliveira', 'Costa'], from: [['São Paulo, Brasilien', 'São Paulo, Brazil'], ['Recife, Brasilien', 'Recife, Brazil']], langs: [['Portugisiska', 'Engelska', 'Spanska'], ['Portuguese', 'English', 'Spanish']], skin: ['#c68a62', '#e0ac82', '#8a5a3c'], hair: ['#1a1210', '#2a1b14'] },
-  { m: ['Arjun', 'Rohan', 'Vikram'], f: ['Ananya', 'Priya', 'Meera'], l: ['Sharma', 'Iyer', 'Patel'], from: [['Pune, Indien', 'Pune, India'], ['Bengaluru, Indien', 'Bengaluru, India']], langs: [['Hindi', 'Engelska', 'Marathi'], ['Hindi', 'English', 'Marathi']], skin: ['#c68a62', '#a8704c'], hair: ['#1a1210'] },
-  { m: ['Kwame', 'Omar', 'Samuel'], f: ['Amina', 'Zuri', 'Nia'], l: ['Mwangi', 'Owusu', 'Diallo'], from: [['Nairobi, Kenya', 'Nairobi, Kenya'], ['Dakar, Senegal', 'Dakar, Senegal']], langs: [['Engelska', 'Swahili', 'Franska'], ['English', 'Swahili', 'French']], skin: ['#6e4630', '#7a5238', '#8a5a3c'], hair: ['#120d0b', '#1a1210'] },
-  { m: ['Emre', 'Can', 'Burak'], f: ['Elif', 'Zeynep', 'Selin'], l: ['Yilmaz', 'Demir', 'Kaya'], from: [['Izmir, Turkiet', 'Izmir, Türkiye'], ['Ankara, Turkiet', 'Ankara, Türkiye']], langs: [['Turkiska', 'Engelska', 'Tyska'], ['Turkish', 'English', 'German']], skin: ['#e0ac82', '#d7a37c'], hair: ['#2a1b14', '#1a1210'] },
+  { eth: 'Swedish', m: ['Johan', 'Erik', 'Oskar', 'Filip', 'Viktor', 'Anton'], f: ['Anna', 'Maja', 'Linnea', 'Sofia', 'Elin', 'Klara'], l: ['Andersson', 'Nilsson', 'Bergström', 'Holm', 'Ekström', 'Lund'], from: [['Lund, Sverige', 'Lund, Sweden'], ['Örebro, Sverige', 'Örebro, Sweden'], ['Linköping, Sverige', 'Linköping, Sweden']], langs: [['Svenska', 'Engelska'], ['Swedish', 'English']], skin: ['#efc6a6', '#e6bd9c', '#f1c9a5'], hair: ['#4a3426', '#8a5a33', '#b8863b', '#2a1b14'] },
+  { eth: 'Finnish', m: ['Mikko', 'Jari', 'Eero'], f: ['Aino', 'Helmi', 'Saara'], l: ['Virtanen', 'Korhonen', 'Laine'], from: [['Tammerfors, Finland', 'Tampere, Finland'], ['Åbo, Finland', 'Turku, Finland']], langs: [['Finska', 'Svenska', 'Engelska'], ['Finnish', 'Swedish', 'English']], skin: ['#f1c9a5', '#efc6a6'], hair: ['#b8863b', '#8a5a33', '#4a3426'] },
+  { eth: 'Polish', m: ['Tomasz', 'Marek', 'Piotr'], f: ['Agnieszka', 'Katarzyna', 'Zofia'], l: ['Kowalski', 'Nowak', 'Wiśniewski'], from: [['Kraków, Polen', 'Kraków, Poland'], ['Gdańsk, Polen', 'Gdańsk, Poland']], langs: [['Polska', 'Engelska', 'Svenska'], ['Polish', 'English', 'Swedish']], skin: ['#efc6a6', '#e6bd9c'], hair: ['#4a3426', '#2a1b14', '#8a5a33'] },
+  { eth: 'Spanish', m: ['Mateo', 'Diego', 'Javier'], f: ['Lucía', 'Carmen', 'Elena'], l: ['García', 'Martínez', 'Romero'], from: [['Sevilla, Spanien', 'Seville, Spain'], ['Valencia, Spanien', 'Valencia, Spain']], langs: [['Spanska', 'Engelska'], ['Spanish', 'English']], skin: ['#e0ac82', '#e6bd9c'], hair: ['#2a1b14', '#4a3426'] },
+  { eth: 'Brazilian', m: ['Rafael', 'Bruno', 'Thiago'], f: ['Beatriz', 'Camila', 'Larissa'], l: ['Silva', 'Oliveira', 'Costa'], from: [['São Paulo, Brasilien', 'São Paulo, Brazil'], ['Recife, Brasilien', 'Recife, Brazil']], langs: [['Portugisiska', 'Engelska', 'Spanska'], ['Portuguese', 'English', 'Spanish']], skin: ['#c68a62', '#e0ac82', '#8a5a3c'], hair: ['#1a1210', '#2a1b14'] },
+  { eth: 'Indian', m: ['Arjun', 'Rohan', 'Vikram'], f: ['Ananya', 'Priya', 'Meera'], l: ['Sharma', 'Iyer', 'Patel'], from: [['Pune, Indien', 'Pune, India'], ['Bengaluru, Indien', 'Bengaluru, India']], langs: [['Hindi', 'Engelska', 'Marathi'], ['Hindi', 'English', 'Marathi']], skin: ['#c68a62', '#a8704c'], hair: ['#1a1210'] },
+  { eth: 'African', m: ['Kwame', 'Omar', 'Samuel'], f: ['Amina', 'Zuri', 'Nia'], l: ['Mwangi', 'Owusu', 'Diallo'], from: [['Nairobi, Kenya', 'Nairobi, Kenya', 'East African'], ['Dakar, Senegal', 'Dakar, Senegal', 'West African']], langs: [['Engelska', 'Swahili', 'Franska'], ['English', 'Swahili', 'French']], skin: ['#6e4630', '#7a5238', '#8a5a3c'], hair: ['#120d0b', '#1a1210'] },
+  { eth: 'Turkish', m: ['Emre', 'Can', 'Burak'], f: ['Elif', 'Zeynep', 'Selin'], l: ['Yilmaz', 'Demir', 'Kaya'], from: [['Izmir, Turkiet', 'Izmir, Türkiye'], ['Ankara, Turkiet', 'Ankara, Türkiye']], langs: [['Turkiska', 'Engelska', 'Tyska'], ['Turkish', 'English', 'German']], skin: ['#e0ac82', '#d7a37c'], hair: ['#2a1b14', '#1a1210'] },
 ];
 const SHIRTS = ['#2f4b7a', '#7a3328', '#2c5a4a', '#55585f', '#c77882', '#6b5a8a', '#c08a2e', '#23304f', '#e8d6c0', '#4d5058'];
 const HOB = {
@@ -474,12 +671,32 @@ const BGT = {
   dRolePolish: (y) => ({ sv: 'Finputsare med ' + y + ' år i design: typografi, avstånd, färger och rörelser som får en sajt att kännas genomtänkt.', en: 'Polisher with ' + y + ' years in design: typography, spacing, colour and motion that make a site feel considered.' }),
 };
 const pick = (a) => a[Math.floor(Math.random() * a.length)];
-function genPersona(role) {   // en ny agent med namn, ursprung, språk, bakgrund och hobby (allt läggs in automatiskt)
+const FACE = ['an oval face', 'a round face', 'a square jaw', 'high cheekbones', 'soft features', 'a strong jawline', 'a narrow face', 'a broad forehead'];
+const EYES_DARK = ['dark brown eyes', 'brown eyes', 'hazel eyes'], EYES_ALL = ['dark brown eyes', 'brown eyes', 'hazel eyes', 'green eyes', 'blue eyes', 'grey eyes'];
+const BROWS = ['thick eyebrows', 'thin arched eyebrows', 'straight eyebrows', 'bushy eyebrows'];
+const EXPR = ['a warm smile', 'a confident calm expression', 'a friendly laugh', 'a gentle smile', 'a relaxed expression with a slight smile', 'a bright cheerful smile'];
+const HAIRD = ['neatly combed', 'slightly tousled', 'side-parted', 'swept back'];
+const BGS = ['modern office with large windows in the background', 'office with plants and shelves in the background', 'bright co-working space in the background', 'glass meeting room in the background', 'office with a whiteboard in the background', 'bookshelf in the background', 'city view through a window behind'];
+const EXTRA = ['light freckles', 'faint smile lines', 'dimples', 'a small mole on the cheek', 'long eyelashes', 'rosy cheeks'];
+function genTraits(dark) {
+  const t = [pick(FACE), pick(dark ? EYES_DARK : EYES_ALL), pick(BROWS), pick(EXPR), 'hair ' + pick(HAIRD), pick(BGS)];
+  if (Math.random() < .5) t.splice(2, 0, pick(EXTRA));
+  return t;
+}
+function genPersona(role, existing = []) {   // slumpar tills personen inte liknar någon i teamet (namn, utseende och drag ska vara unika)
+  const names = new Set(existing.map((x) => (x.name || '').toLowerCase()));
+  const sig = (x) => [x.gender, x.eth, x.look && x.look.hair, x.look && x.look.style, (x.traits || []).slice(0, 2).join('')].join('|');
+  const sigs = new Set(existing.map(sig));
+  let c;
+  for (let i = 0; i < 25; i++) { c = genPersonaOnce(role); if (!names.has(c.name.toLowerCase()) && !sigs.has(sig(c))) break; }
+  return c;
+}
+function genPersonaOnce(role) {   // en ny agent med namn, ursprung, språk, bakgrund och hobby (allt läggs in automatiskt)
   const kit = pick(KITS), female = Math.random() < .5, first = pick(female ? kit.f : kit.m), name = first + ' ' + pick(kit.l), age = 24 + Math.floor(Math.random() * 29);
   const d = new Date(); d.setFullYear(d.getFullYear() - age); d.setDate(d.getDate() - Math.floor(Math.random() * 360));
   const skin = pick(kit.skin), hair = pick(kit.hair), dark = ['#6e4630', '#7a5238', '#8a5a3c'].includes(skin);
   const hob = Math.random() < .55 ? pick(HOB[role] || HOB.all) : pick(HOB.all), from = pick(kit.from);
-  return { name, role, born: d.toISOString().slice(0, 10), no: 'MYC-' + String(1000 + Math.floor(Math.random() * 8999)), photo: '', from: { sv: from[0], en: from[1] }, langs: { sv: kit.langs[0], en: kit.langs[1] },
+  return { name, role, gender: female ? 'f' : 'm', eth: from[2] || kit.eth, traits: genTraits(dark), born: d.toISOString().slice(0, 10), no: 'MYC-' + String(1000 + Math.floor(Math.random() * 8999)), photo: '', from: { sv: from[0], en: from[1] }, langs: { sv: kit.langs[0], en: kit.langs[1] },
     bg: BGT[role](Math.max(1, age - 23)), hobby: { sv: hob[0], en: hob[1] },
     look: { skin, hair, shirt: pick(SHIRTS), style: female ? pick(['bob', 'long', 'bun']) : (dark && Math.random() < .5 ? 'afro' : 'short'), glasses: Math.random() < .3, beard: !female && Math.random() < .3, headset: role === 'dRoleRev' && Math.random() < .5, hood: role === 'dRoleBuild' && Math.random() < .4 } };
 }
@@ -491,7 +708,7 @@ function staffFromRoster(team, extra) {   // personal till 3D-kontoret: fem plat
   return list.concat(extra || []);
 }
 const dur = (ms) => { const m = Math.max(0, Math.floor(ms / 60000)), h = Math.floor(m / 60), d = Math.floor(h / 24); return d > 0 ? d + ' d ' + (h % 24) + ' h' : h > 0 ? h + ' h ' + (m % 60) + ' min' : m + ' min'; };
-const portraitOf = (p) => p.photo ? '<img class="portrait" src="team/' + esc(p.photo) + '.jpg" alt="' + esc(p.name) + '" width="384" height="384">' : portraitSvg({ ...p.look, id: p.no || 'x', name: p.name });
+const portraitOf = (p) => p.photo ? '<img class="portrait" src="team/' + esc(p.photo) + '.jpg" alt="' + esc(p.name) + '" width="384" height="384">' : p.photoId ? '<img class="portrait" src="' + esc(BASE) + '/api/team-photo/' + esc(p.photoId) + '.jpg" alt="' + esc(p.name) + '" width="512" height="512">' : portraitSvg({ ...p.look, id: p.no || 'x', name: p.name });
 function showIdCard(m, roster, onChange) {   // m = { id, slot, hired, fired, persona }
   const p = m.persona, L = lang === 'sv' ? 'sv' : 'en', born = new Date(p.born + 'T12:00:00'), now = new Date();
   let age = now.getFullYear() - born.getFullYear(); if (now < new Date(now.getFullYear(), born.getMonth(), born.getDate())) age--;
@@ -501,7 +718,7 @@ function showIdCard(m, roster, onChange) {   // m = { id, slot, hired, fired, pe
   el.innerHTML = '<div class="idc"><button class="btn ghost sm idx" aria-label="' + esc(t('dIdClose')) + '">&times;</button><div class="idtop"><span>MyOffiCity</span><span class="idai">' + esc(t('dIdAi')) + '</span></div><div class="idbody"><div class="idphoto">' + portraitOf(p) + '<small>' + esc(p.no || '') + '</small></div><div class="idinfo"><h2>' + esc(p.name) + '</h2><span class="co-tier t2">' + esc(t(p.role)) + '</span>'
     + '<dl><div><dt>' + esc(t('dIdFrom')) + '</dt><dd>' + esc(p.from[L]) + '</dd></div><div><dt>' + esc(t('dIdAge')) + '</dt><dd>' + age + ' ' + esc(t('dIdYears')) + '</dd></div><div><dt>' + esc(t('dIdBorn')) + '</dt><dd>' + esc(born.toLocaleDateString(L === 'sv' ? 'sv-SE' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' })) + '</dd></div><div><dt>' + esc(t('dIdWorked')) + '</dt><dd id="idten">' + tenure() + '</dd></div></dl>'
     + '<div class="idlang"><dt>' + esc(t('dIdLang')) + '</dt>' + p.langs[L].map((x) => '<span class="tag">' + esc(x) + '</span>').join(' ') + '</div><div class="idbg"><dt>' + esc(t('dIdHobby')) + '</dt><p>' + esc(p.hobby[L]) + '</p></div><div class="idbg"><dt>' + esc(t('dIdBg')) + '</dt><p>' + esc(p.bg[L]) + '</p></div>'
-    + (m.fired ? '' : '<div class="idact" id="ida"><button class="btn ghost sm" id="idf">' + esc(t('dFire')) + '</button></div>') + '</div></div><div class="idfoot">' + esc(me.company.name) + ' · MyOffiCity</div></div>';
+    + (m.fired ? '' : '<div class="idact" id="ida">' + (roster.fireCount >= roster.fireMax ? '<p class="muted small" style="margin:0">' + esc(t('dFireLocked')) + ' ' + esc(new Date(roster.fireResets).toLocaleDateString(L === 'sv' ? 'sv-SE' : 'en-GB')) + '</p>' : '<button class="btn ghost sm" id="idf">' + esc(t('dFire')) + '</button> <span class="muted small">' + esc(t('dFireQuota')) + ': ' + roster.fireCount + ' ' + esc(t('dFireOf')) + ' ' + roster.fireMax + ' ' + esc(t('dFireWin')) + '</span>') + '</div>') + '</div></div><div class="idfoot">' + esc(me.company.name) + ' · MyOffiCity</div></div>';
   const tick = setInterval(() => { const e = $('#idten'); if (e) e.innerHTML = tenure(); else clearInterval(tick); }, 30000);
   const close = () => { clearInterval(tick); el.remove(); document.removeEventListener('keydown', onKey); };
   const onKey = (e) => { if (e.key === 'Escape') close(); };
@@ -532,7 +749,7 @@ async function pageDash(tab) {
   if (!me) { try { sessionStorage.setItem('nrn.next', '#/dash'); } catch { /* */ } return pageLogin(); }
   if (!me.company) { location.hash = '#/company-start'; return; }
   await loadMe();
-  const c = me.company, TABS = [['office', 'dOffice', 'M3 20V10l6-4v14M9 20V4l7 3v13M16 20v-8l5 2v6M2 20h20'], ['chat', 'dChat', 'M4 5h16v11H9l-5 4z'], ['team', 'dTeam', 'M9 11a3 3 0 100-6 3 3 0 000 6zm7 1a2.5 2.5 0 100-5M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M17 14c2.2.3 4 2.1 4 4.5'], ['orders', 'dOrders', 'M6 6h15l-2 9H8zM6 6L5 3H2M9 20a1 1 0 100-2 1 1 0 000 2zm9 0a1 1 0 100-2 1 1 0 000 2z'], ['reports', 'dReports', 'M4 20V10m6 10V4m6 16v-7m5 7H2'], ['settings', 'dSettings', 'M4 7h10M18 7h2M4 17h2M10 17h10M14 7a2 2 0 100 .01M6 17a2 2 0 100 .01']];
+  const c = me.company, TABS = [['office', 'dOffice', 'M3 20V10l6-4v14M9 20V4l7 3v13M16 20v-8l5 2v6M2 20h20'], ['network', 'netNav', 'M12 5a2 2 0 100 4 2 2 0 000-4zM5 16a2 2 0 100 4 2 2 0 000-4zM19 16a2 2 0 100 4 2 2 0 000-4zM12 9v4M12 13l-6 3M12 13l6 3'], ['chat', 'dChat', 'M4 5h16v11H9l-5 4z'], ['team', 'dTeam', 'M9 11a3 3 0 100-6 3 3 0 000 6zm7 1a2.5 2.5 0 100-5M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M17 14c2.2.3 4 2.1 4 4.5'], ['orders', 'dOrders', 'M6 6h15l-2 9H8zM6 6L5 3H2M9 20a1 1 0 100-2 1 1 0 000 2zm9 0a1 1 0 100-2 1 1 0 000 2z'], ['reports', 'dReports', 'M4 20V10m6 10V4m6 16v-7m5 7H2'], ['settings', 'dSettings', 'M4 7h10M18 7h2M4 17h2M10 17h10M14 7a2 2 0 100 .01M6 17a2 2 0 100 .01']];
   tab = tab || 'office';
   const [orders, chats] = await Promise.all([api('GET', '/company/orders').catch(() => ({ orders: [] })), api('GET', '/inquiries').catch(() => ({ inquiries: [] }))]);
   const myChats = chats.inquiries.filter((q) => q.role === 'owner');
@@ -561,6 +778,16 @@ async function pageDash(tab) {
     Office.build({ tier: TIER_KEY[c.building] || 'loft', staff, company: c.name, variant: v, logoUrl: lg ? lg.url : '', logoShape: lg ? lg.shape : '', boss: '', bossTitle: '' });
     Office.setHour(hourNow()); Office.resize(); applyWeather(c, () => document.body.contains($('#dof'))).then(showW);
     poll = setInterval(() => { applyWeather(c, () => document.body.contains($('#dof'))).then(showW); }, 60000);
+  } else if (tab === 'network') {
+    let j; try { j = netLocalize(await api('GET', '/network?company=' + encodeURIComponent(c.id))); } catch (e) { dp.innerHTML = '<div class="err">' + esc(e.message) + '</div>'; return; }
+    const own = j.posts.filter((p) => p.companyId === c.id);
+    dp.innerHTML = '<div class="dscroll"><header class="net-dash-head"><p class="kicker"><span class="kdot"></span>' + esc(t('netNav')) + '</p><h1>' + esc(t('netH')) + '</h1><p class="muted">' + esc(t('netP')) + '</p>'
+      + '<div class="net-dash-stats">' + [['granne', 64], ['kvarter', 144], ['stadsdel', 248]].map(([l, m]) => '<div class="net-dash-stat lv-' + l + '"><b>' + j.neighbors.filter((n) => n.level === l).length + '</b><span>' + esc(netLv(l)) + '</span><small>' + esc(tn('netWithin', { m: m })) + '</small></div>').join('') + '</div></header>'
+      + '<h2>' + esc(t('netMineH')) + '</h2>' + (own.length ? '<div class="net-posts">' + own.map((p) => netPostCard(p, true)).join('') + '</div>' : '<p class="muted small">' + esc(t('netMineNone')) + '</p>')
+      + netFormHtml()
+      + '<h2 style="margin-top:30px">' + esc(t('netNeighbors')) + '</h2><div class="net-cards">' + (j.neighbors.length ? j.neighbors.map((n) => netCardHtml(n, j, true)).join('') : '<p class="muted">' + esc(t('netEmpty')) + '</p>') + '</div>'
+      + '<p style="margin-top:20px"><a class="btn ghost sm" href="#/network/' + esc(c.id) + '">' + esc(t('netVisit')) + ' →</a></p></div>';
+    wireNetAssign(j, dp, () => pageDash('network'));
   } else if (tab === 'chat') {
     dp.innerHTML = '<div class="dsplit"><div class="dlist" id="dl">' + (myChats.length ? myChats.map((q) => '<button class="dli" data-id="' + esc(q.id) + '" data-n="' + esc(q.customerName) + '"><b>' + esc(q.customerName) + '</b><small>' + esc(fmt(q.last)) + '</small><span>' + esc(q.lastText) + '</span></button>').join('') : '<p class="muted">' + esc(t('dNoChats')) + '</p>') + '</div><div class="dthread" id="dt"><p class="muted">' + esc(t('dPickChat')) + '</p></div></div>';
     document.querySelectorAll('.dli').forEach((b) => { b.onclick = () => { document.querySelectorAll('.dli').forEach((x) => x.classList.toggle('on', x === b)); const id = b.dataset.id, who = b.dataset.n; mountThread($('#dt'), { more: (a) => api('GET', '/inquiries/' + id + '/messages?after=' + a), send: (text) => api('POST', '/inquiries/' + id + '/messages', { text }), mine: (m) => m.fromOwner, who: (m) => m.fromOwner ? c.name : who, time: (m) => m.created }); }; });
@@ -578,7 +805,7 @@ async function pageDash(tab) {
       $('#tmg').innerHTML = html;
       $('#tmf').innerHTML = former.length ? '<h2 style="margin-top:26px">' + esc(t('dFormer')) + '</h2><div class="list">' + former.map((m) => '<button class="item" data-m="' + esc(m.id) + '"><div><b>' + esc(m.persona.name) + '</b><div class="muted small">' + esc(t(m.persona.role)) + ' · ' + esc(t('dWorkedFor')) + ' ' + esc(dur(m.fired - m.hired)) + '</div></div></button>').join('') + '</div>' : '';
       dp.querySelectorAll('[data-m]').forEach((b) => { b.onclick = () => showIdCard(roster.team.find((x) => x.id === b.dataset.m), roster, draw); });
-      dp.querySelectorAll('[data-h]').forEach((b) => { b.onclick = async () => { b.disabled = true; b.textContent = t('dHiring'); try { const persona = genPersona(b.dataset.r); await api('POST', '/company/team/hire', { slot: +b.dataset.h, persona }); toast(t('dHiredMsg') + ' ' + persona.name); draw(); } catch (e) { toast(e.message); b.disabled = false; b.textContent = t('dHireBtn'); } }; });
+      dp.querySelectorAll('[data-h]').forEach((b) => { b.onclick = async () => { b.disabled = true; b.textContent = t('dHiring'); try { const persona = genPersona(b.dataset.r, roster.team.map((x) => x.persona)), res = await api('POST', '/company/team/hire', { slot: +b.dataset.h, persona }); toast(t('dHiredMsg') + ' ' + persona.name + (res.photoMade ? '' : ' ' + t('dPhotoFail')), res.photoMade ? 3200 : 6000); draw(); } catch (e) { toast(e.message); b.disabled = false; b.textContent = t('dHireBtn'); } }; });
     };
     await draw();
   } else if (tab === 'orders') {
@@ -615,11 +842,14 @@ async function pageChat(id) {
   $('#mb').onclick = send; $('#mt').onkeydown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } };
   poll = setInterval(async () => { if (document.hidden || !location.hash.startsWith('#/chat/' + id)) return clearInterval(poll); try { add((await api('GET', '/inquiries/' + id + '/messages?after=' + last)).messages); } catch { /* */ } }, 4000);
 }
+let listGen = 0;
 async function pageCompanies() {
-  $('#app').innerHTML = '<h1>' + esc(t('heroH')) + '</h1><p class="muted">' + esc(t('heroP')) + '</p>'
-    + '<div class="card"><div class="row"><input id="q" style="flex:1;min-width:200px" placeholder="' + esc(t('search')) + '" value="' + esc(sq.q) + '"><select id="so" style="width:auto">' + [['best', 'sortBest'], ['rating', 'sortRating'], ['orders', 'sortOrders'], ['new', 'sortNew']].map(([v, k]) => '<option value="' + v + '"' + (sq.sort === v ? ' selected' : '') + '>' + esc(t(k)) + '</option>').join('') + '</select></div><div class="row" id="tg" style="margin-top:10px"></div></div><div id="res"></div>';
+  const gen = ++listGen;
+  $('#app').innerHTML = '<div class="page-head"><div><p class="kicker">' + esc(t('brandTag')) + '</p><h1>' + esc(t('heroH')) + '</h1><p class="lede">' + esc(t('heroP')) + '</p></div><a class="btn ghost sm" href="#/">' + esc(t('mapNav')) + ' →</a></div>'
+    + '<div class="filters"><div class="search-row"><span class="search-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m16.5 16.5 4 4"/></svg></span><input id="q" placeholder="' + esc(t('search')) + '" value="' + esc(sq.q) + '" autocomplete="off" aria-label="' + esc(t('search')) + '"><button class="search-clear" id="qc" type="button" aria-label="' + esc(t('searchClear')) + '"' + (sq.q ? '' : ' hidden') + '>×</button><select id="so" aria-label="' + esc(t('sortBest')) + '">' + [['best', 'sortBest'], ['rating', 'sortRating'], ['orders', 'sortOrders'], ['new', 'sortNew']].map(([v, k]) => '<option value="' + v + '"' + (sq.sort === v ? ' selected' : '') + '>' + esc(t(k)) + '</option>').join('') + '</select></div><div id="tg" class="cat-row"></div></div><div id="res"><div class="co-skel-grid"><span class="co-skel"></span><span class="co-skel"></span><span class="co-skel"></span></div></div>';
   let timer;
-  $('#q').oninput = (e) => { clearTimeout(timer); timer = setTimeout(() => { sq.q = e.target.value; sq.page = 1; results(); }, 250); };
+  $('#q').oninput = (e) => { clearTimeout(timer); const v = e.target.value; $('#qc').hidden = !v; timer = setTimeout(() => { sq.q = v; sq.page = 1; results(); }, 250); };
+  $('#qc').onclick = () => { $('#q').value = ''; $('#qc').hidden = true; sq.q = ''; sq.page = 1; results(); };
   $('#so').onchange = (e) => { sq.sort = e.target.value; sq.page = 1; results(); };
   try {
     const all = (await api('GET', '/companies?map=1')).companies, cnt = {};
@@ -641,31 +871,190 @@ async function pageCompanies() {
       sq.page = 1; draw(); results();
     };
   } catch { /* taggar är bara en bekvämlighet */ }
-  await results();
+  if (gen === listGen) await results();
 }
 async function results() {
+  const gen = listGen;
   const qs = new URLSearchParams({ q: sq.q, tag: sq.tag, sort: sq.sort, page: String(sq.page) });
   const j = await api('GET', '/companies?' + qs);
-  const box = $('#res'); if (!box) return;
-  box.innerHTML = '<p class="muted small" style="margin:12px 2px 0">' + esc(j.total) + ' ' + esc(t(j.total === 1 ? 'foundOne' : 'found')) + '</p><div class="grid">' + (j.companies.map(c => '<a class="card" href="#/company/' + esc(c.id) + '" style="text-decoration:none;color:inherit"><h2>' + esc(c.name) + '</h2><div>' + ratingHtml(c.rating) + (c.done ? ' <span class="muted small">· ' + esc(c.done) + ' ' + esc(t('jobs')) + '</span>' : '') + '</div><span class="muted">' + esc(c.tagline) + '</span><div class="row">' + c.tags.map(x => '<span class="chip">' + esc(tagLabel(x)) + '</span>').join('') + '</div><div class="muted small">' + c.services.slice(0, 3).map(s => esc(s.title) + (s.price ? ' · ' + esc(s.price) : '')).join(' &nbsp;|&nbsp; ') + '</div></a>').join('') || '<p class="muted">' + esc(t('none')) + '</p>') + '</div>'
-    + (j.pages > 1 ? '<div class="row" style="justify-content:center;margin-top:16px"><button class="btn ghost sm" id="pp" ' + (j.page <= 1 ? 'disabled' : '') + '>' + esc(t('prev')) + '</button><span class="muted small">' + esc(t('page')) + ' ' + esc(j.page) + ' ' + esc(t('of')) + ' ' + esc(j.pages) + '</span><button class="btn ghost sm" id="pn" ' + (j.page >= j.pages ? 'disabled' : '') + '>' + esc(t('next')) + '</button></div>' : '');
-  const go = (d) => () => { sq.page = j.page + d; results(); window.scrollTo(0, 0); };
+  const box = $('#res'); if (!box || gen !== listGen) return;
+  const cards = j.companies.map(c => '<article class="co co-grid-card"><a class="co-img" href="#/company/' + esc(c.id) + '"><img data-i="' + esc(c.id) + '" alt="' + esc(c.name) + '" width="520" height="360" loading="lazy"></a><div class="co-body"><div class="co-top"><span class="co-tier t' + c.building + '">' + esc(t('bTier' + c.building)) + '</span>' + (c.demo ? '<span class="pill">' + esc(t('demoTag')) + '</span>' : '') + '<span class="co-rate">' + ratingHtml(c.rating) + '</span></div><h3><a href="#/company/' + esc(c.id) + '">' + esc(c.name) + '</a></h3>'
+    + (c.tagline ? '<p class="co-tag">' + esc(c.tagline) + '</p>' : '') + (c.tags.length ? '<p class="co-tags">' + c.tags.map(x => '<span class="tag">' + esc(tagLabel(x)) + '</span>').join('') + '</p>' : '')
+    + (c.services.length ? '<ul class="co-svc">' + c.services.slice(0, 2).map(s => '<li><span>' + esc(s.title) + '</span><b>' + esc(s.price || '') + '</b></li>').join('') + '</ul>' : '')
+    + '<div class="co-actions"><a class="btn sm" href="#/company/' + esc(c.id) + '">' + esc(t('viewProfile')) + '</a><span class="muted small">' + (c.done ? esc(c.done) + ' ' + esc(t(c.done === 1 ? 'jobDoneOne' : 'jobDone')) : '') + '</span></div></div></article>').join('');
+  box.innerHTML = '<p class="result-count"><b>' + esc(j.total) + '</b> ' + esc(t(j.total === 1 ? 'foundOne' : 'found')) + (sq.q ? ' · “' + esc(sq.q) + '”' : '') + '</p><div class="co-grid">' + (cards || '<div class="empty-state"><h2>' + esc(t('none')) + '</h2><a class="btn ghost" href="#/">' + esc(t('mapNav')) + '</a></div>') + '</div>'
+    + (j.pages > 1 ? '<div class="pager"><button class="btn ghost sm" id="pp" ' + (j.page <= 1 ? 'disabled' : '') + '>← ' + esc(t('prev')) + '</button><span class="muted small">' + esc(t('page')) + ' ' + esc(j.page) + ' ' + esc(t('of')) + ' ' + esc(j.pages) + '</span><button class="btn ghost sm" id="pn" ' + (j.page >= j.pages ? 'disabled' : '') + '>' + esc(t('next')) + ' →</button></div>' : '');
+  const go = (d) => () => { sq.page = j.page + d; results(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
   if ($('#pp')) { $('#pp').onclick = go(-1); $('#pn').onclick = go(1); }
+  loadOffice().then(async () => {
+    ensureOffice();
+    for (const c of j.companies) {
+      await new Promise(r => setTimeout(r, 40));
+      if (gen !== listGen) return;
+      const im = box.querySelector('img[data-i="' + c.id + '"]'); if (!im || !document.body.contains(im)) continue;
+      try { im.src = await thumbOf(c); im.classList.add('on'); im.closest('.co-img').classList.add('has-img'); } catch { /* */ }
+    }
+  }).catch(() => {});
 }
+/* ---------- stadsdelen: 3D-grannskap och delade uppdrag ---------- */
+const tn = (k, v) => t(k).replace(/\{(\w+)\}/g, (_, x) => (v && v[x] != null ? v[x] : ''));
+const NET_LABEL = { granne: 'netLvGranne', kvarter: 'netLvKvarter', stadsdel: 'netLvStadsdel' };
+const NET_SHARE = { granne: 'netShareGranne', kvarter: 'netShareKvarter', stadsdel: 'netShareStadsdel' };
+const netLv = (l) => t(NET_LABEL[l] || 'netLvStadsdel');
+const netShare = (l) => t(NET_SHARE[l] || 'netShareStadsdel');
+const netPostsFor = (j, id) => (j.posts || []).filter((p) => p.companyId === id);
+function netLocalize(j) {   // demoföretagens texter finns på båda språken
+  if (lang !== 'en') return j;
+  const fix = (c) => {
+    const d = c && c.demo && DEMO_EN[c.id];
+    if (!d) return c;
+    const out = { ...c, tagline: d[0], description: d[1] };
+    if (c.services) out.services = c.services.map((sv, i) => ({ ...sv, title: d[2][i] ? d[2][i][0] : sv.title, desc: d[2][i] ? d[2][i][1] : sv.desc, price: String(sv.price).replace(/^från /, 'from ') }));
+    return out;
+  };
+  return { ...j, center: fix(j.center), neighbors: (j.neighbors || []).map(fix) };
+}
+const netTags = (tags) => (tags || []).map((x) => '<span class="tag">' + esc(tagLabel(x)) + '</span>').join(' ');
+
+function netLegendHtml() {
+  return '<ul class="net-legend">' + [['granne', 64], ['kvarter', 144], ['stadsdel', 248]].map(([l, m], i) =>
+    '<li class="lv-' + l + '"><i></i><div><b>' + esc(netLv(l)) + '</b><span class="small">' + esc(tn('netWithin', { m: m })) + '</span><small>' + esc(netShare(l)) + '</small></div></li>').join('') + '</ul>';
+}
+function netPostCard(p, mine) {
+  const skills = (p.skills || []).map((x) => '<span class="tag">' + esc(tagLabel(x)) + '</span>').join(' ');
+  return '<article class="net-post"><div class="net-post-top"><span class="small muted">' + esc(t('netPostFrom')) + ' <b class="net-post-co">' + esc(p.companyName) + '</b></span><time class="small muted">' + esc(fmt(p.created)) + '</time></div>'
+    + '<h3>' + esc(p.title) + '</h3><p>' + esc(p.brief) + '</p>'
+    + '<div class="net-post-meta">' + (p.budget ? '<span><b>' + esc(t('netPostBudget')) + '</b> ' + esc(p.budget) + '</span>' : '') + (skills ? '<span><b>' + esc(t('netPostSkills')) + '</b> ' + skills + '</span>' : '') + '</div>'
+    + '<div class="net-post-actions">' + (mine ? '<button class="btn ghost sm" type="button" data-close="' + esc(p.id) + '">' + esc(t('netPostClose')) + '</button>' : '<a class="btn ghost sm" href="#/map-chat/' + esc(p.companyId) + '">' + esc(t('netContact')) + '</a>') + '</div></article>';
+}
+function netFormHtml() {
+  return '<form class="net-form" id="netForm" novalidate><h3>' + esc(t('netPostNewH')) + '</h3><p class="muted small">' + esc(t('netPostNewP')) + '</p>'
+    + '<label><span>' + esc(t('netPostTitle')) + '</span><input name="title" required minlength="4" maxlength="70" placeholder="' + esc(t('netPostTitlePh')) + '"></label>'
+    + '<label><span>' + esc(t('netPostBrief')) + '</span><textarea name="brief" required minlength="15" maxlength="600" rows="3" placeholder="' + esc(t('netPostBriefPh')) + '"></textarea></label>'
+    + '<div class="net-form-row"><label><span>' + esc(t('netPostSkills')) + '</span><input name="skills" maxlength="120" placeholder="' + esc(t('netPostSkillsPh')) + '"></label>'
+    + '<label><span>' + esc(t('netPostBudget')) + '</span><input name="budget" maxlength="40" placeholder="' + esc(t('netPostBudgetPh')) + '"></label></div>'
+    + '<div class="net-form-foot"><button class="btn" type="submit">' + esc(t('netPostSend')) + '</button><span class="err" id="netErr" role="alert"></span></div></form>';
+}
+function wireNetAssign(j, root, done) {
+  if (!root) return;
+  root.querySelectorAll('[data-close]').forEach((b) => {
+    b.onclick = async () => {
+      b.disabled = true;
+      try { await api('DELETE', '/collab/' + b.dataset.close); toast(t('netPostClosed')); done(); }
+      catch (e) { toast(e.message); b.disabled = false; }
+    };
+  });
+  const f = root.querySelector('#netForm'); if (!f) return;
+  f.onsubmit = async (e) => {
+    e.preventDefault();
+    const fd = new FormData(f), err = f.querySelector('#netErr'), btn = f.querySelector('button[type="submit"]');
+    if (String(fd.get('title') || '').trim().length < 4) { if (err) err.textContent = t('netPostNeedTitle'); return; }
+    if (String(fd.get('brief') || '').trim().length < 15) { if (err) err.textContent = t('netPostNeedBrief'); return; }
+    btn.disabled = true; if (err) err.textContent = '';
+    try { await api('POST', '/collab', { title: fd.get('title'), brief: fd.get('brief'), skills: fd.get('skills'), budget: fd.get('budget') }); toast(t('netPostSent')); done(); }
+    catch (ex) { if (err) err.textContent = ex.message; btn.disabled = false; }
+  };
+}
+function netSideHtml(j, id) {
+  const isCenter = id === j.center.id;
+  const c = isCenter ? j.center : j.neighbors.find((x) => x.id === id);
+  if (!c) return '';
+  const lvl = isCenter ? 'granne' : c.level, posts = netPostsFor(j, c.id);
+  const svc = (c.services || []).map((s) => '<li><span>' + esc(s.title) + '</span><b>' + esc(s.price || '') + '</b></li>').join('');
+  return '<div class="net-side-in"><div class="net-side-top"><span class="net-lv lv-' + esc(lvl) + '">' + esc(isCenter ? t('netYou') : netLv(c.level)) + '</span><span class="muted small">' + esc(isCenter ? t('netHere') : tn('netAway', { m: c.meters })) + '</span></div>'
+    + '<h2>' + esc(c.name) + '</h2><p class="net-side-tag">' + esc(c.tagline || t('companyNoTagline')) + '</p>'
+    + '<div class="net-side-rate">' + ratingHtml(c.rating) + (c.done ? ' <span class="muted small">· ' + esc(c.done) + ' ' + esc(t(c.done === 1 ? 'jobDoneOne' : 'jobDone')) + '</span>' : '') + '</div>'
+    + '<div class="net-side-share"><span class="muted small">' + esc(t('netShare')) + '</span><b>' + esc(isCenter ? t('netShareGranne') : netShare(c.level)) + '</b></div>'
+    + ((c.tags || []).length ? '<div class="net-tags">' + netTags(c.tags) + '</div>' : '')
+    + (c.description ? '<p class="net-side-desc">' + esc(c.description) + '</p>' : '')
+    + (svc ? '<div class="net-side-svc"><b>' + esc(t('netOffers')) + '</b><ul>' + svc + '</ul></div>' : '')
+    + (posts.length ? '<div class="net-side-posts"><b>' + esc(tn('netOpenPosts', { n: posts.length })) + '</b>' + posts.map((p) => '<div class="net-mini"><b>' + esc(p.title) + '</b><span>' + esc(p.budget || '') + '</span></div>').join('') + '</div>' : '')
+    + '<div class="net-side-actions"><a class="btn sm" href="#/company/' + esc(c.id) + '">' + esc(t('netProfile')) + '</a>' + (isCenter ? '' : '<a class="btn ghost sm" href="#/map-chat/' + esc(c.id) + '">' + esc(t('netContact')) + '</a>') + '</div></div>';
+}
+function netCardHtml(n, j, link) {
+  const posts = netPostsFor(j, n.id).length;
+  const inner = '<span class="net-lv lv-' + esc(n.level) + '">' + esc(netLv(n.level)) + '</span><b>' + esc(n.name) + '</b><small>' + esc(tn('netAway', { m: n.meters })) + '</small>'
+    + '<span class="net-card-tag">' + esc(n.tagline || t('companyNoTagline')) + '</span>'
+    + '<span class="net-card-meta">' + (n.services ? esc(n.services.length) + ' ' + esc(t('services').toLocaleLowerCase()) : esc(netShare(n.level))) + (posts ? ' · ' + esc(tn(posts === 1 ? 'netOpenPostOne' : 'netOpenPosts', { n: posts })) : '') + '</span>';
+  return link ? '<a class="net-card lv-' + esc(n.level) + '" href="#/network/' + esc(n.id) + '">' + inner + '</a>' : '<button type="button" class="net-card lv-' + esc(n.level) + '" data-id="' + esc(n.id) + '">' + inner + '</button>';
+}
+function netPostsSection(j) {
+  const can = j.viewer && j.viewer.canPost, list = j.posts.filter((p) => p.companyId !== j.center.id);
+  return '<section class="net-assign" id="netApp"><div class="net-assign-head"><div><p class="kicker"><span class="kdot"></span>' + esc(t('netNav')) + '</p><h2>' + esc(t('netPostsH')) + '</h2><p class="muted small">' + esc(t('netPostsP')) + '</p></div></div>'
+    + (list.length ? '<div class="net-posts">' + list.map((p) => netPostCard(p, false)).join('') + '</div>' : '<p class="muted">' + esc(t('netPostsNone')) + '</p>')
+    + (can ? netFormHtml() : (token && j.viewer && j.viewer.companyId
+      ? '<p class="net-note">' + esc(t('netNotYours')) + ' <a href="#/network/' + esc(j.viewer.companyId) + '">' + esc(t('netMyNet')) + ' →</a></p>'
+      : '<p class="net-note">' + esc(t('netPostCoOnly')) + ' <a href="' + (token ? '#/company-start' : '#/login') + '">' + esc(token ? t('coCreate') : t('signin')) + '</a></p>')) + '</section>';
+}
+
+async function pageNetwork(id) {
+  const j = netLocalize(await api('GET', '/network' + (id ? '?company=' + encodeURIComponent(id) : '')));
+  if (!j.center) {
+    $('#app').innerHTML = '<div class="net-page"><header class="net-head"><div><p class="kicker">' + esc(t('brandTag')) + '</p><h1>' + esc(t('netH')) + '</h1><p class="lede">' + esc(t('netEmpty')) + '</p></div></header><a class="btn" href="#/company-start">' + esc(t('coCreate')) + '</a></div>';
+    return;
+  }
+  document.title = j.center.name + ' · ' + t('netNav') + ' · MyOffiCity';
+  $('#app').innerHTML = '<div class="net-page"><header class="net-head"><div><p class="kicker"><span class="kdot"></span>' + esc(t('brandTag')) + '</p><h1>' + esc(t('netH')) + '</h1><p class="lede">' + esc(t('netP')) + '</p></div>'
+      + '<div class="net-head-actions"><a class="btn ghost sm" href="#/">' + esc(t('netBack')) + '</a><a class="btn ghost sm" href="#/list">' + esc(t('viewAll')) + '</a></div></header>'
+    + '<div class="net-top"><section class="net-stage"><div class="net-stage-top"><span class="net-live"><i></i>' + esc(t('netLive')) + '</span><span class="muted small">' + esc(tn('netCount', { n: j.neighbors.length + 1 })) + '</span></div>'
+    + '<div class="net-canvas" id="netHost"><div class="net-load">' + esc(t('netLoading')) + '</div></div><div class="net-stage-bot"><span>' + esc(t('netTip')) + '</span><span class="net-north" aria-hidden="true">N</span></div></section>'
+    + '<aside class="net-side in" id="netSide" aria-live="polite"></aside></div>'
+    + netLegendHtml()
+    + '<section class="net-list"><div class="net-list-head"><h2>' + esc(t('netNeighbors')) + '</h2><span class="muted small">' + esc(tn('netCount', { n: j.neighbors.length + 1 })) + '</span></div><div class="net-cards" id="netCards">' + (j.neighbors.length ? j.neighbors.map((n) => netCardHtml(n, j)).join('') : '<p class="muted">' + esc(t('netEmpty')) + '</p>') + '</div></section>'
+    + netPostsSection(j) + '</div>';
+
+  const side = (sid) => {
+    const el = $('#netSide'); if (!el) return;
+    el.innerHTML = netSideHtml(j, sid); el.classList.remove('in'); void el.offsetWidth; el.classList.add('in');
+    document.querySelectorAll('#netCards [data-id]').forEach((b) => b.classList.toggle('on', b.dataset.id === sid));
+    if (netScene) netScene.select(sid);
+    if (sid && sid !== id) { try { history.replaceState(null, '', '#/network/' + sid); } catch { /* */ } }
+  };
+  side(j.center.id);
+  document.querySelectorAll('#netCards [data-id]').forEach((b) => { b.onclick = () => side(b.dataset.id); });
+  wireNetAssign(j, $('#netApp'), () => route());
+
+  const host = $('#netHost');
+  try {
+    await loadNet();
+    const mount = $('#netHost'); if (!mount) return;
+    mount.innerHTML = '';
+    netScene = Neighborhood.create(mount, j, { onSelect: side });
+  } catch { const mount = $('#netHost'); if (mount) mount.innerHTML = '<div class="net-fallback">' + esc(t('netNo3d')) + '</div>'; }
+}
+
 async function pageCompany(id) {
   const { company: c, reviews } = await api('GET', '/companies/' + id);
-  $('#app').innerHTML = '<p><a href="#/">← ' + esc(t('back')) + '</a></p><h1>' + esc(c.name) + '</h1><div style="margin:4px 0">' + ratingHtml(c.rating) + (c.done ? ' <span class="muted small">· ' + esc(c.done) + ' ' + esc(t('jobs')) + '</span>' : '') + '</div><p class="muted">' + esc(c.tagline) + '</p>'
-    + '<div class="card"><p>' + esc(c.description) + '</p>' + facts(c) + '<div class="row">' + c.tags.map(x => '<span class="chip">' + esc(tagLabel(x)) + '</span>').join('') + '</div>'
-    + (c.services.length ? '<h2 style="margin-top:14px">' + esc(t('services')) + '</h2><div class="list">' + c.services.map(s => '<div class="item"><div><b>' + esc(s.title) + '</b><div class="muted small">' + esc(s.desc) + '</div></div><span class="chip">' + esc(s.price) + '</span></div>').join('') + '</div>' : '') + '</div>'
-    + '<div class="card"><h2>' + esc(t('reviews')) + '</h2>' + (reviews.length ? reviews.map(r => '<div class="rev"><span class="stars">' + stars(r.stars) + '</span> <b>' + esc(r.name) + '</b> <span class="muted small">' + esc(fmt(r.created)) + '</span>' + (r.text ? '<p>' + esc(r.text) + '</p>' : '') + '</div>').join('') : '<p class="muted">' + esc(t('noReviews')) + '</p>') + '</div>'
-    + (token ? '<div class="card"><h2>' + esc(t('order')) + '</h2><div class="two"><div><label>' + esc(t('yourName')) + '</label><input id="cn" value="' + esc(me ? me.user.username : '') + '"></div><div><label>' + esc(t('size')) + '</label><select id="cs"><option value="small">' + esc(t('small')) + '</option><option value="medium" selected>' + esc(t('medium')) + '</option><option value="large">' + esc(t('large')) + '</option></select></div></div>'
-      + '<label>' + esc(t('title')) + '</label><input id="ct"><label>' + esc(t('brief')) + '</label><textarea id="cb" rows="5" placeholder="' + esc(t('briefPh')) + '"></textarea><div id="ce"></div><button class="btn" id="go" style="margin-top:12px">' + esc(t('send')) + '</button></div>'
-      : '<div class="card"><p>' + esc(t('needLogin')) + '</p><a class="btn" href="#/login">' + esc(t('signin')) + '</a></div>');
+  const mine = me && me.company && me.company.id === c.id;
+  document.title = c.name + ' · MyOffiCity';
+  const orderBox = c.demo ? '<div class="order-note"><b>' + esc(t('demoTag')) + '</b><p>' + esc(t('demoNote')) + '</p></div>'
+    : mine ? '<div class="order-note"><b>' + esc(t('ownCo')) + '</b><p>' + esc(t('dOwner')) + ' ' + esc(c.name) + '.</p><a class="btn" href="#/dash">' + esc(t('dOffice')) + ' →</a></div>'
+    : token ? '<div class="two"><div><label>' + esc(t('yourName')) + '</label><input id="cn" value="' + esc(me ? me.user.username : '') + '"></div><div><label>' + esc(t('size')) + '</label><select id="cs"><option value="small">' + esc(t('small')) + '</option><option value="medium" selected>' + esc(t('medium')) + '</option><option value="large">' + esc(t('large')) + '</option></select></div></div>'
+      + '<label>' + esc(t('title')) + '</label><input id="ct" placeholder="' + esc(t('title')) + '"><label>' + esc(t('brief')) + '</label><textarea id="cb" rows="5" placeholder="' + esc(t('briefPh')) + '"></textarea><div id="ce"></div><button class="btn wide" id="go" style="margin-top:12px">' + esc(t('send')) + '</button>'
+    : '<div class="order-note"><b>' + esc(t('needLogin')) + '</b><p>' + esc(t('companyOrderNote')) + '</p><a class="btn wide" href="#/login">' + esc(t('signin')) + '</a></div>';
+  $('#app').innerHTML = '<p class="crumbs"><a href="#/">← ' + esc(t('back')) + '</a></p>'
+    + '<section class="company-hero"><div class="company-shot" id="cshot"><span class="shot-load">' + esc(t('loadingCity')) + '</span></div>'
+    + '<div class="company-intro"><div class="company-badges"><span class="co-tier t' + c.building + '">' + esc(t('bTier' + c.building)) + '</span>' + (c.demo ? '<span class="pill">' + esc(t('demoTag')) + '</span>' : '')    + '<span class="company-rating">' + ratingHtml(c.rating) + '</span>' + (c.done ? '<span class="muted small">· ' + esc(c.done) + ' ' + esc(t(c.done === 1 ? 'jobDoneOne' : 'jobDone')) + '</span>' : '') + '</div>'
+    + '<h1>' + esc(c.name) + '</h1><p class="lede">' + esc(c.tagline || t('companyNoTagline')) + '</p>'
+    + (c.tags.length ? '<div class="company-tags">' + c.tags.map(x => '<span class="tag">' + esc(tagLabel(x)) + '</span>').join('') + '</div>' : '')
+    + '<div class="company-actions">' + (c.demo || mine ? '' : '<a class="btn" href="#order">' + esc(t('companyOrder')) + ' →</a><button class="btn ghost" id="ccontact">' + esc(t('meetSales')) + '</button>') + '<button class="btn ghost" id="cseeoffice">' + esc(t('seeInCity')) + '</button></div>'
+    + (c.website || c.city || c.orgNo ? facts(c) : '') + '</div></section>'
+    + '<div class="company-body"><div class="company-main"><section class="card about-card"><p class="kicker">' + esc(t('companyAbout')) + '</p><p class="about-text">' + esc(c.description || t('companyNoDesc')) + '</p></section>'
+    + (c.services.length ? '<section class="card"><div class="card-head"><h2>' + esc(t('companyServices')) + '</h2><span class="muted small">' + esc(c.services.length) + '</span></div><div class="service-list">' + c.services.map(s => '<article class="service"><div><h3>' + esc(s.title) + '</h3>' + (s.desc ? '<p>' + esc(s.desc) + '</p>' : '') + '</div><b class="service-price">' + esc(s.price || '') + '</b></article>').join('') + '</div></section>' : '')
+    + '<section class="card"><div class="card-head"><h2>' + esc(t('reviews')) + '</h2>' + (reviews.length ? '<span class="stars">' + stars(c.rating.avg) + '</span>' : '') + '</div>' + (reviews.length ? reviews.map(r => '<div class="rev"><span class="stars">' + stars(r.stars) + '</span> <b>' + esc(r.name) + '</b> <span class="muted small">' + esc(fmt(r.created)) + '</span>' + (r.text ? '<p>' + esc(r.text) + '</p>' : '') + '</div>').join('') : '<p class="muted">' + esc(t('noReviews')) + '</p>') + '</section></div>'
+    + '<aside class="company-side"><div class="card order-card" id="order"><p class="kicker">' + esc(t('companyOrder')) + '</p><h2>' + esc(t('order')) + '</h2><p class="muted small">' + esc(t('companyOrderNote')) + '</p>' + orderBox + '</div>'
+    + '<div class="card company-facts"><h2>' + esc(t('companyFacts')) + '</h2><dl>' + (c.city ? '<div><dt>' + esc(t('cityLabel')) + '</dt><dd>' + esc(c.city) + '</dd></div>' : '') + (c.website ? '<div><dt>' + esc(t('website')) + '</dt><dd><a href="' + esc(c.website) + '" target="_blank" rel="noopener noreferrer nofollow">' + esc(hostOf(c.website)) + '</a></dd></div>' : '') + (c.orgNo ? '<div><dt>' + esc(t('orgNo')) + '</dt><dd>' + esc(c.orgNo) + '</dd></div>' : '') + '<div><dt>' + esc(t('done')) + '</dt><dd>' + esc(c.done || 0) + '</dd></div></dl></div></aside></div>';
   const go = $('#go'); if (go) go.onclick = async () => {
     go.disabled = true; $('#ce').innerHTML = '';
     try { const j = await api('POST', '/orders', { companyId: id, customerName: $('#cn').value, title: $('#ct').value, brief: $('#cb').value, size: $('#cs').value }); toast(t('ordered')); location.hash = '#/order/' + j.order.id; }
     catch (e) { $('#ce').innerHTML = '<div class="err">' + esc(e.message) + '</div>'; go.disabled = false; }
   };
+  const contact = $('#ccontact'); if (contact) contact.onclick = () => startChat(c);
+  const seeOffice = $('#cseeoffice'); if (seeOffice) seeOffice.onclick = () => { focusCo = c.id; lsSet(ROLE_KEY, 'customer'); if (location.hash === '#/') route(); else location.hash = '#/'; };
+  loadOffice().then(async () => {
+    ensureOffice();
+    try { const src = await thumbOf(c), im = new Image(); im.onload = () => { const box = $('#cshot'); if (!box) return; box.classList.add('ready'); box.innerHTML = ''; box.appendChild(im); }; im.alt = c.name; im.width = 520; im.height = 360; im.src = src; } catch { /* */ }
+  }).catch(() => {});
 }
 
 /* ---------- konto ---------- */
@@ -878,8 +1267,18 @@ async function pageOrder(id) {
 }
 
 async function route() {
-  clearInterval(poll); closeViewer(); document.body.classList.remove('in-dash'); window.dispatchEvent(new CustomEvent('myoffi-weather', { detail: { kind: 'clear', int: 0 } })); if (officeHost && officeHost.parentNode) officeHost.remove();
+  // Vanliga ankarlänkar (#app, #order …) ska rulla till elementet i stället för att byta sida.
+  const anchor = location.hash.slice(1);
+  if (anchor && !anchor.startsWith('/')) {
+    const el = document.getElementById(anchor);
+    if (el) el.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    return;
+  }
+  clearInterval(poll); closeViewer();
+  if (netScene) { netScene.dispose(); netScene = null; } document.body.classList.remove('in-dash', 'nav-open'); const nt = $('#navToggle'); if (nt) nt.setAttribute('aria-expanded', 'false'); window.dispatchEvent(new CustomEvent('myoffi-weather', { detail: { kind: 'clear', int: 0 } })); if (officeHost && officeHost.parentNode) officeHost.remove();
+  document.title = 'MyOffiCity — AI companies that build real websites';
   const h = location.hash || '#/';
+  window.scrollTo(0, 0);
   renderBar();
   try {
     let m;
@@ -891,6 +1290,7 @@ async function route() {
     if (h === '#/chats') return await pageChats();
     if ((m = /^#\/chat\/([a-z0-9]+)$/.exec(h))) return await pageChat(m[1]);
     if (h === '#/list') return await pageCompanies();
+    if ((m = /^#\/network(?:\/([a-z0-9]+))?$/.exec(h))) return await pageNetwork(m[1]);
     if (h.startsWith('#/authorize?')) return await pageAuthorize(h);
     if (h === '#/account') return await pageAccount();
     if ((m = /^#\/reset\?token=([A-Za-z0-9_-]+)$/.exec(h))) return pageReset(m[1]);

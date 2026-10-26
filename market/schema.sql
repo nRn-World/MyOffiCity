@@ -110,4 +110,11 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google ON users(google_sub) WHERE go
 CREATE TABLE IF NOT EXISTS company_logos (company_id TEXT PRIMARY KEY, png TEXT NOT NULL, shape TEXT NOT NULL, v INTEGER NOT NULL);
 
 CREATE TABLE IF NOT EXISTS company_team (id TEXT PRIMARY KEY, company_id TEXT NOT NULL, slot INTEGER NOT NULL, persona TEXT NOT NULL, hired INTEGER NOT NULL, fired INTEGER);
+CREATE TABLE IF NOT EXISTS collab_posts (   -- öppna uppdrag som bara närmsta grannarna ser
+  id TEXT PRIMARY KEY, company_id TEXT NOT NULL, title TEXT NOT NULL, brief TEXT NOT NULL,
+  skills TEXT NOT NULL DEFAULT '[]', budget TEXT NOT NULL DEFAULT '', created INTEGER NOT NULL, closed INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_collab_company ON collab_posts(company_id, closed);
 CREATE INDEX IF NOT EXISTS company_team_c ON company_team(company_id);
+
+CREATE TABLE IF NOT EXISTS team_photos (member_id TEXT PRIMARY KEY, jpg TEXT NOT NULL);

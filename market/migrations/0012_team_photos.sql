@@ -1,0 +1,1 @@
+CREATE TABLE IF NOT EXISTS team_photos (member_id TEXT PRIMARY KEY, jpg TEXT NOT NULL);

@@ -51,7 +51,7 @@ o_report_from:"Rapport från {n}",o_report_default:"Arbetet är klart och kontro
 o_chosen_h:"{n} valde \"{v}\"",o_build:"Be {n} bygga det valda",
 o_site_h:"Den färdiga hemsidan",o_open_site:"Öppna hemsidan",o_download:"Ladda ner som zip",o_approve:"Godkänn och lämna till {n}",
 o_change_l:"Inte rätt än? Be teamet ändra något",o_change_ph:"Vad ska ändras?",o_change_btn:"Skicka ändringsönskemål till teamet",o_need_change:"Beskriv ändringen först.",
-o_pick_h:"Välj ditt favoritförslag",o_pick_p:"Här är fyra förslag från teamet. Öppna dem i stor storlek och välj ett. {n} för ditt val vidare till teamet.",o_pick_note:"Något teamet ska veta? (valfritt)",o_pick_note_ph:"t.ex. Jag gillar den här, men med en grön knapp",
+o_pick_h:"Välj ditt favoritförslag",o_pick_p:"Här är fyra förslag från teamet. Öppna dem i full storlek och välj ett. {n} skickar ditt val vidare till teamet.",o_pick_note:"Något teamet ska veta? (valfritt)",o_pick_note_ph:"t.ex. Jag gillar den här, men med en grön knapp",
 o_c_working_h:"Ditt val byggs",o_c_working_p:"{n} och teamet bygger den färdiga hemsidan. Du får ett meddelande när den är klar.",o_c_ready_h:"Din hemsida är klar",o_c_ready_p:"Teamet har byggt och kontrollerat den. Öppna den, eller ladda ner alla filer.",
 o_c_wait_p:"{n} på {c} har din beställning. Du får ett meddelande här när förslagen är klara.",
 o_delete:"Ta bort beställningen",o_del_confirm:"Ta bort beställningen \"{t}\"?",o_close:"Stäng",o_desktop:"Dator",o_mobile:"Mobil",

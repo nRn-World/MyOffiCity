@@ -330,6 +330,85 @@ async function getCompany(env, id) {
   return { company: companyOut(r), reviews };
 }
 
+/* ---------- stadsdelen: tomter, grannskap och öppna uppdrag ----------
+   Varje företag får en fast tomt i ett kvarter. Ju närmare två företag står,
+   desto mer delar de: grannar (≤ 1,6 tomter) ser profil, tjänster och öppna
+   uppdrag, kvarteret (≤ 3,6) ser profil och tjänster, stadsdelen (≤ 6) bara
+   namn, taggar och betyg. Avstånden räknas i tomter om 40 meter. */
+const PLOT_M = 40, PLOT_BLOCK = 4, PLOT_STREET = 1, BLOCKS_W = 4, NET_RADIUS = 6.2;
+const NET_LEVELS = [{ key: 'granne', max: 1.6 }, { key: 'kvarter', max: 3.6 }, { key: 'stadsdel', max: 6.2 }];
+const PLOT_GRID = PLOT_BLOCK * BLOCKS_W;          // 16 tomter i bredd = fyra kvarter
+function plotOf(i) {                       // tomt nr i → {x,z} i staden, gx/gz = adress utan gator
+  const row = Math.floor(i / PLOT_GRID), raw = i % PLOT_GRID;
+  const col = row % 2 ? PLOT_GRID - 1 - raw : raw;   // ormbanemönster: nya grannar hamnar alltid intill
+  return {
+    gx: col, gz: row,
+    x: col + Math.floor(col / PLOT_BLOCK), z: row + Math.floor(row / PLOT_BLOCK),
+  };
+}
+const netLevel = (d) => (NET_LEVELS.find(l => d <= l.max) || { key: 'stad' }).key;
+const postOut = (p) => ({ id: p.id, companyId: p.company_id, companyName: p.company_name || '', title: p.title, brief: p.brief, skills: parseJson(p.skills, []), budget: p.budget || '', created: p.created });
+
+async function network(req, env) {
+  const user = await auth(req, env, false);            // frivillig inloggning: ägaren ser sina egna uppdrag
+  const rows = (await env.DB.prepare(COMPANY_SQL + ' ORDER BY c.created, c.id').all()).results.map(companyOut);
+  if (!rows.length) return { center: null, neighbors: [], posts: [], viewer: null, layout: { plotM: PLOT_M, block: PLOT_BLOCK, street: PLOT_STREET, blocks: BLOCKS_W } };
+  const placed = rows.map((c, i) => ({ c, ...plotOf(i) }));
+  let viewerCo = null;
+  if (user) { const v = await env.DB.prepare('SELECT id FROM companies WHERE owner_id=?').bind(user.id).first(); viewerCo = v ? v.id : null; }
+  const want = clip(new URL(req.url).searchParams.get('company'), 40);
+  const center = placed.find((p) => p.c.id === want) || placed.find((p) => p.c.id === viewerCo) || placed[0];
+  const neighbors = placed.filter((p) => p !== center)
+    .map((p) => ({ ...p, d: Math.hypot(p.gx - center.gx, p.gz - center.gz) }))
+    .filter((p) => p.d <= NET_RADIUS)
+    .sort((a, b) => a.d - b.d)
+    .slice(0, 36);
+
+  // Öppna uppdrag delas bara med de allra närmaste grannarna.
+  const close = [center.c.id, ...neighbors.filter((p) => netLevel(p.d) === 'granne').map((p) => p.c.id)];
+  const posts = (await env.DB.prepare('SELECT p.*, c.name AS company_name FROM collab_posts p JOIN companies c ON c.id=p.company_id WHERE p.closed=0 AND p.company_id IN (' + close.map(() => '?').join(',') + ') ORDER BY p.created DESC LIMIT 80').bind(...close).all()).results.map(postOut);
+
+  const shape = (p, level) => {
+    const c = p.c, out = { id: c.id, name: c.name, tagline: c.tagline, tags: c.tags, building: c.building, demo: c.demo, rating: c.rating, done: c.done, x: p.x, z: p.z, level, meters: Math.round((p.d || 0) * PLOT_M) };
+    if (level === 'granne' || level === 'kvarter') out.services = c.services.slice(0, 8);
+    if (level === 'granne') { out.description = c.description; out.website = c.website; }
+    return out;
+  };
+  return {
+    center: { ...shape(center, 'center'), description: center.c.description, services: center.c.services.slice(0, 8), website: center.c.website, posts: posts.filter((p) => p.companyId === center.c.id) },
+    neighbors: neighbors.map((p) => shape(p, netLevel(p.d))),
+    posts,
+    viewer: { companyId: viewerCo, canPost: viewerCo === center.c.id },
+    layout: { plotM: PLOT_M, block: PLOT_BLOCK, street: PLOT_STREET, blocks: BLOCKS_W },
+  };
+}
+
+async function createCollab(req, env, user) {
+  await limit(env, 'cc:' + user.id, 12, 3600);
+  const co = await env.DB.prepare('SELECT id,name FROM companies WHERE owner_id=?').bind(user.id).first();
+  if (!co) throw new HttpError(403, 'no_company', 'Publish your company first, then share an assignment');
+  const b = await readBody(req), title = clip(b.title, 70).trim(), brief = clip(b.brief, 600).trim();
+  if (title.length < 4) throw bad('Give the assignment a short title', 'bad_title');
+  if (brief.length < 15) throw bad('Describe the assignment in a few sentences', 'bad_brief');
+  const open = Number((await env.DB.prepare('SELECT COUNT(*) AS n FROM collab_posts WHERE company_id=? AND closed=0').bind(co.id).first()).n || 0);
+  if (open >= 5) throw new HttpError(409, 'too_many', 'You already have five open assignments');
+  const id = rid('p'), t = now(), skills = JSON.stringify(tagsIn(b.skills)), budget = clip(b.budget, 40).trim();
+  await env.DB.prepare('INSERT INTO collab_posts(id,company_id,title,brief,skills,budget,created,closed) VALUES(?,?,?,?,?,?,?,0)').bind(id, co.id, title, brief, skills, budget, t).run();
+  return { post: { id, companyId: co.id, companyName: co.name, title, brief, skills: parseJson(skills, []), budget, created: t } };
+}
+async function closeCollab(env, id, user) {
+  const p = await env.DB.prepare('SELECT p.id,c.owner_id FROM collab_posts p JOIN companies c ON c.id=p.company_id WHERE p.id=?').bind(id).first();
+  if (!p || p.owner_id !== user.id) throw new HttpError(404, 'not_found', 'Assignment not found');
+  await env.DB.prepare('UPDATE collab_posts SET closed=1 WHERE id=?').bind(id).run();
+  return { ok: true };
+}
+async function myCollab(env, user) {
+  const co = await env.DB.prepare('SELECT id,name FROM companies WHERE owner_id=?').bind(user.id).first();
+  if (!co) return { posts: [] };
+  const rows = (await env.DB.prepare('SELECT p.*, c.name AS company_name FROM collab_posts p JOIN companies c ON c.id=p.company_id WHERE p.company_id=? AND p.closed=0 ORDER BY p.created DESC LIMIT 20').bind(co.id).all()).results;
+  return { posts: rows.map(postOut) };
+}
+
 /* ---------- beställningar ---------- */
 const orderBase = (r) => ({
   id: r.id, companyId: r.company_id, company: r.company_name, customer: r.customer_name, title: r.title, size: r.size, status: r.status,
@@ -816,20 +895,25 @@ function cleanPersona(p) {   // släpper bara igenom kända fält, i kända form
   const name = clip(p.name, 40).trim(), born = String(p.born || '');
   if (name.length < 2 || !/^\d{4}-\d{2}-\d{2}$/.test(born) || !TEAM_ROLES.includes(p.role)) throw bad('The team member is not valid', 'bad_member');
   const L = p.look || {};
-  return { name, role: p.role, born, no: clip(p.no, 12), photo: ['tomas', 'ebba', 'kia', 'manus', 'laila'].includes(p.photo) ? p.photo : '',
+  return { name, role: p.role, born, gender: p.gender === 'f' ? 'f' : p.gender === 'm' ? 'm' : '', eth: clip(p.eth, 30).trim(), traits: (Array.isArray(p.traits) ? p.traits : []).slice(0, 8).map((x) => clip(x, 48).replace(/[^A-Za-z ,'-]/g, '').trim()).filter(Boolean), no: clip(p.no, 12), photo: ['tomas', 'ebba', 'kia', 'manus', 'laila'].includes(p.photo) ? p.photo : '',
     from: two(p.from, 80), langs: { sv: arr(p.langs && p.langs.sv), en: arr(p.langs && p.langs.en) }, bg: two(p.bg, 400), hobby: two(p.hobby, 160),
     look: { skin: hexc(L.skin, '#e0b090'), hair: hexc(L.hair, '#3a2a22'), shirt: hexc(L.shirt, '#24262d'), style: TEAM_STYLES.includes(L.style) ? L.style : 'short', glasses: !!L.glasses, beard: !!L.beard, headset: !!L.headset, hood: !!L.hood } };
 }
-const teamOut = (r) => ({ id: r.id, slot: r.slot, hired: r.hired, fired: r.fired, persona: parseJson(r.persona, {}) });
+const FIRE_MAX = 2, FIRE_WINDOW = 182 * 86400000;   // högst 2 avsked per 6 månader (skyddar AI-kvoten)
+const teamOut = (r) => { const p = parseJson(r.persona, {}); p.photoId = r.hasphoto ? r.id : ''; return { id: r.id, slot: r.slot, hired: r.hired, fired: r.fired, persona: p }; };
 async function myCompany(env, user) {
   const co = await env.DB.prepare('SELECT id,created FROM companies WHERE owner_id=?').bind(user.id).first();
   if (!co) throw new HttpError(409, 'no_company', 'Publish your company first');
   return co;
 }
+async function fireInfo(env, companyId) {
+  const rows = (await env.DB.prepare('SELECT fired FROM company_team WHERE company_id=? AND fired>? ORDER BY fired').bind(companyId, now() - FIRE_WINDOW).all()).results;
+  return { fireCount: rows.length, fireMax: FIRE_MAX, fireResets: rows.length >= FIRE_MAX ? rows[rows.length - FIRE_MAX].fired + FIRE_WINDOW : null };
+}
 async function getTeam(env, user) {
   const co = await myCompany(env, user);
-  const rows = (await env.DB.prepare('SELECT * FROM company_team WHERE company_id=? ORDER BY slot,hired').bind(co.id).all()).results;
-  return { team: rows.map(teamOut), companyCreated: co.created };
+  const rows = (await env.DB.prepare('SELECT t.*, (p.member_id IS NOT NULL) AS hasphoto FROM company_team t LEFT JOIN team_photos p ON p.member_id=t.id WHERE t.company_id=? ORDER BY t.slot,t.hired').bind(co.id).all()).results;
+  return { team: rows.map(teamOut), companyCreated: co.created, ...(await fireInfo(env, co.id)) };
 }
 async function seedTeam(req, env, user) {
   await limit(env, 'team:' + user.id, 60, 3600);
@@ -841,18 +925,58 @@ async function seedTeam(req, env, user) {
 }
 async function fireMember(env, id, user) {
   await limit(env, 'team:' + user.id, 60, 3600);
-  const co = await myCompany(env, user);
+  const co = await myCompany(env, user), f = await fireInfo(env, co.id);
+  if (f.fireCount >= FIRE_MAX) throw new HttpError(429, 'fire_limit', 'You can fire at most ' + FIRE_MAX + ' people every 6 months. The next time is possible on ' + new Date(f.fireResets).toISOString().slice(0, 10) + '.');
   const r = await env.DB.prepare('UPDATE company_team SET fired=? WHERE id=? AND company_id=? AND fired IS NULL').bind(now(), id, co.id).run();
   if (!r.meta.changes) throw new HttpError(404, 'not_found', 'Team member not found');
   return getTeam(env, user);
+}
+/* porträtt på nyanställda: Workers AI (flux-1-schnell). Faller något, används ritat porträtt i stället. */
+function colorWord(hex, kind) {
+  const n = parseInt(String(hex).slice(1), 16), r = (n >> 16) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn;
+  let h = 0; if (d) { h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h = (h * 60 + 360) % 360; }
+  const sat = d ? d / (1 - Math.abs(2 * l - 1)) : 0;
+  if (kind === 'hair') return l < .1 ? 'black' : l < .2 ? 'dark brown' : sat < .12 ? (l > .5 ? 'grey' : 'dark') : h < 20 || h > 340 ? 'auburn' : h < 42 ? (l > .45 ? 'light brown' : 'brown') : 'blonde';
+  if (sat < .12) return l < .3 ? 'charcoal' : l > .8 ? 'white' : 'grey';
+  return h < 20 || h >= 340 ? (l > .6 ? 'pink' : 'dark red') : h < 45 ? (l > .6 ? 'cream' : 'rust') : h < 70 ? 'mustard' : h < 170 ? 'green' : h < 260 ? 'navy blue' : 'purple';
+}
+function photoPrompt(p) {
+  const L = p.look, age = Math.max(20, new Date().getFullYear() - Number(p.born.slice(0, 4))), who = p.gender === 'f' ? 'woman' : 'man';
+  const style = { short: 'short', bob: 'chin-length bob', long: 'long', afro: 'natural afro', bun: 'tied up in a bun' }[L.style] || 'short';
+  const clothes = { dRoleLead: 'smart casual shirt', dRoleRev: 'blazer over a simple top', dRoleBuild: 'casual work shirt', dRolePolish: 'knit sweater' }[p.role] || 'shirt';
+  return 'Professional corporate headshot photograph of a ' + age + '-year-old ' + (p.eth ? p.eth + ' ' : '') + who + ', ' + colorWord(L.hair, 'hair') + ' ' + style + ' hair, ' + (L.glasses ? 'wearing glasses, ' : '') + (L.beard ? 'with a short beard, ' : '') + (L.headset ? 'wearing a headset with a microphone, ' : '')
+    + 'wearing a ' + colorWord(L.shirt, 'cloth') + ' ' + clothes + ', ' + (p.traits && p.traits.length ? p.traits.join(', ') : 'friendly natural smile, modern bright office in the background') + ', looking at the camera, soft natural light, shallow depth of field, photorealistic, sharp focus, square crop';
+}
+async function makePhoto(env, p, companyId) {
+  if (!env.AI) return '';
+  try {
+    for (let k = 0; k < 2; k++) {   // en gång till om bilden skulle bli identisk med en som redan finns i teamet
+      await limit(env, 'aiimg:day', 60, 86400);   // högst 60 bilder per dygn totalt: håller sig långt under gratiskvoten
+      const r = await env.AI.run('@cf/black-forest-labs/flux-1-schnell', { prompt: photoPrompt(p).slice(0, 1900), steps: 4 });
+      const img = r && r.image;
+      if (!(typeof img === 'string' && img.length > 2000 && img.length < 900000 && /^[A-Za-z0-9+/=]+$/.test(img))) return '';
+      const same = await env.DB.prepare('SELECT 1 AS x FROM team_photos ph JOIN company_team t ON t.id=ph.member_id WHERE t.company_id=? AND ph.jpg=?').bind(companyId, img).first();
+      if (!same) return img;
+    }
+    return '';
+  } catch (e) { console.log(JSON.stringify({ level: 'warn', photo: String(e && e.message || e).slice(0, 160) })); return ''; }
+}
+async function teamPhotoFile(env, id) {
+  const r = await env.DB.prepare('SELECT jpg FROM team_photos WHERE member_id=?').bind(id).first();
+  if (!r) return new Response('Not found', { status: 404 });
+  return new Response(Uint8Array.from(atob(r.jpg), (c) => c.charCodeAt(0)), { headers: { 'Content-Type': r.jpg.startsWith('iVBOR') ? 'image/png' : 'image/jpeg', 'Cache-Control': 'public, max-age=86400', 'X-Content-Type-Options': 'nosniff', 'Access-Control-Allow-Origin': '*', 'Cross-Origin-Resource-Policy': 'cross-origin' } });
 }
 async function hireMember(req, env, user) {
   await limit(env, 'team:' + user.id, 60, 3600);
   const co = await myCompany(env, user), b = await readBody(req), slot = Number(b.slot);
   if (!Number.isInteger(slot) || slot < 0 || slot > 4) throw bad('Choose a position between 1 and 5', 'bad_slot');
   if (await env.DB.prepare('SELECT 1 AS x FROM company_team WHERE company_id=? AND slot=? AND fired IS NULL').bind(co.id, slot).first()) throw new HttpError(409, 'slot_taken', 'That position is not vacant');
-  await env.DB.prepare('INSERT INTO company_team(id,company_id,slot,persona,hired,fired) VALUES(?,?,?,?,?,NULL)').bind(rid('m'), co.id, slot, JSON.stringify(cleanPersona(b.persona)), now()).run();
-  return getTeam(env, user);
+  const persona = cleanPersona(b.persona), id = rid('m');
+  if (await env.DB.prepare("SELECT 1 AS x FROM company_team WHERE company_id=? AND fired IS NULL AND json_extract(persona,'$.name')=?").bind(co.id, persona.name).first()) throw new HttpError(409, 'duplicate_member', 'There is already someone with that name on the team');
+  const jpg = await makePhoto(env, persona, co.id);
+  await env.DB.prepare('INSERT INTO company_team(id,company_id,slot,persona,hired,fired) VALUES(?,?,?,?,?,NULL)').bind(id, co.id, slot, JSON.stringify(persona), now()).run();
+  if (jpg) await env.DB.prepare('INSERT INTO team_photos(member_id,jpg) VALUES(?,?)').bind(id, jpg).run();
+  return { ...(await getTeam(env, user)), photoMade: !!jpg, memberId: id };
 }
 async function publicTeam(env, companyId) {   // bara det som behövs för att rita personalen i 3D
   const rows = (await env.DB.prepare('SELECT slot,persona FROM company_team WHERE company_id=? AND fired IS NULL ORDER BY slot').bind(companyId).all()).results;
@@ -942,6 +1066,10 @@ route('GET', /^\/api\/me$/, async (req, env, m, user) => {
 }, true);
 route('GET', /^\/api\/health$/, async (req, env) => { await env.DB.prepare('SELECT 1').first(); return { ok: true, email: mailReady(env), google: env.GOOGLE_CLIENT_ID || '' }; });
 route('GET', /^\/api\/companies$/, (req, env) => listCompanies(req, env));
+route('GET', /^\/api\/network$/, (req, env) => network(req, env));
+route('GET', /^\/api\/collab$/, (req, env, m, user) => myCollab(env, user), true);
+route('POST', /^\/api\/collab$/, (req, env, m, user) => createCollab(req, env, user), true);
+route('DELETE', /^\/api\/collab\/([a-z0-9]+)$/, (req, env, m, user) => closeCollab(env, m[1], user), true);
 route('GET', /^\/api\/companies\/([a-z0-9]+)$/, (req, env, m) => getCompany(env, m[1]));
 route('POST', /^\/api\/companies\/([a-z0-9]+)\/inquiry$/, (req, env, m, user) => startInquiry(env, m[1], user), true);
 route('GET', /^\/api\/inquiries$/, (req, env, m, user) => listInquiries(env, user), true);
@@ -1014,6 +1142,8 @@ export default {
     if (!url.pathname.startsWith('/api/') && !url.pathname.startsWith('/.well-known/')) return env.ASSETS.fetch(req);   // statiska sidor (portalen) under prefixet
     const lg = req.method === 'GET' && new RegExp('^/api/companies/([a-z0-9]+)/logo\\.png$').exec(url.pathname);
     if (lg) return await logoFile(env, lg[1]);
+    const tp = req.method === 'GET' && new RegExp('^/api/team-photo/([a-z0-9]+)\\.jpg$').exec(url.pathname);
+    if (tp) return await teamPhotoFile(env, tp[1]);
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: isOauthPath(url.pathname) ? OAUTH_CORS : corsHeaders(req, env) });
     try {
       const oa = await oauthFetch(req, env, url); if (oa) return oa;

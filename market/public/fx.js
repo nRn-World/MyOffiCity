@@ -86,15 +86,7 @@ document.addEventListener('pointermove', (e) => {
   if (!c) return; const r = c.getBoundingClientRect(); c.style.setProperty('--mx', (e.clientX - r.left) + 'px'); c.style.setProperty('--my', (e.clientY - r.top) + 'px');
 }, { passive: true });
 
-/* 4. karusellen glider sakta av sig själv, stannar vid hover/beröring */
-let rail = null, dir = 1, hold = 0, pos = 0;
-setInterval(() => { const r = $('#rail'); if (r !== rail) { rail = r; dir = 1; if (r) { ['pointerenter', 'pointerdown', 'wheel', 'touchstart', 'focusin'].forEach((ev) => r.addEventListener(ev, () => { hold = Date.now() + 4000; }, { passive: true })); r.addEventListener('pointerleave', () => { hold = Date.now() + 800; }); } } }, 500);
-(function drift() {
-  requestAnimationFrame(drift);
-  if (!rail || document.hidden) return;
-  if (Date.now() < hold) { pos = rail.scrollLeft; return; }
-  const max = rail.scrollWidth - rail.clientWidth; if (max < 10) return;
-  rail.style.scrollSnapType = 'none'; pos += dir * .6; rail.scrollLeft = pos;
-  if (pos >= max - 1) dir = -1; else if (pos <= 0) dir = 1;
-})();
+/* 4. karusellen står stilla: pilarna och styrplattan sköter bläddringen.
+   (En tidigare version lät den glida av sig själv, men då hamnade första kortet
+   utanför bild och farten berodde på skärmens bildfrekvens.) */
 })();

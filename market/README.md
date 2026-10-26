@@ -1,4 +1,4 @@
-# MyOffiCity (fas 2 + 3): konton, företag, beställningar, sök, betyg och återställning på Cloudflare
+# MyOffiCity: konton, företag, beställningar, sök, betyg, stadsdel och AI-verktyg på Cloudflare
 
 En Cloudflare Worker + D1-databas som låter riktiga kunder hitta ett företag, beställa och följa arbetet.
 Teamet (AI-agenterna) jobbar kvar i ägarens app med ägarens egna nycklar; servern förmedlar bara beställningar, förslag, filer och meddelanden.
@@ -9,17 +9,27 @@ Teamet (AI-agenterna) jobbar kvar i ägarens app med ägarens egna nycklar; serv
 - `src/index.js`: API:t (registrering/inloggning, företagsprofil, beställningar, meddelanden, förslag, filer).
 - `schema.sql`: databasen (users, sessions, companies, orders, messages, reviews, email_tokens, ratelimit).
 - `public/`: kundportalen (en statisk sida, `portal.js`), serveras av samma Worker. `_headers` ger säkerhetsrubriker.
-- `test/e2e.mjs`: 56 kontroller (konton, behörigheter, hela beställningsflödet). `test/e2e3.mjs`: 60 kontroller för fas 3 (sök, taggar, betyg, återställningskod, lösenordsbyte, e-postflöden). `test/seed.mjs`: provdata lokalt.
-- `migrations/0002_phase3.sql`, `0003_api_keys.sql`: för en äldre databas (nya installationer använder `schema.sql`).
-- `test/e2e4.mjs`: 64 kontroller för API-nycklar, MCP-servern och verktygsvägen.
+- `test/` (körs mot en lokal Worker, se nedan): `e2e.mjs` 56 kontroller (konton, behörigheter, hela beställningsflödet), `e2e3.mjs` 60 (sök, taggar, betyg, återställningskod, lösenordsbyte, e-post), `e2e4.mjs` 65 (API-nycklar, MCP, verktygsvägen), `network.mjs` 18 (stadsdelen och de öppna uppdragen), `city.mjs` 13 (staden och förfrågningschatten), `oauth.mjs` 14 (OAuth- och PKCE-flödet), `website.mjs` 5 (levererade filer). `seed.mjs` ger provdata lokalt.
+- `migrations/`: tillägg för en äldre databas (nya installationer använder `schema.sql`, som redan innehåller allt).
+- `public/neighborhood.js` + `public/cityassets.js`: den fristående 3D-stadsdelen (three.js) med byggnader, takskyltar, ljuslänkar mellan grannar och gratis CC0-modeller (träd, bilar, cyklister, människor).
 
 ## Köra och testa lokalt
 ```bash
 cd market
 npx wrangler d1 execute nrn-market --local --file=schema.sql --persist-to .wrangler-state
-npx wrangler dev --local --port 8799 --persist-to .wrangler-state
+npx wrangler dev --local --port 8799 --persist-to .wrangler-state --var DEV_MAIL:1 --var MAIL_FROM:test@example.com
+
+# i en annan terminal: alla sviter mot samma server
 BASE=http://localhost:8799 node test/e2e.mjs
+BASE=http://localhost:8799 node test/e2e3.mjs
+BASE=http://localhost:8799 node test/e2e4.mjs
+node test/network.mjs http://localhost:8799
+node test/city.mjs   http://localhost:8799
+node test/oauth.mjs  http://localhost:8799
+node test/website.mjs http://localhost:8799
 ```
+
+`city.mjs` skapar fyra testföretag; lägg till `--keep` om de ska ligga kvar. Utan `DEV_MAIL=1` hoppas e-poststegen i `e2e3` över automatiskt.
 
 ## Driftsätta / uppdatera
 ```bash
@@ -30,7 +40,7 @@ BASE=https://nrn-market.bynrnworld.workers.dev node test/e2e.mjs  # provkör, st
 Testkonton tas bort med `npx wrangler d1 execute nrn-market --remote --command "DELETE FROM messages; DELETE FROM orders; DELETE FROM companies; DELETE FROM sessions; DELETE FROM users; DELETE FROM ratelimit;"` (BARA om databasen inte har riktiga användare än).
 
 ## Säkerhet (så är det byggt)
-- Lösenord hashas med PBKDF2-SHA256 (100 000 varv, taket i Workers), unikt salt; klartext sparas aldrig. Ingen e-post sparas, så ett glömt lösenord kan INTE återställas (kräver e-post, fas 3+).
+- Lösenord hashas med PBKDF2-SHA256 (100 000 varv, taket i Workers), unikt salt; klartext sparas aldrig. Ett konto kräver en e-postadress (för bekräftelse och lösenordsåterställning), men adressen används aldrig till utskick utan att du själv ber om det.
 - Sessionsnycklar är 256 bitar slump; bara deras SHA-256 sparas. Giltiga i 30 dagar. Bearer-nycklar (inga cookies), så ingen CSRF.
 - Alla rättigheter kontrolleras på servern: en kund ser bara sina egna beställningar, en ägare bara sitt eget företags. Förslag syns för kunden först när ägaren visat dem, färdiga filer först efter leverans. Intern granskning (`internal`) lämnar aldrig servern till kunden.
 - Begränsningar: 8 registreringar/timme/IP, 20 inloggningsförsök/10 min/IP och 10/10 min per användarnamn, 40 meddelanden/minut, 10 beställningar/timme, storleksgränser på allt.
@@ -57,6 +67,22 @@ Lokalt provkörs e-post med `--var DEV_MAIL:1 --var MAIL_FROM:test@example.com`;
 
 ### Begränsningar
 Sökningen läser upp till 500 företag och filtrerar i Workern, vilket räcker för tusentals företag men bör flyttas till databasen (eller en sökindex) om det blir fler. Ingen moderering av företag eller omdömen än.
+
+## Stadsdelen: tomter, grannskap och delade uppdrag
+Varje företag får en fast tomt i stadsrutnätet (40 m mellan tomterna, 4×4 tomter per kvarter med gator emellan). Tomterna fylls i ett ormliknande mönster över staden, så nästa företag alltid hamnar intill det förra – nya grannar kan dela med varandra direkt. Avståndet mäts i adressrutor (gator räknas inte), vilket gör att grannar på varsin sida om gatan fortfarande är grannar. Ju närmare två företag står, desto mer delar de – allt räknas fram på servern:
+
+| Nivå | Avstånd | Vad grannen ser |
+| --- | --- | --- |
+| Granne | ≤ 64 m | Full profil, alla tjänster och de öppna uppdragen |
+| Kvarter | ≤ 144 m | Profil och tjänster |
+| Stadsdel | ≤ 248 m | Namn, tagline, taggar och betyg |
+
+- `GET /api/network?company=:id` ger mitten, grannarna (nivå, avstånd i meter och bara de fält nivån tillåter), öppna uppdrag från de närmaste grannarna samt `viewer` (om den inloggade äger mitten). Utan `company` används den inloggades företag, annars det första.
+- `POST /api/collab {title, brief, skills, budget}` publicerar ett öppet uppdrag (företagskonto krävs, max fem öppna per företag, 12/timme). `GET /api/collab` listar de egna, `DELETE /api/collab/:id` stänger ett.
+- Uppdragen syns bara hos företag inom 64 m. Ingen kundinformation, e-post eller beställning delas – bara det företaget själv skriver.
+- Portalen: `#/network` (3D-kartan med klickbara byggnader, delningsnivåer, grannkort och öppna uppdrag) och fliken **Nätverk** i företagets panel, där ägaren publicerar och stänger uppdrag.
+- Databasen: `collab_posts` (migration `0013_network.sql`). Kör `npx wrangler d1 execute nrn-market --local --persist-to .wrangler-state --file=migrations/0013_network.sql` i en befintlig lokal databas.
+- 3D-modellerna ligger i `public/models/` (CC0, plus en cykel under CC-BY 3.0). Källor, licenser och ändringar står i [`public/models/CREDITS.md`](public/models/CREDITS.md); sidfoten länkar dit.
 
 ## Koppla AI-verktyg: API-nycklar, MCP och verktygsväg
 Alla verktyg använder samma server, `https://nrn-market.bynrnworld.workers.dev/api/mcp`, med en personlig nyckel (`nrnm_...`) som skapas på kontosidan i portalen (kontosida > "API-nycklar för AI-verktyg"). Portalen visar färdiga instruktioner med nyckeln ifylld för: **Claude Code, Claude Desktop, OpenAI Codex, Cursor, GitHub Copilot (VS Code), Google Gemini CLI, OpenCode**, "OpenRouter / valfritt modell-API", annan MCP-klient och REST/OpenAPI.

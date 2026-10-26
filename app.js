@@ -1457,17 +1457,18 @@ function changeTier(k){
 const OB={step:1,tier:'kontor',company:'',boss:'',gender:'m',country:guessCountry(),currency:(COUNTRIES.find(c=>c[0]===guessCountry())||COUNTRIES[0])[2],curManual:false,team:true,imgs:{}};
 function sampleStaff(n){const nm=['Tomas','Ebba','Kia','Manus','Laila','Sara','Omar','Lina','Erik','Nora','Jonas','Maja'],out=[];
   for(let i=0;i<n;i++)out.push({id:'s'+i,name:nm[i],rank:i===0?'leader':i<3?'lead':'worker',kind:i%3?'dev':'design',color:COLORS[i%8],title:''});return out;}
+function hideBoot(){const b=$('#boot');if(!b||b.hidden)return;b.classList.add('out');setTimeout(()=>{b.hidden=true;},420);}
 function renderOnboard(){
-  const el=$('#onboard');el.hidden=false;
+  const el=$('#onboard');el.hidden=false;hideBoot();
   const selCss='width:auto;background:rgba(255,255,255,.14);color:#fff;border-color:rgba(255,255,255,.3)';
-  const langSel=`<div class="ob-top" style="float:inline-end;display:flex;gap:8px;flex-wrap:wrap"><select data-lang aria-label="${esc(t('lang_h'))}" style="${selCss}">${LANGS.map(([c,n])=>`<option value="${c}" ${c===LANG?'selected':''} style="color:#141a2e">${n}</option>`).join('')}</select>
+  const langSel=`<div class="ob-top"><select data-lang aria-label="${esc(t('lang_h'))}" style="${selCss}">${LANGS.map(([c,n])=>`<option value="${c}" ${c===LANG?'selected':''} style="color:#141a2e">${n}</option>`).join('')}</select>
     <select data-obcur aria-label="${esc(t('currency'))}" style="${selCss}">${CURS.map(x=>`<option value="${x}" ${x===OB.currency?'selected':''} style="color:#141a2e">${x} – ${esc(curName(x))}</option>`).join('')}</select></div>`;
   const head=`<div class="ob">${langSel}<h1>${t('ob_h')}</h1><p class="lead">${t('ob_lead')}</p>
   <div class="steps">${['ob_s1','ob_s2','ob_s3'].map((s,i)=>`<span class="${OB.step===i+1?'on':''}">${t(s)}</span>`).join('')}</div>`;
   let body='';
   if(OB.step===1){
     body=`<p class="lead" style="font-size:14px">${t('ob_b_lead')}</p>
-    <div class="bcards">${Object.entries(BIZ).map(([k,b])=>`<div class="bc ${OB.tier===k?'sel':''}" data-ot="${k}"><img src="${OB.imgs[k]||''}" alt="${esc(bName(k))}"><div class="bd"><h3>${bName(k)}</h3><div class="price">${money(b.rent)} <small>${t('per_month_sim')}</small></div>
+    <div class="bcards">${Object.entries(BIZ).map(([k,b])=>`<div class="bc ${OB.tier===k?'sel':''}" data-ot="${k}"><img data-obimg="${k}"${OB.imgs[k]?` src="${OB.imgs[k]}"`:''} alt="${esc(bName(k))}"><div class="bd"><h3>${bName(k)}</h3><div class="price">${money(b.rent)} <small>${t('per_month_sim')}</small></div>
       <div class="small mut fee-note">${t('fee_note',{p:feePct(),m:moneyFee(b.rent*PLATFORM_FEE)})}</div>
       <ul>${[1,2,3,4].map(i=>`<li>${t(k+'_p'+i)}</li>`).join('')}</ul><div class="small mut"><b>${t(k+'_who')}</b></div></div></div>`).join('')}</div>
     <p class="note" style="margin-top:14px">${t('ob_example')}</p>
@@ -1527,7 +1528,7 @@ function offerRealModel(){
   }else{S.demoOfferDeclined=true;save();}
 }
 function enterApp(){
-  $('#app').hidden=false;applyLang();rebuild();tick();setView('office');
+  hideBoot();$('#app').hidden=false;applyLang();rebuild();tick();setView('office');
   if(!S.log.length)logEvent(t('welcome',{c:S.company}),'#4f46e5');
   setTimeout(()=>{maybeDaily();maybeWatches();},3500);startSocial();
 }
@@ -1543,16 +1544,20 @@ async function boot(){
   if(S&&S.company){S=migrate(S);save();enterApp();offerRealModel();}
   else{
     S=null;
-    ['loft','kontor','hq'].forEach(k=>{
-      try{OB.imgs[k]=Office.snapshot(k,sampleStaff(k==='loft'?5:k==='kontor'?8:12),t('your_bldg'));}
-      catch(e){console.error('snapshot',k,e);OB.imgs[k]='';}
-    });
     renderOnboard();
+    // Bygg förhandsbilderna efter första ritningen, en i taget, så att startskärmen syns direkt.
+    ['loft','kontor','hq'].forEach((k,i)=>setTimeout(()=>{
+      if(S)return;
+      try{
+        OB.imgs[k]=Office.snapshot(k,sampleStaff(k==='loft'?5:k==='kontor'?8:12),t('your_bldg'),560,385);
+        const im=document.querySelector('img[data-obimg="'+k+'"]');if(im)im.src=OB.imgs[k];
+      }catch(e){console.error('snapshot',k,e);OB.imgs[k]='';}
+    },40+i*30));
   }
   if(!SERVER.ok)toast(t('server_down'),8000);
 }
 boot().catch(err=>{
-  console.error('boot',err);
+  console.error('boot',err);hideBoot();
   const el=$('#onboard');
   el.hidden=false;
   el.innerHTML=`<div class="ob"><h1>MyOffiCity</h1><p class="lead">${t('boot_error')}</p><pre style="white-space:pre-wrap;background:rgba(0,0,0,.3);padding:12px;border-radius:10px;overflow:auto">${esc(err&&(err.stack||err.message)||err)}</pre></div>`;

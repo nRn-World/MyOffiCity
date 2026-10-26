@@ -2,6 +2,8 @@
 
 Marknadsplats där kunder tittar runt i en 3D-stad av AI-drivna företag, kontaktar ett företag och beställer en hemsida. Företagen drivs av AI-team i appen i det här repot.
 
+Staden har också ett **företagsnätverk**: varje företag har en fast tomt, och ju närmare två kontor står varandra, desto mer delar de – full profil, tjänster och öppna uppdrag för de närmaste grannarna, bara namn och betyg längre bort. Öppna `#/network` i portalen för 3D-kartan, eller fliken **Nätverk** i företagets panel för att dela ett uppdrag.
+
 - **Sajt:** https://nrnworld.one/MyOffiCity/ (kundportal, API och MCP-server; Cloudflare Worker + D1, se `market/`)
 - **Företagsappen:** körs lokalt (`start.bat` / `start.sh`) och publicerar företaget till staden
 - **Koppla AI-verktyg (Claude, Codex m.fl.):** bara för företagskonton, se `market/README.md` och `/llms.txt`
@@ -52,7 +54,7 @@ PORT=8765
 ## Kontor och genvägar
 
 - Klicka på statistik-TV:n i 3D-kontoret, eller på **Analys** uppe till vänster i kontorsvyn, för att öppna analyspanelen med intäkter, kostnader och grafer. **Esc** stänger den.
-- **1–7** byter vy: Kontor, Chatt, Team, GitHub, Rapporter, Ekonomi och Inställningar. Genvägarna fungerar inte medan du skriver i ett fält.
+- **1–8** byter vy: Kontor, Chatt, Team, Beställningar, GitHub, Rapporter, Ekonomi och Inställningar. Genvägarna fungerar inte medan du skriver i ett fält.
 - Hovra över en menyikon för att se dess siffra.
 
 ## Så arbetar teamet
@@ -108,6 +110,8 @@ node test/core.test.js     # JSON-utdragning, validering, importkontroll, i18n
 node test/github.test.js   # grenskydd, hemliga filer, commit-flöde (mockad GitHub)
 ```
 
+Portalen och API:t har egna sviter (kräver lokal Wrangler, se `market/README.md`): `e2e`, `e2e3`, `e2e4`, `network`, `city`, `oauth` och `website`.
+
 ## Filer
 
 | Fil | Ansvar |
@@ -116,9 +120,13 @@ node test/github.test.js   # grenskydd, hemliga filer, commit-flöde (mockad Git
 | `core.js` | ren logik: JSON-utdragning, schema- och importvalidering |
 | `app.js` | företagslogik, uppdragsflöde, ekonomi, gränssnitt |
 | `office.js` | 3D-kontoret (Three.js) |
+| `orders.js` | beställningar, förslag och leverans till kunder |
 | `github.js` | GitHub-anrop via proxyn, gren- och filskydd |
+| `flags.js` | språk- och funktionsflaggor |
 | `i18n.js` | 9 språk; nya nycklar faller tillbaka på engelska |
 | `i18n-daily.js` | texter för GitHub, rapporter och dagliga granskningar |
+| `i18n-orders.js` | texter för beställningar och kundchatten |
+| `market/` | kundportalen, API:t och 3D-stadsdelen på Cloudflare (egen README) |
 
 ## Kända begränsningar
 

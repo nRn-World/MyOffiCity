@@ -45,42 +45,51 @@ const CITY_STYLES=[
   {k:'steel',night:'#151c25',day:'#b6ad97',frameN:'#0c1118',frameD:'#7f7867',winN:'#0a1017',winD:'#6d97a4',lit:['#cfe7ff','#ffe2b0'],glass:true}
 ];
 let BW=19,floors=3,LAWN=null;
-/* Gräs: modellen "Grass" av MauroGonzalezA (CC BY 4.0, se CREDITS.md). Tuvan är bakad till en bild med genomskinlig bakgrund
-   och planteras som tusentals korsade kort (en enda InstancedMesh), så det går lätt även på mobil. Marken under är den vanliga gröna ytan. */
-let TUFT=null,TUFT_TRIED=false,gpMat=null;
-const TUFT_SIZE=.55;
-function loadTuft(){
-  if(TUFT_TRIED)return;TUFT_TRIED=true;
-  new T3.TextureLoader().load('models/grasstuft.png?v=2',t=>{
-    t.encoding=T3.sRGBEncoding;t.anisotropy=4;
-    gpMat=new T3.MeshBasicMaterial({map:t,alphaTest:.45,side:T3.DoubleSide});
-    const g=new T3.BufferGeometry(),P=[],U=[],I=[];
-    for(let k=0;k<3;k++){const an=k*Math.PI/3,cx=Math.cos(an)*.5,cz=Math.sin(an)*.5,i0=P.length/3;   // tre lodräta kort, 60 grader isär
-      P.push(-cx,0,-cz,cx,0,cz,cx,1,cz,-cx,1,-cz);U.push(0,0,1,0,1,1,0,1);I.push(i0,i0+1,i0+2,i0,i0+2,i0+3);}
-    g.setAttribute('position',new T3.Float32BufferAttribute(P,3));g.setAttribute('uv',new T3.Float32BufferAttribute(U,2));g.setIndex(I);
-    TUFT=g;if(root)placeGrass(root.userData.gpE);
-  },undefined,()=>{});
+/* Gräs: modellen "Grass" av MauroGonzalezA (CC BY 4.0, se CREDITS.md). Marken har en tät gräsmatta som sömlös bild fotad uppifrån ur modellen
+   (grasscarpet.jpg), och ovanpå ligger låga tuvor av modellens riktiga strån (tre varianter, grassblades.bin) som en InstancedMesh. */
+let GK=null,GK_TRIED=false,gpMat=null;
+function loadGrassKit(){
+  if(GK){applyCarpet();return;}
+  if(GK_TRIED)return;GK_TRIED=true;
+  Promise.all([
+    new Promise((ok,no)=>new T3.TextureLoader().load('models/grasscarpet.jpg?v=2',ok,undefined,no)),
+    fetch('models/grassblades.bin').then(r=>r.ok?r.arrayBuffer():Promise.reject())
+  ]).then(([tex,buf])=>{
+    tex.encoding=T3.sRGBEncoding;tex.wrapS=tex.wrapT=T3.RepeatWrapping;tex.repeat.set(110,110);tex.anisotropy=8;
+    const dv=new DataView(buf),n=dv.getUint32(0,true),geos=[];let off=4;
+    for(let i=0;i<n;i++){
+      const nV=dv.getUint32(off,true),nI=dv.getUint32(off+4,true);off+=8;
+      const pos=new Float32Array(buf,off,nV*3);off+=nV*12;const col=new Uint8Array(buf,off,nV*3);off+=Math.ceil(nV*3/4)*4;const idx=new Uint16Array(buf,off,nI);off+=Math.ceil(nI/2)*4;
+      const g=new T3.BufferGeometry();g.setAttribute('position',new T3.BufferAttribute(pos,3));g.setAttribute('color',new T3.BufferAttribute(col,3,true));g.setIndex(new T3.BufferAttribute(idx,1));g.computeBoundingSphere();geos.push(g);
+    }
+    GK={tex,geos};gpMat=new T3.MeshBasicMaterial({vertexColors:true,side:T3.DoubleSide});
+    applyCarpet();if(root)placeGrass(root.userData.gpE);
+  }).catch(()=>{});
 }
+function applyCarpet(){if(!GK||!groundMat)return;groundMat.map=GK.tex;groundMat.needsUpdate=true;if(root)applyTime();}
+const GK_XZ=3,GK_Y=1.8;
 function placeGrass(e){
   if(!root)return;root.userData.gpE=e;
-  if(!TUFT||root.userData.gp)return;root.userData.gp=1;
-  // allt som är asfalt, trottoar, torg eller hus får ingen tuva; resten av den gröna marken fylls
+  if(!GK||root.userData.gp)return;root.userData.gp=1;
+  // allt som är asfalt, trottoar, torg eller hus får inga strån; resten av den gröna marken har gräsmattan som marktextur
   const bl=-(e+AWL+.7),br=e+AWR+.7;
   const paved=(x,z)=>(x>bl&&x<br&&z>-6.7&&z<2.7)||(Math.abs(x)<e+15.2&&z>1.9&&z<5.3)||z<-7.1||(z>6.65&&z<11.75)||(STY.gold&&Math.abs(x)<e+9.4&&z>-10.6&&z<8.4);
-  const spots=[],near=(x,z)=>Math.abs(x)<46&&z<14;
-  const sample=(x0,x1,z0,z1,dens,keep)=>{const n=Math.round((x1-x0)*(z1-z0)*dens);for(let i=0;i<n;i++){const x=x0+Math.random()*(x1-x0),z=z0+Math.random()*(z1-z0);if(!paved(x,z)&&keep(x,z))spots.push([x,z]);}};
-  sample(-46,46,-7.2,14,9,near);                       // nära: tätt
-  sample(-78,78,-7.2,46,2.4,(x,z)=>!near(x,z));            // längre bort: glesare men större tuvor
-  const N=Math.min(30000,spots.length);
-  const mesh=new T3.InstancedMesh(TUFT,gpMat,N),m=new T3.Matrix4(),q=new T3.Quaternion(),up=new T3.Vector3(0,1,0),pos=new T3.Vector3(),sc=new T3.Vector3(),col=new T3.Color();
-  for(let i=0;i<N;i++){
-    const [x,z]=spots[i],far=!near(x,z),sz=TUFT_SIZE*(far?1.25:1)*(.7+Math.random()*.6);
-    pos.set(x,-.7,z);q.setFromAxisAngle(up,Math.random()*Math.PI);sc.set(sz,sz*(.5+Math.random()*.3),sz);
-    m.compose(pos,q,sc);mesh.setMatrixAt(i,m);
-    const v=.74+Math.random()*.26;mesh.setColorAt(i,col.setRGB(v,v,v));
-  }
-  mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;
-  mesh.frustumCulled=false;mesh.castShadow=false;mesh.receiveShadow=false;root.add(mesh);
+  const coarse=matchMedia('(pointer:coarse)').matches,dens=coarse?.7:1.5;
+  const spots=[];
+  const n=Math.round(92*(14+7.2)*dens);
+  for(let i=0;i<n;i++){const x=-46+Math.random()*92,z=-7.2+Math.random()*21.2;if(!paved(x,z))spots.push([x,z]);}
+  const per=geos=>geos.map(()=>[]);const bins=per(GK.geos);spots.forEach(p=>bins[Math.floor(Math.random()*bins.length)].push(p));
+  const m=new T3.Matrix4(),q=new T3.Quaternion(),up=new T3.Vector3(0,1,0),pos=new T3.Vector3(),sc=new T3.Vector3(),col=new T3.Color();
+  GK.geos.forEach((geo,gi)=>{
+    const list=bins[gi],mesh=new T3.InstancedMesh(geo,gpMat,list.length);
+    list.forEach(([x,z],i)=>{
+      const r=.8+Math.random()*.45;
+      pos.set(x,-.7,z);q.setFromAxisAngle(up,Math.random()*Math.PI*2);sc.set(GK_XZ*r,GK_Y*(.8+Math.random()*.4),GK_XZ*r);
+      m.compose(pos,q,sc);mesh.setMatrixAt(i,m);const v=.8+Math.random()*.25;mesh.setColorAt(i,col.setRGB(v,v,v));
+    });
+    mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;
+    mesh.frustumCulled=false;mesh.castShadow=false;mesh.receiveShadow=false;root.add(mesh);
+  });
   applyTime();
 }
 function lawnTex(){   // mjukt klippt gräsmatta: band och korn ger marken liv i stället för platt färg
@@ -423,7 +432,7 @@ function outside(){
   box(150,.1,5,M(0x6b6559),0,-.66,9.2,root);
   for(let i=-9;i<=9;i++)box(1.6,.02,.18,M(0xfbf2dc),i*5,-.6,9.2,root);
   box(2.6,.15,2.4,M(0xcabf9f),0,-.6,2.4,root);
-  const e=BW/2;loadTuft();placeGrass(e);
+  const e=BW/2;loadGrassKit();placeGrass(e);
   if(STY.gold){ // granittorg, spegeldammar och formklippta japanska tallar
     box(BW+18,.06,BD+12,M(0xa79c84,{roughness:.6}),0,-.64,ZC+1,root);
     const water=M(0x4f8fa0,{metalness:.6,roughness:.05});
@@ -1166,7 +1175,7 @@ function applyTimeBase(){
   sunL.intensity=.72*d;sunL.color.copy(lerpC('#fffdf8','#ffb070',w));
   const a=Math.min(1,Math.max(0,(hourNow-6)/14))*Math.PI;sunL.position.set(-34*Math.cos(a),26*Math.max(.3,Math.sin(a)),30);
   lights.forEach(L=>{L.intensity=.06+.94*(1-d);});
-  if(groundMat)groundMat.color.copy(lerpC('#050a07','#'+new T3.Color(GROUNDC[VAR%GROUNDC.length]).multiplyScalar(.5).getHexString(),d));
+  if(groundMat)groundMat.color.copy(lerpC('#050a07',GK?'#ffffff':'#'+new T3.Color(GROUNDC[VAR%GROUNDC.length]).getHexString(),d));
   if(gpMat)gpMat.color.copy(lerpC('#080d0a','#ffffff',Math.min(1,.12+d*.9)));
   drawCity(d);const nk=Math.max(0,1-d*1.4);beamMat.opacity=.75*nk;coneMat.opacity=.13*nk;glowMat.opacity=nk;tailMat.opacity=.85*nk;if(scene.fog)scene.fog.color.copy(lerpC('#101a3a','#cfdbe6',d).lerp(new T3.Color('#ffb98a'),w*.18));
 }

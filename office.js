@@ -84,16 +84,18 @@ function placeGrass(e){
   const spots=[];   // [x,z,avstånd 0 nära | 1 mellan | 2 långt]
   const mid=(x,z)=>Math.abs(x)<56&&z<30;
   const fill=(x0,x1,z0,z1,dens,keep,tier)=>{const n=Math.round((x1-x0)*(z1-z0)*dens);for(let i=0;i<n;i++){const x=x0+Math.random()*(x1-x0),z=z0+Math.random()*(z1-z0);if(!paved(x,z)&&keep(x,z))spots.push([x,z,tier]);}};
-  fill(-34,34,-7.2,16,4*k,near,0);                                            // nära: tätt
-  fill(-56,56,-7.2,30,.8*k,(x,z)=>!near(x,z),1);                              // mellan
-  fill(-95,95,-7.2,75,.95*k,(x,z)=>!mid(x,z),2);                              // långt: lätta tuvor, stora
-  const bins=GK.geos.map(()=>[[],[],[]]);spots.forEach(p=>bins[Math.floor(Math.random()*bins.length)][p[2]].push(p));
+  fill(-34,34,-7.2,16,5.5*k,near,0);                                            // nära: tätt
+  fill(-56,56,-7.2,30,1.1*k,(x,z)=>!near(x,z),1);                              // mellan
+  fill(-95,95,-7.2,75,1.5*k,(x,z)=>!mid(x,z),2);
+  const far2=(x,z)=>Math.abs(x)<95&&z<75;
+  fill(-140,140,-7.2,140,.4*k,(x,z)=>!far2(x,z),3);                         // yttersta kanten: glest men stora tuvor                              // långt: lätta tuvor, stora
+  const bins=GK.geos.map(()=>[[],[],[],[]]);spots.forEach(p=>bins[Math.floor(Math.random()*bins.length)][p[2]].push(p));
   const m=new T3.Matrix4(),q=new T3.Quaternion(),up=new T3.Vector3(0,1,0),pos=new T3.Vector3(),sc=new T3.Vector3(),col=new T3.Color();
-  GK.geos.forEach((geo,gi)=>{for(let tier=0;tier<3;tier++){
+  GK.geos.forEach((geo,gi)=>{for(let tier=0;tier<4;tier++){
     const list=bins[gi][tier];if(!list.length)continue;
-    const mesh=new T3.InstancedMesh(tier===2?GK.thin[gi]:geo,gpMat,list.length);
+    const mesh=new T3.InstancedMesh(tier>=2?GK.thin[gi]:geo,gpMat,list.length);
     list.forEach(([x,z],i)=>{
-      const r=[1,1.35,2.3][tier]*(.8+Math.random()*.4);
+      const r=[1,1.35,2.3,3.4][tier]*(.8+Math.random()*.4);
       pos.set(x,-.7,z);q.setFromAxisAngle(up,Math.random()*Math.PI*2);sc.set(GK_XZ*r,GK_Y*r*(.85+Math.random()*.3),GK_XZ*r);
       m.compose(pos,q,sc);mesh.setMatrixAt(i,m);const v=.78+Math.random()*.25;mesh.setColorAt(i,col.setRGB(v,v,v));
     });

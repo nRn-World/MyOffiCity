@@ -460,8 +460,8 @@ function outside(){
   box(BW+1.2,.66,BD+1.2,M(0xb9b3a8),0,-.37,ZC,root);   // toppen strax under golvplattan (y 0) så de inte z-fajtas
   groundMat=M(GROUNDC[VAR%GROUNDC.length],{roughness:1,map:lawnTex()});const ground=new T3.Mesh(new T3.PlaneGeometry(520,520),groundMat);ground.rotation.x=-Math.PI/2;ground.position.y=-.7;ground.receiveShadow=true;root.add(ground);
   box(BW+30,.15,3.2,M(0xd2c5a6),0,-.62,3.6,root);
-  box(150,.1,5,M(0x6b6559),0,-.66,9.2,root);
-  for(let i=-9;i<=9;i++)box(1.6,.02,.18,M(0xfbf2dc),i*5,-.6,9.2,root);
+  box(520,.1,5,M(0x6b6559),0,-.66,9.2,root);
+  for(let i=-50;i<=50;i++)box(1.6,.02,.18,M(0xfbf2dc),i*5,-.6,9.2,root);
   box(2.6,.15,2.4,M(0xcabf9f),0,-.6,2.4,root);
   const e=BW/2;loadGrassKit();placeGrass(e);
   if(STY.gold){ // granittorg, spegeldammar och formklippta japanska tallar
@@ -484,9 +484,9 @@ function outside(){
   [-e+1,e-1,-e-AW-1.5,e+AW+1.5].forEach(x=>lamp(x,5.2));
   for(const i of[-1,1])box(2.4,.4,.8,M(0x17400d),i*Math.min(5.5,e-3),-.5,Z1+1,root);
   // stad: asfalt, trottoar, körfält och en riktig stadsbild bakom kontoret
-  const road=box(200,.06,64,M(0x5f5a4e,{roughness:.98}),0,-.685,-40,root);road.castShadow=road.receiveShadow=false;
-  const walk=box(200,.08,2.2,M(0xdbd0b4,{roughness:.95}),0,-.64,-8.4,root);walk.castShadow=walk.receiveShadow=false;
-  for(let i=-9;i<=9;i++){const dash=box(2.6,.02,.12,M(0xfaf0d8),i*4.4,-.62,-10.8,root);dash.castShadow=dash.receiveShadow=false;}
+  const road=box(520,.06,200,M(0x5f5a4e,{roughness:.98}),0,-.685,-108,root);road.castShadow=road.receiveShadow=false;
+  const walk=box(520,.08,2.2,M(0xdbd0b4,{roughness:.95}),0,-.64,-8.4,root);walk.castShadow=walk.receiveShadow=false;
+  for(let i=-59;i<=59;i++){const dash=box(2.6,.02,.12,M(0xfaf0d8),i*4.4,-.62,-10.8,root);dash.castShadow=dash.receiveShadow=false;}
   for(let x=-42;x<=42;x+=14)lamp(x,-8.6);
   cityLayout().forEach(cityBuilding);
   // två körfält: färre fordon, men taxibilar och motorcyklar blandas in

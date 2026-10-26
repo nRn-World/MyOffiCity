@@ -565,7 +565,6 @@ let BEAM_GEO=null,CONE_GEO=null,coneMat=null;
 /* Bilmodeller: "Generic passenger car pack" av Comrade1280 (CC BY 4.0). Filen har tio bilar uppradade i en cirkel med
    inbakade positioner, så varje bil tas ut för sig (kaross, glas, lyktor, fyra hjul) och vrids så att fronten pekar mot +x. */
 const CAR_GLB={sedan:'Sedan',small:'Compact',jeep:'Offroad',van:'minivan',sport:'Sport',taxi:'Wagon'};
-const CAR_FWD_FLIP=false;
 let CARPACK=null,carPackTried=false;
 function loadCarPack(){
   if(carPackTried||!T3.GLTFLoader)return;carPackTried=true;
@@ -582,20 +581,16 @@ function buildCarTemplates(scene){
   meshes.filter(o=>/Body_0$/.test(o.name)&&!/Glass|Optics/.test(o.name)).forEach(b=>{
     const key=b.parent.name.replace(/_?body$/i,'').toLowerCase();
     const ws=wheels.map(w=>({w,d:w.userData.c.distanceTo(b.userData.c)})).sort((a,c)=>a.d-c.d).slice(0,4).map(x=>x.w);
-    const cs=ws.map(w=>w.userData.c);let best=0,pair=[0,1];
-    for(let i=0;i<4;i++)for(let j=i+1;j<4;j++){const d=cs[i].distanceTo(cs[j]);if(d>best){best=d;pair=[i,j];}}
-    const ax=cs[pair[1]].clone().sub(cs[pair[0]]).setY(0).normalize();
-    const cen=cs.reduce((a,c)=>a.add(c),new T3.Vector3()).multiplyScalar(.25);
-    const ang=Math.atan2(cen.z,cen.x);let yaw=Math.atan2(ax.z,ax.x);
-    // bilarna står i en cirkel med samma lutning mot mittpunkten: välj det av de två håll som ligger närmast den gemensamma riktningen
-    const ref=ang-28*Math.PI/180+(CAR_FWD_FLIP?Math.PI:0),dd=(a,b)=>Math.abs(Math.atan2(Math.sin(a-b),Math.cos(a-b)));
-    if(dd(yaw+Math.PI,ref)<dd(yaw,ref))yaw+=Math.PI;
+    const cs=ws.map(w=>w.userData.c),cen=cs.reduce((a,c)=>a.add(c),new T3.Vector3()).multiplyScalar(.25);
+    // paketets bilar står radiellt i en cirkel och alla har fronten mot cirkelns mitt: framåt = rakt mot mitten
+    const yaw=Math.atan2(-cen.z,-cen.x);
     const g=new T3.Group(),inner=new T3.Group();g.add(inner);inner.position.set(-cen.x,0,-cen.z);
     const parts=[b,...b.parent.children.filter(c=>c.isMesh&&c!==b),...ws];
     const box=new T3.Box3();
     parts.forEach(m=>{const c=new T3.Mesh(m.geometry,m.material);m.matrixWorld.decompose(c.position,c.quaternion,c.scale);c.castShadow=true;inner.add(c);});
     g.rotation.y=yaw;g.updateMatrixWorld(true);box.setFromObject(g);
-    out[key]={g,len:box.max.x-box.min.x,top:box.max.y,body:b.material};
+    const mid=box.getCenter(new T3.Vector3()),o=new T3.Group();g.position.set(-mid.x,0,-mid.z);o.add(g);   // mitten av bilen i origo, så längd och avstånd stämmer
+    out[key]={g:o,len:box.max.x-box.min.x,top:box.max.y,body:b.material};
   });
   return out;
 }

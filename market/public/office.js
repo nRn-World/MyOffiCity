@@ -344,9 +344,27 @@ function buildLevel(n,kind,lift){
   if(STY.gold)box(BW+.72,.08,.08,goldM,0,y-.05,Z1+.32,root); // guldlist längs bjälklaget
   const L=new T3.PointLight(0xffbd80,.5,26,1);L.position.set(0,y+3.8,ZC);root.add(L);lights.push(L);
 }
-function tree(x,z,s=1){if(VAR){const r=rnd(x*7.1+z*3.3+VAR*13);if(r<.2)return;x+=(rnd(x+VAR)-.5)*3;z+=(rnd(z+VAR*2)-.5)*2;s*=.75+rnd(x*z+VAR)*.7;}const g=new T3.Group();g.position.set(x,-.7,z);g.scale.setScalar(s);cyl(.18,.25,2,M(0x6b4a2b),0,1,0,g,8);
+/* Träd: "Animated Oak Trees" av Jagobo (CC BY 4.0, se CREDITS.md). Tre ekar, förenklade till 7 000-11 000 trianglar vardera (stam i en färg, glesare men större löv), statiska.
+   Tills filerna laddats ritas de gamla enkla träden; sedan byts de mot ekar. */
+let OAKS=[],oakTried=false,TREES=[];
+function loadOak(){
+  if(oakTried)return;oakTried=true;
+  fetch('models/oak.json?v=3').then(r=>r.json()).then(async J=>{
+    const buf=await (await fetch('models/oak.bin?v=3')).arrayBuffer();
+    const texs=await Promise.all(J.tex.map(f=>new Promise(ok=>new T3.TextureLoader().load('models/'+f+'?v=1',t=>{t.encoding=T3.sRGBEncoding;t.flipY=false;t.anisotropy=4;ok(t);},undefined,()=>ok(null)))));
+    const mats=J.mats.map(m=>{const mt=new T3.MeshLambertMaterial({color:new T3.Color().setRGB(m.c[0],m.c[1],m.c[2]),side:T3.DoubleSide});if(m.t>=0&&texs[m.t])mt.map=texs[m.t];if(m.a){mt.alphaTest=.5;mt.transparent=false;}return mt;});
+    const trees=[new T3.Group(),new T3.Group(),new T3.Group()];
+    J.parts.forEach(p=>{let o=p.o;const pos=new Float32Array(buf,o,p.nV*3);o+=p.nV*12;const nrm=new Float32Array(buf,o,p.nV*3);o+=p.nV*12;const uv=new Float32Array(buf,o,p.nV*2);o+=p.nV*8;const idx=new Uint16Array(buf,o,p.nI);
+      const g=new T3.BufferGeometry();g.setAttribute('position',new T3.BufferAttribute(pos,3));g.setAttribute('normal',new T3.BufferAttribute(nrm,3));g.setAttribute('uv',new T3.BufferAttribute(uv,2));g.setIndex(new T3.BufferAttribute(idx,1));g.computeBoundingSphere();
+      const m=new T3.Mesh(g,mats[p.mat]);m.castShadow=true;trees[p.tree].add(m);});
+    OAKS=trees;swapTrees();
+  }).catch(()=>{});
+}
+function addOak(x,z,s){const m=OAKS[Math.floor(rnd(x*3.1+z*1.7+VAR)*OAKS.length)%OAKS.length].clone(true);m.position.set(x,-.7,z);m.rotation.y=rnd(x*1.3+z)*6.28;m.scale.setScalar(s*.55);root.add(m);return m;}
+function swapTrees(){if(!root||!OAKS.length)return;TREES.forEach(t=>{if(t.g.parent)t.g.parent.remove(t.g);addOak(t.x,t.z,t.s);});TREES=[];}
+function tree(x,z,s=1){if(VAR){const r=rnd(x*7.1+z*3.3+VAR*13);if(r<.2)return;x+=(rnd(x+VAR)-.5)*3;z+=(rnd(z+VAR*2)-.5)*2;s*=.75+rnd(x*z+VAR)*.7;}if(OAKS.length){addOak(x,z,s);return;}const g=new T3.Group();TREES.push({g,x,z,s});g.position.set(x,-.7,z);g.scale.setScalar(s);cyl(.18,.25,2,M(0x6b4a2b),0,1,0,g,8);
   const LC=LEAFC[VAR%LEAFC.length];sph(1.3,M(LC[0]),0,2.8,0,g);sph(1,M(LC[1]),.6,3.4,.2,g);sph(.9,M(LC[2]),-.6,3.2,-.3,g);root.add(g);}
-function pine(x,z,s=1){if(VAR){if(rnd(x*5.3+z*2.1+VAR*7)<.2)return;x+=(rnd(x+VAR)-.5)*2;s*=.8+rnd(z+VAR)*.5;}const g=new T3.Group();g.position.set(x,-.7,z);g.scale.setScalar(s);
+function pine(x,z,s=1){if(VAR){if(rnd(x*5.3+z*2.1+VAR*7)<.2)return;x+=(rnd(x+VAR)-.5)*2;s*=.8+rnd(z+VAR)*.5;}if(OAKS.length){addOak(x,z,s);return;}const g=new T3.Group();TREES.push({g,x,z,s});g.position.set(x,-.7,z);g.scale.setScalar(s);
   const tr=cyl(.14,.24,2.4,M(0x5a3d27),0,1.2,0,g,8);tr.rotation.z=.18;
   [[.45,2.1,0,1.3],[-.6,2.7,.2,1.05],[.35,3.3,-.2,.85],[-.05,3.85,0,.6]].forEach(([dx,y,dz,r],i)=>sph(r,M(i%2?0x2d5a32:0x356b3a),dx,y,dz,g,1,.3,1));root.add(g);}
 function bike(x,z,col){
@@ -1021,7 +1039,7 @@ function build(o){
   if(root){disposeTree(root);scene.remove(root);}
   glassMat=null;
   root=new T3.Group();scene.add(root);
-  loadCarPack();loadBike();screens=[];leds=[];holos=[];lights=[];cars=[];bikes=[];screenHits=[];cityTex=[];flames=[];OBST=[];
+  TREES=[];loadCarPack();loadBike();loadOak();screens=[];leds=[];holos=[];lights=[];cars=[];bikes=[];screenHits=[];cityTex=[];flames=[];OBST=[];
   cityFaces.forEach(f=>f.t.dispose());cityFaces=CITY_STYLES.map((_,i)=>makeCityFace(i));cityMats=[];cityBeacons=[];
   Object.values(agents).forEach(a=>{a.tag.remove();a.bub.remove();});for(const k in agents)delete agents[k];
   packets.forEach(p=>p.res());packets=[];trails=[];

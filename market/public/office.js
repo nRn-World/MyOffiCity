@@ -695,8 +695,34 @@ function makeCar(type,col,dir){
     const tg=new T3.Sprite(tailMat);tg.scale.set(.6,.6,1);tg.position.set(-(LL/2+.1)*dir,by+.15,sz);g.add(tg);}
   return {g,len:LL};
 }
+/* Motorcykel: "Honda CB500X" av DevanirGrau (CC BY 4.0, se CREDITS.md). Modellen är förenklad (ca 50 000 trianglar, 59 delar, texturer 512 px)
+   och fronten pekar mot +x; föraren är kvar från den gamla enkla motorcykeln. */
+let BIKE=null,bikeTried=false;
+function loadBike(){
+  if(bikeTried)return;bikeTried=true;
+  fetch('models/bike.json?v=1').then(r=>r.json()).then(async J=>{
+    const buf=await (await fetch('models/bike.bin?v=1')).arrayBuffer();
+    const texs=await Promise.all(J.tex.map(f=>new Promise(ok=>new T3.TextureLoader().load('models/'+f+'?v=1',t=>{t.encoding=T3.sRGBEncoding;t.flipY=false;t.anisotropy=4;ok(t);},undefined,()=>ok(null)))));
+    const mats=J.mats.map(m=>{const mt=new T3.MeshStandardMaterial({color:new T3.Color().setRGB(m.c[0],m.c[1],m.c[2]),metalness:m.m,roughness:m.r,side:T3.DoubleSide});if(m.t>=0&&texs[m.t])mt.map=texs[m.t];if(m.o<1){mt.transparent=true;mt.opacity=m.o;mt.depthWrite=false;}return mt;});
+    const grp=new T3.Group();
+    J.parts.forEach(p=>{let o=p.o;const pos=new Float32Array(buf,o,p.nV*3);o+=p.nV*12;const nrm=new Float32Array(buf,o,p.nV*3);o+=p.nV*12;const uv=new Float32Array(buf,o,p.nV*2);o+=p.nV*8;const idx=new Uint16Array(buf,o,p.nI);
+      const g=new T3.BufferGeometry();g.setAttribute('position',new T3.BufferAttribute(pos,3));g.setAttribute('normal',new T3.BufferAttribute(nrm,3));g.setAttribute('uv',new T3.BufferAttribute(uv,2));g.setIndex(new T3.BufferAttribute(idx,1));g.computeBoundingSphere();
+      const m=new T3.Mesh(g,mats[p.mat]);m.castShadow=true;grp.add(m);});
+    BIKE={g:grp,len:J.len};
+    if(root)cars.forEach((o,i)=>{if(o.type!=='moto')return;const n=spawnCar(o.dir,o.z,0,'moto');n.g.position.x=o.g.position.x;n.cur=o.cur;n.v0=o.v0;root.remove(o.g);cars[i]=n;});
+  }).catch(()=>{});
+}
 function makeMoto(col,dir){
   const g=new T3.Group(),b=new T3.Group();g.add(b);if(dir<0)b.rotation.y=Math.PI;
+  if(BIKE){   // riktig modell + förare
+    const m=BIKE.g.clone(true);m.scale.setScalar(.93);b.add(m);
+    const black=M(0x16181d,{metalness:.4,roughness:.5}),jacket=M(0x2c3a4e),pants=M(0x22252e),skin=M(0xd9a06f),helmet=M(0x15161a),ox=-.12,oy=-.17;
+    box(.34,.52,.27,jacket,ox,1.17+oy,0,b);
+    for(const sz of[-.14,.14]){box(.11,.4,.12,pants,ox-.02,.82+oy,sz,b);box(.13,.08,.18,black,ox-.02,.6+oy,sz,b);}
+    for(const sz of[-.17,.17]){const arm=cyl(.04,.035,.48,jacket,ox+.27,1.18+oy,sz,b,6);arm.rotation.z=-.95;}
+    sph(.17,skin,ox,1.51+oy,0,b);sph(.19,helmet,ox,1.55+oy,0,b,1,.78,1);
+    return {g,len:2.15};
+  }
   const paint=M(col,{metalness:.6,roughness:.3}),black=M(0x16181d,{metalness:.4,roughness:.5}),chrome=M(0xb8bec8,{metalness:.8,roughness:.2}),light=M(0xfff3c8),red=M(0xff3030);
   for(const x of[-.66,.66]){const w=cyl(.33,.33,.14,black,x,.33,0,b,18);w.rotation.x=Math.PI/2;}
   box(.95,.18,.36,paint,0,.62,0,b);
@@ -989,7 +1015,7 @@ function build(o){
   if(root){disposeTree(root);scene.remove(root);}
   glassMat=null;
   root=new T3.Group();scene.add(root);
-  loadCarPack();screens=[];leds=[];holos=[];lights=[];cars=[];bikes=[];screenHits=[];cityTex=[];flames=[];OBST=[];
+  loadCarPack();loadBike();screens=[];leds=[];holos=[];lights=[];cars=[];bikes=[];screenHits=[];cityTex=[];flames=[];OBST=[];
   cityFaces.forEach(f=>f.t.dispose());cityFaces=CITY_STYLES.map((_,i)=>makeCityFace(i));cityMats=[];cityBeacons=[];
   Object.values(agents).forEach(a=>{a.tag.remove();a.bub.remove();});for(const k in agents)delete agents[k];
   packets.forEach(p=>p.res());packets=[];trails=[];

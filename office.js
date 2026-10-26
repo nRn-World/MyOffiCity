@@ -736,7 +736,7 @@ function loadCivil(){
 }
 /* Fotgängare: två gratis CC0-personer (man och kvinna, gå-animation) från CityAssets (se models/CREDITS.md). De går fram och tillbaka på trottoarerna. */
 let PEDS=[],pedTried=false;
-const PED_SPOTS=[['man',3.9,-18,1,1.3,22],['woman',4.6,14,-1,1.5,22],['man',5.0,-6,-1,1.1,22],['woman',4.2,20,1,1.4,22],['woman',-8.0,-30,1,1.35,44],['man',-8.7,25,-1,1.2,44],['man',-8.3,-10,1,1.6,44]];
+const PED_SPOTS=[['man',3.9,-90,1,1.3,130],['woman',4.6,-55,-1,1.5,130],['man',5.0,-30,1,1.1,130],['woman',4.2,-8,-1,1.4,130],['man',4.4,18,1,1.2,130],['woman',3.8,40,-1,1.35,130],['woman',4.9,65,1,1.45,130],['man',4.6,95,-1,1.25,130],['woman',-8.0,-60,1,1.35,130],['man',-8.7,-20,-1,1.2,130],['man',-8.3,25,1,1.6,130],['woman',-7.9,75,-1,1.3,130]];   // går hela trottoaren och fortsätter i andra änden
 function loadPeds(){
   if(pedTried||!window.CityAssets||!T3.SkeletonUtils)return;pedTried=true;
   window.CityAssets.loadAll(['man','woman']).then(()=>{if(root)placePeds();}).catch(()=>{});
@@ -762,8 +762,8 @@ function placePeds(){
   });
 }
 function movePeds(dt){
-  for(const q of PEDS){q.x+=q.dir*q.v*dt;if(q.x>q.lim){q.x=q.lim;q.dir=-1;}else if(q.x<-q.lim){q.x=-q.lim;q.dir=1;}
-    q.p.group.position.x=q.x;q.p.group.rotation.y=q.dir>0?Math.PI/2:-Math.PI/2;q.p.mixer.update(dt);}
+  for(const q of PEDS){q.x+=q.dir*q.v*dt;if(q.x>q.lim)q.x=-q.lim;else if(q.x<-q.lim)q.x=q.lim;
+    q.p.group.position.x=q.x;q.p.mixer.update(dt);}
 }
 let BIKES=[],bikeTried=false,motoN=0;
 const BIKE_FILES=['bike','duc'];   // Honda CB500X och Ducati Panigale V4

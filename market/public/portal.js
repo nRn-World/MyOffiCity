@@ -346,7 +346,7 @@ const loadNet = () => netLoad || (netLoad = new Promise((ok, no) => {
 }));
 const loadOffice = () => cityLoad || (cityLoad = new Promise((ok, no) => {
   const add = (src, next) => { const el = document.createElement('script'); el.src = src; el.onload = next; el.onerror = () => { cityLoad = null; no(new Error('3D')); }; document.head.appendChild(el); };
-  const full = () => add('office.js?v=24', ok);
+  const full = () => add('office.js?v=25', ok);
   window.THREE ? full() : add('vendor/three.min.js', full);
 }));
 let officeCv = null, showCb = null;

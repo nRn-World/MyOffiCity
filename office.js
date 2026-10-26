@@ -30,10 +30,10 @@ function safePt(x,z,y){   // flyttar en målpunkt ut ur möbler så att ingen f�
   }
   return [x,z];
 }
-const PAL=[{},{wall:0xe6efe8,slab:0xc9b99a,roof:0x2f6b55,frame:0x2c5a4a,win:0x2c5a4a},{wall:0xf2e4d2,slab:0xb98b5b,roof:0xa94a35,frame:0x7a3328,win:0x7a3328},{wall:0xe4ebf2,slab:0xa9b3bf,roof:0x3a62a8,frame:0x2f4b7a,win:0x2f4b7a},{wall:0xf4dfd8,slab:0xd2a590,roof:0xc9922f,frame:0xc08a2e,win:0xc08a2e},{wall:0xeceae0,slab:0x8fa88a,roof:0x7a5aa8,frame:0x6b5a8a,win:0x6b5a8a}];
+const PAL=[{},{wall:0xfbfaf7,slab:0xc9b99a,roof:0x2f6b55,frame:0x2c5a4a,win:0x2c5a4a},{wall:0xfbfaf7,slab:0xb98b5b,roof:0xa94a35,frame:0x7a3328,win:0x7a3328},{wall:0xfbfaf7,slab:0xa9b3bf,roof:0x3a62a8,frame:0x2f4b7a,win:0x2f4b7a},{wall:0xfbfaf7,slab:0xd2a590,roof:0xc9922f,frame:0xc08a2e,win:0xc08a2e},{wall:0xfbfaf7,slab:0x8fa88a,roof:0x7a5aa8,frame:0x6b5a8a,win:0x6b5a8a}];
 const SIGNC=[['#1b2550','#0c1230','#ffd27a','#6fc8ff'],['#2a1a12','#120a06','#f0b07a','#ffb36b'],['#12332b','#06150f','#8fe0b8','#6fffd0'],['#2b1245','#12061f','#d9a7ff','#c58bff'],['#3a1216','#190508','#ffc4a0','#ff8f6f'],['#10283a','#06121c','#a7e0ff','#6fd0ff']];
-const GROUNDC=[0x29550d,0x39600f,0x344c14,0x234911,0x465d10,0x25520c];
-const LEAFC=[[0x0c5216,0x11681d,0x084111],[0x1a5b11,0x25731a,0x11460c],[0xa43d07,0xbe540d,0x7c2906],[0x0b4632,0x115f43,0x073223],[0x326411,0x427f19,0x244e0a],[0x073411,0x0c4819,0x05240c]];
+const GROUNDC=[0x58a834,0x4f9d30,0x5fae38,0x4c9a2e,0x66b13c,0x55a533];
+const LEAFC=[[0x3f7a26,0x4f8f30,0x2f6420],[0x5a7a2a,0x6b8f33,0x46611f],[0x6e7a2c,0x82903a,0x566024],[0x2f6b2a,0x3d8236,0x24551f],[0x4d7a2b,0x5f9136,0x3a5f20],[0x6b6f2a,0x7f8636,0x555a22]];
 let STY=BSTYLES.kontor,frameM=null,winM=null,goldM=null,flames=[];
 const BD=6.6,Z0=-5.4,Z1=1.2,ZC=-2.1,FH=5.2,WH=FH-.4;
 // Fyra fasadstilar till staden bakom kontoret. Färgerna blandas mellan natt och dag
@@ -284,7 +284,7 @@ function buildLevel(n,kind,lift){
   if(STY.gold)box(BW+.72,.08,.08,goldM,0,y-.05,Z1+.32,root); // guldlist längs bjälklaget
   const L=new T3.PointLight(0xffbd80,.5,26,1);L.position.set(0,y+3.8,ZC);root.add(L);lights.push(L);
 }
-function tree(x,z,s=1){if(VAR){const r=rnd(x*7.1+z*3.3+VAR*13);if(r<.2)return;x+=(rnd(x+VAR)-.5)*3;z+=(rnd(z+VAR*2)-.5)*2;s*=.75+rnd(x*z+VAR)*.7;}const g=new T3.Group();g.position.set(x,-.7,z);g.scale.setScalar(s);cyl(.18,.25,2,M(0x251108),0,1,0,g,8);
+function tree(x,z,s=1){if(VAR){const r=rnd(x*7.1+z*3.3+VAR*13);if(r<.2)return;x+=(rnd(x+VAR)-.5)*3;z+=(rnd(z+VAR*2)-.5)*2;s*=.75+rnd(x*z+VAR)*.7;}const g=new T3.Group();g.position.set(x,-.7,z);g.scale.setScalar(s);cyl(.18,.25,2,M(0x6b4a2b),0,1,0,g,8);
   const LC=LEAFC[VAR%LEAFC.length];sph(1.3,M(LC[0]),0,2.8,0,g);sph(1,M(LC[1]),.6,3.4,.2,g);sph(.9,M(LC[2]),-.6,3.2,-.3,g);root.add(g);}
 function pine(x,z,s=1){if(VAR){if(rnd(x*5.3+z*2.1+VAR*7)<.2)return;x+=(rnd(x+VAR)-.5)*2;s*=.8+rnd(z+VAR)*.5;}const g=new T3.Group();g.position.set(x,-.7,z);g.scale.setScalar(s);
   const tr=cyl(.14,.24,2.4,M(0x5a3d27),0,1.2,0,g,8);tr.rotation.z=.18;
@@ -1076,13 +1076,13 @@ function applyTimeBase(){
   gr.addColorStop(1,hexOf(lerpC('#1a2547','#fdf0d6',d)));
   g.fillStyle=gr;g.fillRect(0,0,4,256);bgT.needsUpdate=true;
   drawSky(d,w);
-  hemi.intensity=.11+.29*d;hemi.color.copy(lerpC('#7089d0','#fffaf1',d));hemi.groundColor.copy(lerpC('#28324c','#a9b184',d));
+  hemi.intensity=.11+.29*d;hemi.color.copy(lerpC('#7089d0','#fffaf1',d));hemi.groundColor.copy(lerpC('#28324c','#b4b8a6',d));
   fillL.intensity=.04+.11*d;fillL.color.copy(lerpC('#b9d4ff','#eef4fb',d));
-  sunL.intensity=.72*d;sunL.color.copy(lerpC('#ffe3bd','#ff9a55',w));
+  sunL.intensity=.72*d;sunL.color.copy(lerpC('#fffdf8','#ffb070',w));
   const a=Math.min(1,Math.max(0,(hourNow-6)/14))*Math.PI;sunL.position.set(-34*Math.cos(a),26*Math.max(.3,Math.sin(a)),30);
   lights.forEach(L=>{L.intensity=.06+.94*(1-d);});
-  if(groundMat)groundMat.color.copy(lerpC('#050a07','#29520b',d));
-  drawCity(d);const nk=Math.max(0,1-d*1.4);beamMat.opacity=.75*nk;coneMat.opacity=.13*nk;glowMat.opacity=nk;tailMat.opacity=.85*nk;if(scene.fog)scene.fog.color.copy(lerpC('#101a3a','#d6bc90',d).lerp(new T3.Color('#ffb98a'),w*.4));
+  if(groundMat)groundMat.color.copy(lerpC('#050a07','#'+new T3.Color(GROUNDC[VAR%GROUNDC.length]).getHexString(),d));
+  drawCity(d);const nk=Math.max(0,1-d*1.4);beamMat.opacity=.75*nk;coneMat.opacity=.13*nk;glowMat.opacity=nk;tailMat.opacity=.85*nk;if(scene.fog)scene.fog.color.copy(lerpC('#101a3a','#cfdbe6',d).lerp(new T3.Color('#ffb98a'),w*.18));
 }
 function setHour(h){hourNow=h;if(root)applyTime();}
 
@@ -1404,7 +1404,7 @@ function init(c,ov){
   scene=new T3.Scene();
   bgC=cv(4,256);bgT=new T3.CanvasTexture(bgC);bgT.encoding=T3.sRGBEncoding;scene.background=bgT;
   camera=new T3.OrthographicCamera(-10,10,10,-10,.1,500);
-  hemi=new T3.HemisphereLight(0xffffff,0xb9c4b0,.95);scene.add(hemi);
+  hemi=new T3.HemisphereLight(0xffffff,0xb4b8a6,.95);scene.add(hemi);
   // Mjukt ljus framifrån så att glasfasaden och interiören aldrig blir en svart silhuett.
   fillL=new T3.DirectionalLight(0xd7e6ff,.3);fillL.position.set(26,18,42);scene.add(fillL);
   const sun=sunL=new T3.DirectionalLight(0xfff0d6,.8);sun.position.set(-12,34,22);sun.castShadow=true;
@@ -1421,7 +1421,7 @@ function init(c,ov){
     BEAM_GEO=new T3.PlaneGeometry(7,2.4);BEAM_GEO.rotateX(-Math.PI/2);
     CONE_GEO=new T3.ConeGeometry(.75,4,18,1,true);coneMat=new T3.MeshBasicMaterial({color:0xfff0c8,transparent:true,opacity:0,blending:T3.AdditiveBlending,depthWrite:false,side:T3.DoubleSide});
   }
-  skyC=cv(256,160);SKY=new T3.CanvasTexture(skyC);SKY.encoding=T3.sRGBEncoding;scene.fog=new T3.Fog(0xd6bc90,105,230);
+  skyC=cv(256,160);SKY=new T3.CanvasTexture(skyC);SKY.encoding=T3.sRGBEncoding;scene.fog=new T3.Fog(0xcfdbe6,105,230);
   {const c2=cv(64,64),g2=c2.getContext('2d'),r=g2.createRadialGradient(32,32,0,32,32,32);
     r.addColorStop(0,'rgba(255,255,255,1)');r.addColorStop(.35,'rgba(255,255,255,.55)');r.addColorStop(1,'rgba(255,255,255,0)');g2.fillStyle=r;g2.fillRect(0,0,64,64);GT=new T3.CanvasTexture(c2);}
   glowMat=new T3.SpriteMaterial({map:GT,color:0xfff1c8,transparent:true,opacity:0,blending:T3.AdditiveBlending,depthWrite:false});

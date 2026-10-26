@@ -473,7 +473,7 @@ function outside(){
   cityLayout().forEach(cityBuilding);
   // två körfält: färre fordon, men taxibilar och motorcyklar blandas in
   [[8.0,1],[10.4,-1]].forEach(([z,lane],i)=>{
-    const seed=i===0?['taxi','sedan','sport']:['taxi','moto','small'];
+    const seed=i===0?['taxi','moto','sport']:['taxi','moto','small'];
     let x=-60+Math.random()*5;
     for(let k=0;k<(VAR?2+VAR%3:3);k++){const c=spawnCar(lane,z,x,seed[k%3]);cars.push(c);x+=c.len+26+Math.random()*22;}
   });
@@ -617,7 +617,7 @@ function taxiTex(){
 }
 function spawnCar(lane,z,s,forced){
   const type=forced||pickR(CAR_TYPES),c=type==='moto'?makeMoto(pickR(CAR_COLORS),lane):makeCar(type,pickR(CAR_COLORS),lane);
-  const v0=CAR_SPEED[type]*(.8+Math.random()*.45);
+  const v0=CAR_SPEED[type]*(type==='moto'?.55+Math.random()*.95:.8+Math.random()*.45);
   c.g.position.set(s*lane,-.62,z);root.add(c.g);
   return {...c,dir:lane,z,v0,cur:v0,type};
 }
@@ -697,25 +697,28 @@ function makeCar(type,col,dir){
 }
 /* Motorcykel: "Honda CB500X" av DevanirGrau (CC BY 4.0, se CREDITS.md). Modellen är förenklad (ca 50 000 trianglar, 59 delar, texturer 512 px)
    och fronten pekar mot +x; föraren är kvar från den gamla enkla motorcykeln. */
-let BIKE=null,bikeTried=false;
+let BIKES=[],bikeTried=false,motoN=0;
+const BIKE_FILES=['bike','duc'];   // Honda CB500X och Ducati Panigale V4
 function loadBike(){
   if(bikeTried)return;bikeTried=true;
-  fetch('models/bike.json?v=1').then(r=>r.json()).then(async J=>{
-    const buf=await (await fetch('models/bike.bin?v=1')).arrayBuffer();
-    const texs=await Promise.all(J.tex.map(f=>new Promise(ok=>new T3.TextureLoader().load('models/'+f+'?v=1',t=>{t.encoding=T3.sRGBEncoding;t.flipY=false;t.anisotropy=4;ok(t);},undefined,()=>ok(null)))));
-    const mats=J.mats.map(m=>{const mt=new T3.MeshStandardMaterial({color:new T3.Color().setRGB(m.c[0],m.c[1],m.c[2]),metalness:m.m,roughness:m.r,side:T3.DoubleSide});if(m.t>=0&&texs[m.t])mt.map=texs[m.t];if(m.o<1){mt.transparent=true;mt.opacity=m.o;mt.depthWrite=false;}return mt;});
-    const grp=new T3.Group();
-    J.parts.forEach(p=>{let o=p.o;const pos=new Float32Array(buf,o,p.nV*3);o+=p.nV*12;const nrm=new Float32Array(buf,o,p.nV*3);o+=p.nV*12;const uv=new Float32Array(buf,o,p.nV*2);o+=p.nV*8;const idx=new Uint16Array(buf,o,p.nI);
-      const g=new T3.BufferGeometry();g.setAttribute('position',new T3.BufferAttribute(pos,3));g.setAttribute('normal',new T3.BufferAttribute(nrm,3));g.setAttribute('uv',new T3.BufferAttribute(uv,2));g.setIndex(new T3.BufferAttribute(idx,1));g.computeBoundingSphere();
-      const m=new T3.Mesh(g,mats[p.mat]);m.castShadow=true;grp.add(m);});
-    BIKE={g:grp,len:J.len};
-    if(root)cars.forEach((o,i)=>{if(o.type!=='moto')return;const n=spawnCar(o.dir,o.z,0,'moto');n.g.position.x=o.g.position.x;n.cur=o.cur;n.v0=o.v0;root.remove(o.g);cars[i]=n;});
-  }).catch(()=>{});
+  BIKE_FILES.forEach(name=>{
+    fetch('models/'+name+'.json?v=1').then(r=>r.json()).then(async J=>{
+      const buf=await (await fetch('models/'+name+'.bin?v=1')).arrayBuffer();
+      const texs=await Promise.all(J.tex.map(f=>new Promise(ok=>new T3.TextureLoader().load('models/'+f+'?v=1',t=>{t.encoding=T3.sRGBEncoding;t.flipY=false;t.anisotropy=4;ok(t);},undefined,()=>ok(null)))));
+      const mats=J.mats.map(m=>{const mt=new T3.MeshStandardMaterial({color:new T3.Color().setRGB(m.c[0],m.c[1],m.c[2]),metalness:m.m,roughness:m.r,side:T3.DoubleSide});if(m.t>=0&&texs[m.t])mt.map=texs[m.t];if(m.o<1){mt.transparent=true;mt.opacity=m.o;mt.depthWrite=false;}return mt;});
+      const grp=new T3.Group();
+      J.parts.forEach(p=>{let o=p.o;const pos=new Float32Array(buf,o,p.nV*3);o+=p.nV*12;const nrm=new Float32Array(buf,o,p.nV*3);o+=p.nV*12;const uv=new Float32Array(buf,o,p.nV*2);o+=p.nV*8;const idx=new Uint16Array(buf,o,p.nI);
+        const g=new T3.BufferGeometry();g.setAttribute('position',new T3.BufferAttribute(pos,3));g.setAttribute('normal',new T3.BufferAttribute(nrm,3));g.setAttribute('uv',new T3.BufferAttribute(uv,2));g.setIndex(new T3.BufferAttribute(idx,1));g.computeBoundingSphere();
+        const m=new T3.Mesh(g,mats[p.mat]);m.castShadow=true;grp.add(m);});
+      BIKES.push({g:grp,len:J.len});
+      if(root&&BIKES.length===BIKE_FILES.length){motoN=0;cars.forEach((o,i)=>{if(o.type!=='moto')return;const n=spawnCar(o.dir,o.z,0,'moto');n.g.position.x=o.g.position.x;n.cur=o.cur;n.v0=o.v0;root.remove(o.g);cars[i]=n;});}
+    }).catch(()=>{});
+  });
 }
 function makeMoto(col,dir){
   const g=new T3.Group(),b=new T3.Group();g.add(b);if(dir<0)b.rotation.y=Math.PI;
-  if(BIKE){   // riktig modell + förare
-    const m=BIKE.g.clone(true);m.scale.setScalar(.93);b.add(m);
+  if(BIKES.length){   // riktig modell (växelvis Honda och Ducati) + förare
+    const BK=BIKES[motoN++%BIKES.length];g.userData.real=1;const m=BK.g.clone(true);m.scale.setScalar(.93);b.add(m);
     const black=M(0x16181d,{metalness:.4,roughness:.5}),jacket=M(0x2c3a4e),pants=M(0x22252e),skin=M(0xd9a06f),helmet=M(0x15161a),ox=-.12,oy=-.17;
     box(.34,.52,.27,jacket,ox,1.17+oy,0,b);
     for(const sz of[-.14,.14]){box(.11,.4,.12,pants,ox-.02,.82+oy,sz,b);box(.13,.08,.18,black,ox-.02,.6+oy,sz,b);}
@@ -779,8 +782,11 @@ function moveCars(dt){
       c.g.position.x+=c.cur*lane*dt;
       if(c.g.position.x*lane>62){ // ut ur bild: en ny slumpad bil ställer sig sist i kön
         const others=ls.filter(o=>o!==c).map(o=>o.g.position.x*lane),back=others.length?Math.min(...others):62;
-        root.remove(c.g);const n=spawnCar(lane,c.z,0,c.type);
-        n.g.position.x=Math.min(-62,back-n.len-8-Math.random()*20)*lane;cars[cars.indexOf(c)]=n;
+        root.remove(c.g);
+        if(c.type==='moto'){const nl=Math.random()<.5?1:-1,nz=nl===1?8:10.4,n=spawnCar(nl,nz,0,'moto'),wait=Math.random()*Math.random()*260;   // slumpat körfält och paus innan nästa tur
+          n.g.position.x=-(62+wait)*nl;cars[cars.indexOf(c)]=n;}
+        else{const n=spawnCar(lane,c.z,0,c.type);
+        n.g.position.x=Math.min(-62,back-n.len-8-Math.random()*20)*lane;cars[cars.indexOf(c)]=n;}
       }
     });
   }

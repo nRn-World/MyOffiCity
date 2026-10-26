@@ -562,6 +562,44 @@ function spawnCar(lane,z,s,forced){
   return {...c,dir:lane,z,v0,cur:v0,type};
 }
 let BEAM_GEO=null,CONE_GEO=null,coneMat=null;
+/* Bilmodeller: "Generic passenger car pack" av Comrade1280 (CC BY 4.0). Filen har tio bilar uppradade i en cirkel med
+   inbakade positioner, så varje bil tas ut för sig (kaross, glas, lyktor, fyra hjul) och vrids så att fronten pekar mot +x. */
+const CAR_GLB={sedan:'Sedan',small:'Compact',jeep:'Offroad',van:'minivan',sport:'Sport',taxi:'Wagon'};
+const CAR_FWD_FLIP=false;
+let CARPACK=null,carPackTried=false;
+function loadCarPack(){
+  if(carPackTried||!T3.GLTFLoader)return;carPackTried=true;
+  new T3.GLTFLoader().load('models/cars.glb',gl=>{
+    try{CARPACK=buildCarTemplates(gl.scene);}catch(e){console.warn('bilpaket',e);return;}
+    if(!root)return;   // byt ut redan körande bilar mot de nya modellerna
+    cars.forEach((o,i)=>{if(o.type==='moto')return;const n=spawnCar(o.dir,o.z,0,o.type);n.g.position.x=o.g.position.x;n.cur=o.cur;n.v0=o.v0;root.remove(o.g);cars[i]=n;});
+  },undefined,()=>{});
+}
+function buildCarTemplates(scene){
+  scene.updateMatrixWorld(true);
+  const meshes=[];scene.traverse(o=>{if(o.isMesh){o.userData.c=new T3.Box3().setFromObject(o).getCenter(new T3.Vector3());meshes.push(o);}});
+  const wheels=meshes.filter(o=>/^Wheel/i.test(o.parent.name)),out={};
+  meshes.filter(o=>/Body_0$/.test(o.name)&&!/Glass|Optics/.test(o.name)).forEach(b=>{
+    const key=b.parent.name.replace(/_?body$/i,'').toLowerCase();
+    const ws=wheels.map(w=>({w,d:w.userData.c.distanceTo(b.userData.c)})).sort((a,c)=>a.d-c.d).slice(0,4).map(x=>x.w);
+    const cs=ws.map(w=>w.userData.c);let best=0,pair=[0,1];
+    for(let i=0;i<4;i++)for(let j=i+1;j<4;j++){const d=cs[i].distanceTo(cs[j]);if(d>best){best=d;pair=[i,j];}}
+    const ax=cs[pair[1]].clone().sub(cs[pair[0]]).setY(0).normalize();
+    const cen=cs.reduce((a,c)=>a.add(c),new T3.Vector3()).multiplyScalar(.25);
+    const ang=Math.atan2(cen.z,cen.x);let yaw=Math.atan2(ax.z,ax.x);
+    // bilarna står i en cirkel med samma lutning mot mittpunkten: välj det av de två håll som ligger närmast den gemensamma riktningen
+    const ref=ang-28*Math.PI/180+(CAR_FWD_FLIP?Math.PI:0),dd=(a,b)=>Math.abs(Math.atan2(Math.sin(a-b),Math.cos(a-b)));
+    if(dd(yaw+Math.PI,ref)<dd(yaw,ref))yaw+=Math.PI;
+    const g=new T3.Group(),inner=new T3.Group();g.add(inner);inner.position.set(-cen.x,0,-cen.z);
+    const parts=[b,...b.parent.children.filter(c=>c.isMesh&&c!==b),...ws];
+    const box=new T3.Box3();
+    parts.forEach(m=>{const c=new T3.Mesh(m.geometry,m.material);m.matrixWorld.decompose(c.position,c.quaternion,c.scale);c.castShadow=true;inner.add(c);});
+    g.rotation.y=yaw;g.updateMatrixWorld(true);box.setFromObject(g);
+    out[key]={g,len:box.max.x-box.min.x,top:box.max.y,body:b.material};
+  });
+  return out;
+}
+
 function makeCar(type,col,dir){
   const g=new T3.Group(),paint=M(type==='taxi'?0xf6c343:col,{metalness:.45,roughness:.3}),gl=M(0x1d2a3a,{metalness:.6,roughness:.15});
   // [längd, karosshöjd, bredd, hjulradie, hyttlängd, hytthöjd, hyttförskjutning]
@@ -580,13 +618,27 @@ function makeCar(type,col,dir){
     for(const sz of[-1,1])for(let i=0;i<4;i++)box(.24,.12,.02,M(i%2?0x15161a:0xf6c343),-L/2+.8+i*.42,by+.02,sz*(Wd/2+.012),g);
   }
   for(const sx of[-1,1])for(const sz of[-1,1]){const wh=cyl(R,R,.26,dark,sx*(L/2-.75),R,sz*(Wd/2-.05),g,16);wh.rotation.x=Math.PI/2;}
-  for(const sz of[-.55,.55]){box(.08,.16,.3,new T3.MeshBasicMaterial({color:0xfff3c8}),(L/2)*dir,by+.15,sz,g);box(.08,.16,.3,new T3.MeshBasicMaterial({color:0xff3030}),-(L/2)*dir,by+.15,sz,g);
-    const hg=new T3.Sprite(glowMat);hg.scale.set(1.1,1.1,1);hg.position.set((L/2+.1)*dir,by+.15,sz);g.add(hg);
+  let LL=L;
+  const tp=CARPACK&&CARPACK[(CAR_GLB[type]||'').toLowerCase()];
+  if(tp){   // riktig modell: göm de enkla klossarna och lägg in bilen (fronten pekar mot körriktningen)
+    g.children.slice().forEach(ch=>{ch.visible=false;});
+    const m=tp.g.clone(true),w=new T3.Group();w.add(m);if(dir<0)w.rotation.y=Math.PI;g.add(w);LL=tp.len;
+    if(type==='taxi'){   // gul taxi med skylt på taket
+      const y=new T3.MeshStandardMaterial({color:0xf6c343,metalness:.3,roughness:.4});
+      m.traverse(o=>{if(o.isMesh&&o.material===tp.body)o.material=y;});
+      const sy=tp.top+.12;box(.8,.22,.34,M(0x15161a),0,sy,0,w);
+      const sm=new T3.MeshBasicMaterial({map:taxiTex(),transparent:true});
+      for(const sz of[-1,1]){const p=new T3.Mesh(new T3.PlaneGeometry(.72,.2),sm);p.position.set(0,sy,sz*.176);if(sz<0)p.rotation.y=Math.PI;w.add(p);}
+    }
+  }
+
+  for(const sz of[-.55,.55]){box(.08,.16,.3,new T3.MeshBasicMaterial({color:0xfff3c8}),(LL/2)*dir,by+.15,sz,g);box(.08,.16,.3,new T3.MeshBasicMaterial({color:0xff3030}),-(LL/2)*dir,by+.15,sz,g);
+    const hg=new T3.Sprite(glowMat);hg.scale.set(1.1,1.1,1);hg.position.set((LL/2+.1)*dir,by+.15,sz);g.add(hg);
     // ljuskägla ut från lampan, lätt nedåtlutad, och ljusfläck på vägen som börjar vid lampan
-    const cn=new T3.Mesh(CONE_GEO,coneMat);cn.rotation.z=dir>0?Math.PI/2-.08:-(Math.PI/2-.08);cn.position.set((L/2+2)*dir,by,sz);cn.renderOrder=3;g.add(cn);
-    const bm=new T3.Mesh(BEAM_GEO,beamMat);bm.position.set((L/2+3.5)*dir,.04,sz*1.1);bm.rotation.y=dir>0?0:Math.PI;bm.renderOrder=3;g.add(bm);
-    const tg=new T3.Sprite(tailMat);tg.scale.set(.6,.6,1);tg.position.set(-(L/2+.1)*dir,by+.15,sz);g.add(tg);}
-  return {g,len:L};
+    const cn=new T3.Mesh(CONE_GEO,coneMat);cn.rotation.z=dir>0?Math.PI/2-.08:-(Math.PI/2-.08);cn.position.set((LL/2+2)*dir,by,sz);cn.renderOrder=3;g.add(cn);
+    const bm=new T3.Mesh(BEAM_GEO,beamMat);bm.position.set((LL/2+3.5)*dir,.04,sz*1.1);bm.rotation.y=dir>0?0:Math.PI;bm.renderOrder=3;g.add(bm);
+    const tg=new T3.Sprite(tailMat);tg.scale.set(.6,.6,1);tg.position.set(-(LL/2+.1)*dir,by+.15,sz);g.add(tg);}
+  return {g,len:LL};
 }
 function makeMoto(col,dir){
   const g=new T3.Group(),b=new T3.Group();g.add(b);if(dir<0)b.rotation.y=Math.PI;
@@ -882,7 +934,7 @@ function build(o){
   if(root){disposeTree(root);scene.remove(root);}
   glassMat=null;
   root=new T3.Group();scene.add(root);
-  screens=[];leds=[];holos=[];lights=[];cars=[];bikes=[];screenHits=[];cityTex=[];flames=[];OBST=[];
+  loadCarPack();screens=[];leds=[];holos=[];lights=[];cars=[];bikes=[];screenHits=[];cityTex=[];flames=[];OBST=[];
   cityFaces.forEach(f=>f.t.dispose());cityFaces=CITY_STYLES.map((_,i)=>makeCityFace(i));cityMats=[];cityBeacons=[];
   Object.values(agents).forEach(a=>{a.tag.remove();a.bub.remove();});for(const k in agents)delete agents[k];
   packets.forEach(p=>p.res());packets=[];trails=[];
@@ -1466,5 +1518,5 @@ function snapshot(tier,staff,label,w=640,h=440,variant=0,logo=null){
   renderer.render(scene,camera);const url=renderer.domElement.toDataURL('image/jpeg',.9);
   hourNow=h0;WX=wxKeep;if(wxObj)wxObj.visible=true;Object.assign({zoom,az,el},keep);resize();return url;
 }
-return {init,build,send,say,busy,snapshot,resize,setHour,daylight,pick:f=>{onPick=f;},phone:()=>phoneCall(),obst:()=>OBST,setWeather,sign:f=>{onSign=f;},zoomOut:f=>{onZoomOut=f;},preloadLogo,screen:f=>{onScreen=f;},select:id=>{selId=id;for(const k in agents)agents[k].tag.classList.toggle('on',k===id);},setStats:d=>{statsData=d;},visit,socialVisit,away:id=>agents[id]&&agents[id].away,pos:id=>{const g=agents[id],o=g&&(g.mover||g.p);return o?[+o.position.x.toFixed(2),+o.position.y.toFixed(2),+o.position.z.toFixed(2),g.away||'',g.seat?[g.seat.x,g.seat.y,g.seat.z,g.seat.facing]:null]:null;},toilet,kitchen,has:id=>!!agents[id],TIERS};
+return {init,build,send,say,busy,snapshot,resize,setHour,daylight,pick:f=>{onPick=f;},phone:()=>phoneCall(),obst:()=>OBST,dbgCars:()=>({cars,pack:!!CARPACK,keys:CARPACK?Object.keys(CARPACK):[]}),setWeather,sign:f=>{onSign=f;},zoomOut:f=>{onZoomOut=f;},preloadLogo,screen:f=>{onScreen=f;},select:id=>{selId=id;for(const k in agents)agents[k].tag.classList.toggle('on',k===id);},setStats:d=>{statsData=d;},visit,socialVisit,away:id=>agents[id]&&agents[id].away,pos:id=>{const g=agents[id],o=g&&(g.mover||g.p);return o?[+o.position.x.toFixed(2),+o.position.y.toFixed(2),+o.position.z.toFixed(2),g.away||'',g.seat?[g.seat.x,g.seat.y,g.seat.z,g.seat.facing]:null]:null;},toilet,kitchen,has:id=>!!agents[id],TIERS};
 })();

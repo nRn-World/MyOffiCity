@@ -62,9 +62,14 @@ function loadGrassKit(){
       const pos=new Float32Array(buf,off,nV*3);off+=nV*12;const col=new Uint8Array(buf,off,nV*3);off+=Math.ceil(nV*3/4)*4;const idx=new Uint16Array(buf,off,nI);off+=Math.ceil(nI/2)*4;
       const g=new T3.BufferGeometry();g.setAttribute('position',new T3.BufferAttribute(pos,3));g.setAttribute('color',new T3.BufferAttribute(col,3,true));g.setIndex(new T3.BufferAttribute(idx,1));g.computeVertexNormals();g.computeBoundingSphere();geos.push(g);
     }
-    GK={tex,geos};gpMat=new T3.MeshLambertMaterial({vertexColors:true,side:T3.DoubleSide});
+    GK={tex,geos,thin:geos.map(g=>thinGeo(g,4))};gpMat=new T3.MeshLambertMaterial({vertexColors:true,side:T3.DoubleSide});
     applyCarpet();if(root)placeGrass(root.userData.gpE);
   }).catch(()=>{});
+}
+function thinGeo(g,step){   // färre strån (varje strå = 7 hörn och 15 index): för långt avstånd
+  const P=g.attributes.position.array,C=g.attributes.color.array,I=g.index.array,nb=P.length/21|0,pos=[],col=[],idx=[];let o=0;
+  for(let b=0;b<nb;b+=step){for(let k=0;k<21;k++)pos.push(P[b*21+k]);for(let k=0;k<21;k++)col.push(C[b*21+k]);for(let k=0;k<15;k++)idx.push(I[b*15+k]-b*7+o);o+=7;}
+  const t=new T3.BufferGeometry();t.setAttribute('position',new T3.Float32BufferAttribute(pos,3));t.setAttribute('color',new T3.BufferAttribute(new Uint8Array(col),3,true));t.setIndex(idx);t.computeVertexNormals();t.computeBoundingSphere();return t;
 }
 function applyCarpet(){if(!GK||!groundMat)return;groundMat.map=GK.tex;groundMat.needsUpdate=true;if(root)applyTime();}
 const GK_XZ=1.5,GK_Y=2.4;
@@ -76,22 +81,25 @@ function placeGrass(e){
   const paved=(x,z)=>(x>bl&&x<br&&z>-6.7&&z<2.7)||(Math.abs(x)<e+15.2&&z>1.9&&z<5.3)||z<-7.1||(z>6.65&&z<11.75)||(STY.gold&&Math.abs(x)<e+9.4&&z>-10.6&&z<8.4);
   const coarse=matchMedia('(pointer:coarse)').matches,k=coarse?.5:1;
   const near=(x,z)=>Math.abs(x)<34&&z<16;
-  const spots=[];   // [x,z,avstånd=0|1]
-  const fill=(x0,x1,z0,z1,dens,keep,far)=>{const n=Math.round((x1-x0)*(z1-z0)*dens);for(let i=0;i<n;i++){const x=x0+Math.random()*(x1-x0),z=z0+Math.random()*(z1-z0);if(!paved(x,z)&&keep(x,z))spots.push([x,z,far]);}};
-  fill(-34,34,-7.2,16,4*k,near,0);                       // nära: tätt
-  fill(-56,56,-7.2,30,.7*k,(x,z)=>!near(x,z),1);            // längre bort: glesare och större tuvor
-  const bins=GK.geos.map(()=>[]);spots.forEach(p=>bins[Math.floor(Math.random()*bins.length)].push(p));
+  const spots=[];   // [x,z,avstånd 0 nära | 1 mellan | 2 långt]
+  const mid=(x,z)=>Math.abs(x)<56&&z<30;
+  const fill=(x0,x1,z0,z1,dens,keep,tier)=>{const n=Math.round((x1-x0)*(z1-z0)*dens);for(let i=0;i<n;i++){const x=x0+Math.random()*(x1-x0),z=z0+Math.random()*(z1-z0);if(!paved(x,z)&&keep(x,z))spots.push([x,z,tier]);}};
+  fill(-34,34,-7.2,16,4*k,near,0);                                            // nära: tätt
+  fill(-56,56,-7.2,30,.8*k,(x,z)=>!near(x,z),1);                              // mellan
+  fill(-95,95,-7.2,75,.95*k,(x,z)=>!mid(x,z),2);                              // långt: lätta tuvor, stora
+  const bins=GK.geos.map(()=>[[],[],[]]);spots.forEach(p=>bins[Math.floor(Math.random()*bins.length)][p[2]].push(p));
   const m=new T3.Matrix4(),q=new T3.Quaternion(),up=new T3.Vector3(0,1,0),pos=new T3.Vector3(),sc=new T3.Vector3(),col=new T3.Color();
-  GK.geos.forEach((geo,gi)=>{
-    const list=bins[gi],mesh=new T3.InstancedMesh(geo,gpMat,list.length);
-    list.forEach(([x,z,far],i)=>{
-      const r=(far?1.35:1)*(.8+Math.random()*.4);
+  GK.geos.forEach((geo,gi)=>{for(let tier=0;tier<3;tier++){
+    const list=bins[gi][tier];if(!list.length)continue;
+    const mesh=new T3.InstancedMesh(tier===2?GK.thin[gi]:geo,gpMat,list.length);
+    list.forEach(([x,z],i)=>{
+      const r=[1,1.35,2.3][tier]*(.8+Math.random()*.4);
       pos.set(x,-.7,z);q.setFromAxisAngle(up,Math.random()*Math.PI*2);sc.set(GK_XZ*r,GK_Y*r*(.85+Math.random()*.3),GK_XZ*r);
       m.compose(pos,q,sc);mesh.setMatrixAt(i,m);const v=.78+Math.random()*.25;mesh.setColorAt(i,col.setRGB(v,v,v));
     });
     mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;
     mesh.frustumCulled=false;mesh.castShadow=false;mesh.receiveShadow=false;root.add(mesh);
-  });
+  }});
   applyTime();
 }
 function lawnTex(){   // mjukt klippt gräsmatta: band och korn ger marken liv i stället för platt färg

@@ -627,7 +627,7 @@ function makeCar(type,col,dir){
     }
   }
 
-  for(const sz of[-.55,.55]){box(.08,.16,.3,new T3.MeshBasicMaterial({color:0xfff3c8}),(LL/2)*dir,by+.15,sz,g);box(.08,.16,.3,new T3.MeshBasicMaterial({color:0xff3030}),-(LL/2)*dir,by+.15,sz,g);
+  for(const sz of[-.55,.55]){if(!tp){box(.08,.16,.3,new T3.MeshBasicMaterial({color:0xfff3c8}),(LL/2)*dir,by+.15,sz,g);box(.08,.16,.3,new T3.MeshBasicMaterial({color:0xff3030}),-(LL/2)*dir,by+.15,sz,g);}
     const hg=new T3.Sprite(glowMat);hg.scale.set(1.1,1.1,1);hg.position.set((LL/2+.1)*dir,by+.15,sz);g.add(hg);
     // ljuskägla ut från lampan, lätt nedåtlutad, och ljusfläck på vägen som börjar vid lampan
     const cn=new T3.Mesh(CONE_GEO,coneMat);cn.rotation.z=dir>0?Math.PI/2-.08:-(Math.PI/2-.08);cn.position.set((LL/2+2)*dir,by,sz);cn.renderOrder=3;g.add(cn);

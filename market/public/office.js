@@ -78,7 +78,7 @@ function placeGrass(e){
   if(!GK||root.userData.gp)return;root.userData.gp=1;
   // allt som är asfalt, trottoar, torg eller hus får inga strån; resten av den gröna marken har gräsmattan som marktextur
   const bl=-(e+AWL+.7),br=e+AWR+.7;
-  const paved=(x,z)=>(x>bl&&x<br&&z>-6.7&&z<2.7)||(Math.abs(x)<e+15.2&&z>1.9&&z<5.3)||z<-7.1||(z>6.65&&z<11.75)||(STY.gold&&Math.abs(x)<e+9.4&&z>-10.6&&z<8.4);
+  const paved=(x,z)=>(x>bl&&x<br&&z>-6.7&&z<2.7)||(z>1.9&&z<5.3)||z<-7.1||(z>6.65&&z<11.75)||(STY.gold&&Math.abs(x)<e+9.4&&z>-10.6&&z<8.4);
   const coarse=matchMedia('(pointer:coarse)').matches,k=coarse?.5:1;
   const near=(x,z)=>Math.abs(x)<34&&z<16;
   const spots=[];   // [x,z,avstånd 0 nära | 1 mellan | 2 långt]
@@ -459,13 +459,13 @@ function cityLayout(){
 function outside(){
   box(BW+1.2,.66,BD+1.2,M(0xb9b3a8),0,-.37,ZC,root);   // toppen strax under golvplattan (y 0) så de inte z-fajtas
   groundMat=M(GROUNDC[VAR%GROUNDC.length],{roughness:1,map:lawnTex()});const ground=new T3.Mesh(new T3.PlaneGeometry(520,520),groundMat);ground.rotation.x=-Math.PI/2;ground.position.y=-.7;ground.receiveShadow=true;root.add(ground);
-  box(BW+30,.15,3.2,M(0xd2c5a6),0,-.62,3.6,root);
+  box(520,.15,3.2,M(0xd2c5a6),0,-.62,3.6,root);   // trottoaren går lika långt som vägen
   box(520,.1,5,M(0x6b6559),0,-.66,9.2,root);
   for(let i=-50;i<=50;i++)box(1.6,.02,.18,M(0xfbf2dc),i*5,-.6,9.2,root);
   box(2.6,.15,2.4,M(0xcabf9f),0,-.6,2.4,root);
   const e=BW/2;loadGrassKit();placeGrass(e);loadPeds();placePeds();
   if(STY.gold){ // granittorg, spegeldammar och formklippta japanska tallar
-    box(BW+18,.06,BD+12,M(0xa79c84,{roughness:.6}),0,-.64,ZC+1,root);
+    box(BW+18,.06,BD+12,M(0xa79c84,{roughness:.6}),0,-.6355,ZC+1,root);   // toppen strax över vägens (-.61) så de inte z-fajtas
     const water=M(0x4f8fa0,{metalness:.6,roughness:.05});
     for(const sx of[-1,1]){box(6.2,.1,3.4,M(0x9a9282),sx*(e+4.5+AW),-.6,ZC+1.5,root);box(5.8,.12,3,water,sx*(e+4.5+AW),-.57,ZC+1.5,root);
       box(4.2,.1,1.6,M(0x9a9282),sx*(e/2+1.5),-.6,Z1+1.4,root);box(3.9,.12,1.3,water,sx*(e/2+1.5),-.57,Z1+1.4,root);}

@@ -55,14 +55,14 @@ function loadGrassKit(){
     new Promise((ok,no)=>new T3.TextureLoader().load('models/grasscarpet.jpg?v=2',ok,undefined,no)),
     fetch('models/grassblades.bin?v=3').then(r=>r.ok?r.arrayBuffer():Promise.reject())
   ]).then(([tex,buf])=>{
-    tex.encoding=T3.sRGBEncoding;tex.wrapS=tex.wrapT=T3.RepeatWrapping;tex.repeat.set(110,110);tex.anisotropy=8;
+    tex.encoding=T3.sRGBEncoding;tex.wrapS=tex.wrapT=T3.RepeatWrapping;tex.repeat.set(220,220);tex.anisotropy=8;
     const dv=new DataView(buf),n=dv.getUint32(0,true),geos=[];let off=4;
     for(let i=0;i<n;i++){
       const nV=dv.getUint32(off,true),nI=dv.getUint32(off+4,true);off+=8;
       const pos=new Float32Array(buf,off,nV*3);off+=nV*12;const col=new Uint8Array(buf,off,nV*3);off+=Math.ceil(nV*3/4)*4;const idx=new Uint16Array(buf,off,nI);off+=Math.ceil(nI/2)*4;
       const g=new T3.BufferGeometry();g.setAttribute('position',new T3.BufferAttribute(pos,3));g.setAttribute('color',new T3.BufferAttribute(col,3,true));g.setIndex(new T3.BufferAttribute(idx,1));g.computeVertexNormals();g.computeBoundingSphere();geos.push(g);
     }
-    GK={tex,geos,thin:geos.map(g=>thinGeo(g,4))};gpMat=new T3.MeshLambertMaterial({vertexColors:true,side:T3.DoubleSide});
+    GK={tex,geos,thin:geos.map(g=>thinGeo(g,4)),thin8:geos.map(g=>thinGeo(g,9))};gpMat=new T3.MeshLambertMaterial({vertexColors:true,side:T3.DoubleSide});
     applyCarpet();if(root)placeGrass(root.userData.gpE);
   }).catch(()=>{});
 }
@@ -88,14 +88,15 @@ function placeGrass(e){
   fill(-56,56,-7.2,30,1.1*k,(x,z)=>!near(x,z),1);                              // mellan
   fill(-95,95,-7.2,75,1.5*k,(x,z)=>!mid(x,z),2);
   const far2=(x,z)=>Math.abs(x)<95&&z<75;
-  fill(-140,140,-7.2,140,.4*k,(x,z)=>!far2(x,z),3);                         // yttersta kanten: glest men stora tuvor                              // långt: lätta tuvor, stora
-  const bins=GK.geos.map(()=>[[],[],[],[]]);spots.forEach(p=>bins[Math.floor(Math.random()*bins.length)][p[2]].push(p));
+  fill(-140,140,-7.2,140,.4*k,(x,z)=>!far2(x,z),3);
+  fill(-210,210,-7.2,210,.14*k,(x,z)=>Math.abs(x)>=140||z>=140,4);        // allra längst bort: mycket glest, mycket stora tuvor                         // yttersta kanten: glest men stora tuvor                              // långt: lätta tuvor, stora
+  const bins=GK.geos.map(()=>[[],[],[],[],[]]);spots.forEach(p=>bins[Math.floor(Math.random()*bins.length)][p[2]].push(p));
   const m=new T3.Matrix4(),q=new T3.Quaternion(),up=new T3.Vector3(0,1,0),pos=new T3.Vector3(),sc=new T3.Vector3(),col=new T3.Color();
-  GK.geos.forEach((geo,gi)=>{for(let tier=0;tier<4;tier++){
+  GK.geos.forEach((geo,gi)=>{for(let tier=0;tier<5;tier++){
     const list=bins[gi][tier];if(!list.length)continue;
-    const mesh=new T3.InstancedMesh(tier>=2?GK.thin[gi]:geo,gpMat,list.length);
+    const mesh=new T3.InstancedMesh(tier===4?GK.thin8[gi]:tier>=2?GK.thin[gi]:geo,gpMat,list.length);
     list.forEach(([x,z],i)=>{
-      const r=[1,1.35,2.3,3.4][tier]*(.8+Math.random()*.4);
+      const r=[1,1.35,2.3,3.4,5.5][tier]*(.8+Math.random()*.4);
       pos.set(x,-.7,z);q.setFromAxisAngle(up,Math.random()*Math.PI*2);sc.set(GK_XZ*r,GK_Y*r*(.85+Math.random()*.3),GK_XZ*r);
       m.compose(pos,q,sc);mesh.setMatrixAt(i,m);const v=.78+Math.random()*.25;mesh.setColorAt(i,col.setRGB(v,v,v));
     });
@@ -439,7 +440,7 @@ function cityLayout(){
 }
 function outside(){
   box(BW+1.2,.7,BD+1.2,M(0xb9b3a8),0,-.35,ZC,root);
-  groundMat=M(GROUNDC[VAR%GROUNDC.length],{roughness:1,map:lawnTex()});const ground=new T3.Mesh(new T3.PlaneGeometry(260,260),groundMat);ground.rotation.x=-Math.PI/2;ground.position.y=-.7;ground.receiveShadow=true;root.add(ground);
+  groundMat=M(GROUNDC[VAR%GROUNDC.length],{roughness:1,map:lawnTex()});const ground=new T3.Mesh(new T3.PlaneGeometry(520,520),groundMat);ground.rotation.x=-Math.PI/2;ground.position.y=-.7;ground.receiveShadow=true;root.add(ground);
   box(BW+30,.15,3.2,M(0xd2c5a6),0,-.62,3.6,root);
   box(150,.1,5,M(0x6b6559),0,-.66,9.2,root);
   for(let i=-9;i<=9;i++)box(1.6,.02,.18,M(0xfbf2dc),i*5,-.6,9.2,root);

@@ -45,6 +45,13 @@ const CITY_STYLES=[
   {k:'steel',night:'#151c25',day:'#b6ad97',frameN:'#0c1118',frameD:'#7f7867',winN:'#0a1017',winD:'#6d97a4',lit:['#cfe7ff','#ffe2b0'],glass:true}
 ];
 let BW=19,floors=3,LAWN=null;
+/* Gräsyta: sömlös struktur gjord av skanningen "Grass" av Epic_Tree_Store (CC BY 4.0, se CREDITS.md). Den enkla procedurella gräsmattan visas tills bilden laddats. */
+let GRASS_TEX=null,GRASS_IMG=false;
+function loadGrass(mat){
+  const apply=t=>{mat.map=t;mat.needsUpdate=true;GRASS_IMG=true;if(root)applyTime();};
+  if(GRASS_TEX)return apply(GRASS_TEX);
+  new T3.TextureLoader().load('models/grass.jpg?v=2',t=>{t.encoding=T3.sRGBEncoding;t.wrapS=t.wrapT=T3.RepeatWrapping;t.repeat.set(32,32);t.anisotropy=8;GRASS_TEX=t;apply(t);},undefined,()=>{});
+}
 function lawnTex(){   // mjukt klippt gräsmatta: band och korn ger marken liv i stället för platt färg
   if(LAWN)return LAWN;
   const c=cv(64,64),g=c.getContext('2d');
@@ -380,7 +387,7 @@ function cityLayout(){
 }
 function outside(){
   box(BW+1.2,.7,BD+1.2,M(0xb9b3a8),0,-.35,ZC,root);
-  groundMat=M(GROUNDC[VAR%GROUNDC.length],{roughness:1,map:lawnTex()});const ground=new T3.Mesh(new T3.PlaneGeometry(260,260),groundMat);ground.rotation.x=-Math.PI/2;ground.position.y=-.7;ground.receiveShadow=true;root.add(ground);
+  groundMat=M(GROUNDC[VAR%GROUNDC.length],{roughness:1,map:lawnTex()});loadGrass(groundMat);const ground=new T3.Mesh(new T3.PlaneGeometry(260,260),groundMat);ground.rotation.x=-Math.PI/2;ground.position.y=-.7;ground.receiveShadow=true;root.add(ground);
   box(BW+30,.15,3.2,M(0xd2c5a6),0,-.62,3.6,root);
   box(150,.1,5,M(0x6b6559),0,-.66,9.2,root);
   for(let i=-9;i<=9;i++)box(1.6,.02,.18,M(0xfbf2dc),i*5,-.6,9.2,root);
@@ -1128,7 +1135,7 @@ function applyTimeBase(){
   sunL.intensity=.72*d;sunL.color.copy(lerpC('#fffdf8','#ffb070',w));
   const a=Math.min(1,Math.max(0,(hourNow-6)/14))*Math.PI;sunL.position.set(-34*Math.cos(a),26*Math.max(.3,Math.sin(a)),30);
   lights.forEach(L=>{L.intensity=.06+.94*(1-d);});
-  if(groundMat)groundMat.color.copy(lerpC('#050a07','#'+new T3.Color(GROUNDC[VAR%GROUNDC.length]).getHexString(),d));
+  if(groundMat)groundMat.color.copy(lerpC('#050a07',GRASS_IMG?'#ffffff':'#'+new T3.Color(GROUNDC[VAR%GROUNDC.length]).getHexString(),d));
   drawCity(d);const nk=Math.max(0,1-d*1.4);beamMat.opacity=.75*nk;coneMat.opacity=.13*nk;glowMat.opacity=nk;tailMat.opacity=.85*nk;if(scene.fog)scene.fog.color.copy(lerpC('#101a3a','#cfdbe6',d).lerp(new T3.Color('#ffb98a'),w*.18));
 }
 function setHour(h){hourNow=h;if(root)applyTime();}

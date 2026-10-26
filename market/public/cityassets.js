@@ -71,7 +71,7 @@ window.CityAssets = (() => {
     if (key === 'treeRound' || key === 'treeTall') {
       /* riktiga lövträd: bark och lövverk har egna texturerade material.
          Fyra diskreta nyanser ger variation utan att skogen blir en grön massa. */
-      const colors = [0xffffff, 0xe4efd3, 0xc3d8a4, 0xeeddb4];
+      const colors = [0xffffff, 0xf1f2e8, 0xdfe6cf, 0xefe8d5];
       scene.traverse((o) => {
         if (!o.isMesh || !o.material) return;
         const mats = Array.isArray(o.material) ? o.material : [o.material];
@@ -95,7 +95,7 @@ window.CityAssets = (() => {
         mats.forEach((m) => {
           m.roughness = 0.96; m.metalness = 0;
           if (/green|leaf|pine|needle/i.test(m.name || '')) {
-            m.color.setHex(0x2f5a3c);
+            m.color.setHex(0x0a1f0d);
             m.emissive = new THREE.Color(0x0a1a10); m.emissiveIntensity = 0.35;
             meta.leafMats.push(m);
           } else { m.color.setHex(0x251b12); }
@@ -110,7 +110,7 @@ window.CityAssets = (() => {
         if (!o.isMesh || !o.material) return;
         o.material.roughness = 0.92; o.material.metalness = 0;
         if (o.material.map) o.material.alphaTest = 0.32;
-        if (!/flower/i.test(o.material.name || '')) o.material.color.setHex(key === 'grass' ? 0x86a05c : 0x7d9455);
+        if (!/flower/i.test(o.material.name || '')) o.material.color.setHex(0xffffff);
         meta.leafMats.push(o.material);
       });
     }
@@ -120,7 +120,7 @@ window.CityAssets = (() => {
       if (leaf) {
         meta.leaf = leaf;
         meta.leafVariants = [leaf];
-        [0x4d6a4a, 0x7c7a4e, 0x8a5a35].forEach((hex) => {
+        [0x132512, 0x3a3612, 0x33190b].forEach((hex) => {
           const c = leaf.clone(); c.color.setHex(hex); meta.leafVariants.push(c);
         });
       }
@@ -156,7 +156,7 @@ window.CityAssets = (() => {
     const THREE = T();
     if (!trunkGeo) {
       trunkGeo = new THREE.CylinderGeometry(0.055, 0.095, 1, 7);
-      trunkMat = new THREE.MeshStandardMaterial({ color: 0x4a3a2c, roughness: 0.95, metalness: 0 });
+      trunkMat = new THREE.MeshStandardMaterial({ color: 0x130c06, roughness: 0.95, metalness: 0 });
     }
     return { geo: trunkGeo, mat: trunkMat };
   }

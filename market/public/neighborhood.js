@@ -154,7 +154,7 @@ window.Neighborhood = (() => {
     const r = rnd(hash('ground') ^ 0x9e3779b9);
 
     /* kvarterens gräsmattor */
-    g.fillStyle = '#587340'; g.fillRect(0, 0, SIZE, SIZE);
+    g.fillStyle = '#4f7538'; g.fillRect(0, 0, SIZE, SIZE);
     for (let i = 0; i < 5200; i++) {
       const x = r() * SIZE, y = r() * SIZE, a = 0.014 + r() * 0.028;
       g.fillStyle = r() > 0.5 ? 'rgba(255,255,255,' + a + ')' : 'rgba(0,0,0,' + a + ')';
@@ -208,8 +208,8 @@ window.Neighborhood = (() => {
     L.avenues.forEach((a) => {
       const off = a.axis === 'x' ? a.c : a.c;
       const gs = 1.5;
-      if (a.axis === 'x') { g.fillStyle = '#6f9450'; g.fillRect(X(off + 4.2), 0, gs * px, SIZE); g.fillRect(X(off - 4.2 - gs), 0, gs * px, SIZE); }
-      else { g.fillStyle = '#6f9450'; g.fillRect(0, X(off + 4.2), SIZE, gs * px); g.fillRect(0, X(off - 4.2 - gs), SIZE, gs * px); }
+      if (a.axis === 'x') { g.fillStyle = '#5f8a3d'; g.fillRect(X(off + 4.2), 0, gs * px, SIZE); g.fillRect(X(off - 4.2 - gs), 0, gs * px, SIZE); }
+      else { g.fillStyle = '#5f8a3d'; g.fillRect(0, X(off + 4.2), SIZE, gs * px); g.fillRect(0, X(off - 4.2 - gs), SIZE, gs * px); }
     });
 
     L.streets.forEach((s) => draw(s, false));
@@ -223,7 +223,7 @@ window.Neighborhood = (() => {
       const x = (c.x - cx) * S, z = (c.z - cz) * S;
       if (Math.abs(x) > 64 || Math.abs(z) > 64) return;
       const hw = 3.7 * px;
-      g.fillStyle = '#65834a'; g.fillRect(X(x) - hw, X(z) - hw, hw * 2, hw * 2);
+      g.fillStyle = '#5b7f3c'; g.fillRect(X(x) - hw, X(z) - hw, hw * 2, hw * 2);
       g.strokeStyle = 'rgba(214,228,178,.26)'; g.lineWidth = 2; g.strokeRect(X(x) - hw, X(z) - hw, hw * 2, hw * 2);
       for (let i = 0; i < 26; i++) {
         g.fillStyle = 'rgba(255,255,240,' + (0.01 + r() * 0.016) + ')';
@@ -284,7 +284,7 @@ window.Neighborhood = (() => {
     const scene = new T.Scene();
     /* Varm kvällshimmel: mjuk persika i fjärran så att staden läser som en
        stadskarta i eftermiddagsljus i stället för en nattlig kuliss. */
-    scene.fog = new T.Fog(0xf5e0bd, 88, 225);
+    scene.fog = new T.Fog(0xf0d9b0, 88, 225);
 
     const camera = new T.PerspectiveCamera(42, 1, 0.5, 460);
     const renderer = new T.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
@@ -308,9 +308,9 @@ window.Neighborhood = (() => {
     tip.setAttribute('aria-hidden', 'true');
     host.appendChild(tip);
 
-    scene.add(new T.AmbientLight(0xffe9cc, 0.62));
-    const hemi = new T.HemisphereLight(0xfff3dc, 0x9aa268, 0.7); scene.add(hemi);
-    const sun = new T.DirectionalLight(0xffd8a2, 1.35); sun.position.set(24, 34, 16); scene.add(sun);
+    scene.add(new T.AmbientLight(0xfff6e8, 0.6));
+    const hemi = new T.HemisphereLight(0xfffbf1, 0x8ea15c, 0.68); scene.add(hemi);
+    const sun = new T.DirectionalLight(0xffe2ba, 1.32); sun.position.set(24, 34, 16); scene.add(sun);
     sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024);
     Object.assign(sun.shadow.camera, { left: -42, right: 42, top: 42, bottom: -42, near: 1, far: 150 });
     sun.shadow.bias = -0.0012; sun.shadow.normalBias = 0.03;
@@ -345,14 +345,14 @@ window.Neighborhood = (() => {
     const groundMat = keepMat(new T.MeshStandardMaterial({ map: groundTexMap, color: 0xffffff, roughness: 0.94, metalness: 0.04 }));
     const ground = new T.Mesh(keepGeo(new T.PlaneGeometry(150, 150)), groundMat);
     ground.rotation.x = -Math.PI / 2; ground.position.y = 0; ground.receiveShadow = true; root.add(ground);
-    const baseMat = keepMat(new T.MeshStandardMaterial({ color: 0x9aa86e, roughness: 1 }));
+    const baseMat = keepMat(new T.MeshStandardMaterial({ color: 0x39501b, roughness: 1 }));
     const base = new T.Mesh(keepGeo(new T.PlaneGeometry(420, 420)), baseMat);
     base.rotation.x = -Math.PI / 2; base.position.y = -0.05; root.add(base);
 
     const padGeo = keepGeo(new T.BoxGeometry(5.2, 0.16, 5.2));
-    const padMat = keepMat(new T.MeshStandardMaterial({ color: 0xc0b394, roughness: 0.82, metalness: 0.05 }));
+    const padMat = keepMat(new T.MeshStandardMaterial({ color: 0x86734c, roughness: 0.82, metalness: 0.05 }));
     const paveGeo = keepGeo(new T.BoxGeometry(4.72, 0.02, 4.72));
-    const paveMat = keepMat(new T.MeshStandardMaterial({ color: 0xd3c7a8, roughness: 1 }));
+    const paveMat = keepMat(new T.MeshStandardMaterial({ color: 0xa69264, roughness: 1 }));
     const shadowTex = keepTex(radial('rgba(40,26,10,.5)', 'rgba(40,26,10,.18)'));
     const shadowGeo = keepGeo(new T.PlaneGeometry(7.6, 7.6));
     const shadowMat = keepMat(new T.MeshBasicMaterial({ map: shadowTex, transparent: true, opacity: 0.55, depthWrite: false }));
@@ -369,7 +369,7 @@ window.Neighborhood = (() => {
     /* --- himmelssilhuetten av resten av staden --- */
     /* Fjärran stad: platt silhuettfärg (påverkas bara av dimman) så att horisonten
        läser som en målning i stället för en rad överljusa kuber. */
-    const farMat = keepMat(new T.MeshBasicMaterial({ color: 0x8f8a6c, fog: true }));
+    const farMat = keepMat(new T.MeshBasicMaterial({ color: 0x564e32, fog: true }));
     const farGeo = keepGeo(new T.BoxGeometry(1, 1, 1));
     const farLitMat = keepMat(new T.MeshBasicMaterial({ color: 0xfff0d4, transparent: true, opacity: 0.08, blending: T.AdditiveBlending, depthWrite: false }));
     const FAR_N = 40;

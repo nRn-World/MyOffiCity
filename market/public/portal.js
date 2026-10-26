@@ -334,8 +334,8 @@ let netLoad = null, netScene = null;
 const loadNet = () => netLoad || (netLoad = new Promise((ok, no) => {
   const add = (src, next) => { const el = document.createElement('script'); el.src = src; el.onload = next; el.onerror = () => { netLoad = null; no(new Error('3D')); }; document.head.appendChild(el); };
   // three.js → GLTFLoader → SkeletonUtils → CC0-modellerna → stadsscenen
-  const scene = () => add('neighborhood.js?v=36', ok);
-  const assets = () => add('cityassets.js?v=9', () => {
+  const scene = () => add('neighborhood.js?v=39', ok);
+  const assets = () => add('cityassets.js?v=12', () => {
     const A = window.CityAssets;
     if (!A) return scene();
     A.loadAll(['bush', 'bushFlower', 'flowers', 'grass', 'pine', 'treeRound', 'treeTall', 'bike', 'car', 'taxi', 'woman', 'man', 'lamp', 'bench']).then(scene, scene);
@@ -346,7 +346,7 @@ const loadNet = () => netLoad || (netLoad = new Promise((ok, no) => {
 }));
 const loadOffice = () => cityLoad || (cityLoad = new Promise((ok, no) => {
   const add = (src, next) => { const el = document.createElement('script'); el.src = src; el.onload = next; el.onerror = () => { cityLoad = null; no(new Error('3D')); }; document.head.appendChild(el); };
-  const full = () => add('office.js?v=20', ok);
+  const full = () => add('office.js?v=24', ok);
   window.THREE ? full() : add('vendor/three.min.js', full);
 }));
 let officeCv = null, showCb = null;

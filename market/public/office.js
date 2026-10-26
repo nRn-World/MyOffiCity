@@ -4,9 +4,9 @@ const T3=THREE;
 const TIERS={loft:{BW:12,floors:2},kontor:{BW:19,floors:3},hq:{BW:26,floors:4}};
 // arkitektur per byggnad: loft = ljust furu + svart stål, hub = aluminium + ek, HQ = mörk titan + guld
 const BSTYLES={
-  loft:{frame:0x1d1e22,slab:0xd8b27c,wall:0xf4eee4,win:0x1d1e22,roof:0x2a2b30,floors:['pine','pine']},
-  kontor:{frame:0xb9c0c8,slab:0xe8e6e1,wall:0xf1ebe0,win:0xb9c0c8,roof:0xe4e0d8,floors:['wood','wood','wood']},
-  hq:{frame:0x2a2c33,slab:0x2a2c33,wall:0xe9e1d3,win:0x2a2c33,roof:0x23252b,gold:0xc9a24a,floors:['tile','wood','wood','walnut']}};
+  loft:{frame:0x1d1e22,slab:0xd8b27c,wall:0xfbfaf7,win:0x1d1e22,roof:0x2a2b30,floors:['pine','pine']},
+  kontor:{frame:0xb9c0c8,slab:0xe8e6e1,wall:0xfcfbf8,win:0xb9c0c8,roof:0xe4e0d8,floors:['wood','wood','wood']},
+  hq:{frame:0x2a2c33,slab:0x2a2c33,wall:0xfaf7f0,win:0x2a2c33,roof:0x23252b,gold:0xc9a24a,floors:['tile','wood','wood','walnut']}};
 let VAR=0,TIERK='kontor',OBST=[];
 function obst(x,y,z,hw,hd,ry){OBST.push({x,y,z,hw,hd,ry});}   // halvbredd/halvdjup, rotation runt y
 function pushOut(o){   // flyttar ut personen ur ett möbelhinder (glider längs kanten)
@@ -32,8 +32,8 @@ function safePt(x,z,y){   // flyttar en målpunkt ut ur möbler så att ingen f�
 }
 const PAL=[{},{wall:0xe6efe8,slab:0xc9b99a,roof:0x2f6b55,frame:0x2c5a4a,win:0x2c5a4a},{wall:0xf2e4d2,slab:0xb98b5b,roof:0xa94a35,frame:0x7a3328,win:0x7a3328},{wall:0xe4ebf2,slab:0xa9b3bf,roof:0x3a62a8,frame:0x2f4b7a,win:0x2f4b7a},{wall:0xf4dfd8,slab:0xd2a590,roof:0xc9922f,frame:0xc08a2e,win:0xc08a2e},{wall:0xeceae0,slab:0x8fa88a,roof:0x7a5aa8,frame:0x6b5a8a,win:0x6b5a8a}];
 const SIGNC=[['#1b2550','#0c1230','#ffd27a','#6fc8ff'],['#2a1a12','#120a06','#f0b07a','#ffb36b'],['#12332b','#06150f','#8fe0b8','#6fffd0'],['#2b1245','#12061f','#d9a7ff','#c58bff'],['#3a1216','#190508','#ffc4a0','#ff8f6f'],['#10283a','#06121c','#a7e0ff','#6fd0ff']];
-const GROUNDC=[0x7d9c48,0x9a9c4a,0x8f8549,0x77924f,0xa89851,0x769544];
-const LEAFC=[[0x3d9a52,0x48ab5e,0x338a49],[0x5aa14a,0x6bb35a,0x4a8f3c],[0xd2862f,0xe09b3f,0xb9702a],[0x3b8f7a,0x49a48c,0x2f7a68],[0x7aa84a,0x8bbb59,0x699639],[0x2f7d4a,0x3c9159,0x27693d]];
+const GROUNDC=[0x29550d,0x39600f,0x344c14,0x234911,0x465d10,0x25520c];
+const LEAFC=[[0x0c5216,0x11681d,0x084111],[0x1a5b11,0x25731a,0x11460c],[0xa43d07,0xbe540d,0x7c2906],[0x0b4632,0x115f43,0x073223],[0x326411,0x427f19,0x244e0a],[0x073411,0x0c4819,0x05240c]];
 let STY=BSTYLES.kontor,frameM=null,winM=null,goldM=null,flames=[];
 const BD=6.6,Z0=-5.4,Z1=1.2,ZC=-2.1,FH=5.2,WH=FH-.4;
 // Fyra fasadstilar till staden bakom kontoret. Färgerna blandas mellan natt och dag
@@ -144,7 +144,7 @@ function monitor(parent,x,y,z,type,o={}){
 function plant(x,y,z,s=1){
   const g=new T3.Group();g.position.set(x,y,z);g.scale.setScalar(s);
   cyl(.28,.22,.4,M(0xc9774a),0,.2,0,g);
-  const gm=[M(0x2f9e55),M(0x3fb866),M(0x278a49)];
+  const gm=[M(0x075717),M(0x0d7a22),M(0x054111)];
   for(let i=0;i<9;i++){
     const a=i/9*Math.PI*2,l=sph(.16,gm[i%3],Math.cos(a)*.18,.8+(i%3)*.18,Math.sin(a)*.18,g,1,3.2,.55);
     l.rotation.set(Math.sin(a)*.45,0,-Math.cos(a)*.45);l.rotation.y=-a;
@@ -284,7 +284,7 @@ function buildLevel(n,kind,lift){
   if(STY.gold)box(BW+.72,.08,.08,goldM,0,y-.05,Z1+.32,root); // guldlist längs bjälklaget
   const L=new T3.PointLight(0xffbd80,.5,26,1);L.position.set(0,y+3.8,ZC);root.add(L);lights.push(L);
 }
-function tree(x,z,s=1){if(VAR){const r=rnd(x*7.1+z*3.3+VAR*13);if(r<.2)return;x+=(rnd(x+VAR)-.5)*3;z+=(rnd(z+VAR*2)-.5)*2;s*=.75+rnd(x*z+VAR)*.7;}const g=new T3.Group();g.position.set(x,-.7,z);g.scale.setScalar(s);cyl(.18,.25,2,M(0x6b4a30),0,1,0,g,8);
+function tree(x,z,s=1){if(VAR){const r=rnd(x*7.1+z*3.3+VAR*13);if(r<.2)return;x+=(rnd(x+VAR)-.5)*3;z+=(rnd(z+VAR*2)-.5)*2;s*=.75+rnd(x*z+VAR)*.7;}const g=new T3.Group();g.position.set(x,-.7,z);g.scale.setScalar(s);cyl(.18,.25,2,M(0x251108),0,1,0,g,8);
   const LC=LEAFC[VAR%LEAFC.length];sph(1.3,M(LC[0]),0,2.8,0,g);sph(1,M(LC[1]),.6,3.4,.2,g);sph(.9,M(LC[2]),-.6,3.2,-.3,g);root.add(g);}
 function pine(x,z,s=1){if(VAR){if(rnd(x*5.3+z*2.1+VAR*7)<.2)return;x+=(rnd(x+VAR)-.5)*2;s*=.8+rnd(z+VAR)*.5;}const g=new T3.Group();g.position.set(x,-.7,z);g.scale.setScalar(s);
   const tr=cyl(.14,.24,2.4,M(0x5a3d27),0,1.2,0,g,8);tr.rotation.z=.18;
@@ -400,11 +400,11 @@ function outside(){
     const BC=[0x2f6fe0,0xd62b3a,0x3fa56b,0xf2b632,0x8a56d6,0x1fb5c2],nb=VAR?1+VAR%4:3;for(let i=0;i<nb;i++)bike(-3.8+i*.9,Z1+1.6,BC[(i+VAR)%BC.length]);
   }
   if(TIERK==='kontor'){ // häckar och belysningspollare
-    for(const sx of[-1,1]){box(e-2.5,.7,.7,M(0x4a8a3a,{roughness:.9}),sx*(e/2+1.6),-.3,Z1+1.6,root);
+    for(const sx of[-1,1]){box(e-2.5,.7,.7,M(0x11410b,{roughness:.9}),sx*(e/2+1.6),-.3,Z1+1.6,root);
       for(let i=0;i<3;i++){const bx=sx*(2.2+i*2.6);cyl(.09,.09,.8,dark,bx,-.3,Z1+2.3,root,8);cyl(.1,.1,.08,new T3.MeshBasicMaterial({color:0xfff3c8}),bx,.14,Z1+2.3,root,8);}}
   }
   [-e+1,e-1,-e-AW-1.5,e+AW+1.5].forEach(x=>lamp(x,5.2));
-  for(const i of[-1,1])box(2.4,.4,.8,M(0x55893f),i*Math.min(5.5,e-3),-.5,Z1+1,root);
+  for(const i of[-1,1])box(2.4,.4,.8,M(0x17400d),i*Math.min(5.5,e-3),-.5,Z1+1,root);
   // stad: asfalt, trottoar, körfält och en riktig stadsbild bakom kontoret
   const road=box(200,.06,64,M(0x5f5a4e,{roughness:.98}),0,-.685,-40,root);road.castShadow=road.receiveShadow=false;
   const walk=box(200,.08,2.2,M(0xdbd0b4,{roughness:.95}),0,-.64,-8.4,root);walk.castShadow=walk.receiveShadow=false;
@@ -1076,13 +1076,13 @@ function applyTimeBase(){
   gr.addColorStop(1,hexOf(lerpC('#1a2547','#fdf0d6',d)));
   g.fillStyle=gr;g.fillRect(0,0,4,256);bgT.needsUpdate=true;
   drawSky(d,w);
-  hemi.intensity=.1+.28*d;hemi.color.copy(lerpC('#7089d0','#fff4e0',d));hemi.groundColor.copy(lerpC('#28324c','#b6a578',d));
-  fillL.intensity=.04+.1*d;fillL.color.copy(lerpC('#b9d4ff','#ffeed6',d));
-  sunL.intensity=.7*d;sunL.color.copy(lerpC('#ffd7a4','#ff9a55',w));
+  hemi.intensity=.11+.29*d;hemi.color.copy(lerpC('#7089d0','#fffaf1',d));hemi.groundColor.copy(lerpC('#28324c','#a9b184',d));
+  fillL.intensity=.04+.11*d;fillL.color.copy(lerpC('#b9d4ff','#eef4fb',d));
+  sunL.intensity=.72*d;sunL.color.copy(lerpC('#ffe3bd','#ff9a55',w));
   const a=Math.min(1,Math.max(0,(hourNow-6)/14))*Math.PI;sunL.position.set(-34*Math.cos(a),26*Math.max(.3,Math.sin(a)),30);
-  lights.forEach(L=>{L.intensity=.2+.72*(1-d);});
-  if(groundMat)groundMat.color.copy(lerpC('#26372f','#84a54c',d));
-  drawCity(d);const nk=Math.max(0,1-d*1.4);beamMat.opacity=.75*nk;coneMat.opacity=.13*nk;glowMat.opacity=nk;tailMat.opacity=.85*nk;if(scene.fog)scene.fog.color.copy(lerpC('#101a3a','#f0ddb9',d).lerp(new T3.Color('#ffb98a'),w*.4));
+  lights.forEach(L=>{L.intensity=.06+.94*(1-d);});
+  if(groundMat)groundMat.color.copy(lerpC('#050a07','#29520b',d));
+  drawCity(d);const nk=Math.max(0,1-d*1.4);beamMat.opacity=.75*nk;coneMat.opacity=.13*nk;glowMat.opacity=nk;tailMat.opacity=.85*nk;if(scene.fog)scene.fog.color.copy(lerpC('#101a3a','#d6bc90',d).lerp(new T3.Color('#ffb98a'),w*.4));
 }
 function setHour(h){hourNow=h;if(root)applyTime();}
 
@@ -1410,7 +1410,7 @@ function init(c,ov){
   const sun=sunL=new T3.DirectionalLight(0xfff0d6,.8);sun.position.set(-12,34,22);sun.castShadow=true;
   sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-34,right:34,top:34,bottom:-34,near:1,far:140});sun.shadow.bias=-.0006;scene.add(sun);
   dark=M(0x22252e);metal=M(0x9aa0ab,{metalness:.5,roughness:.4});wood=M(0xc08850);woodD=M(0x7a4a2a);chairM=M(0x30343e);
-  white=M(0xf4f1ea);wall=M(0xf1ebe0);trim=M(0xb7b0a4);
+  white=M(0xfdfcfa);wall=M(0xfdfcfa);trim=M(0xc8c3b7);
   { // strålkastarljus på vägen: ljus nära bilen, tonar ut framåt och åt sidorna
     const c=cv(256,128),g=c.getContext('2d');
     g.beginPath();g.moveTo(0,60);g.lineTo(256,8);g.lineTo(256,120);g.lineTo(0,68);g.closePath();g.clip();
@@ -1421,7 +1421,7 @@ function init(c,ov){
     BEAM_GEO=new T3.PlaneGeometry(7,2.4);BEAM_GEO.rotateX(-Math.PI/2);
     CONE_GEO=new T3.ConeGeometry(.75,4,18,1,true);coneMat=new T3.MeshBasicMaterial({color:0xfff0c8,transparent:true,opacity:0,blending:T3.AdditiveBlending,depthWrite:false,side:T3.DoubleSide});
   }
-  skyC=cv(256,160);SKY=new T3.CanvasTexture(skyC);SKY.encoding=T3.sRGBEncoding;scene.fog=new T3.Fog(0xf0ddb9,105,230);
+  skyC=cv(256,160);SKY=new T3.CanvasTexture(skyC);SKY.encoding=T3.sRGBEncoding;scene.fog=new T3.Fog(0xd6bc90,105,230);
   {const c2=cv(64,64),g2=c2.getContext('2d'),r=g2.createRadialGradient(32,32,0,32,32,32);
     r.addColorStop(0,'rgba(255,255,255,1)');r.addColorStop(.35,'rgba(255,255,255,.55)');r.addColorStop(1,'rgba(255,255,255,0)');g2.fillStyle=r;g2.fillRect(0,0,64,64);GT=new T3.CanvasTexture(c2);}
   glowMat=new T3.SpriteMaterial({map:GT,color:0xfff1c8,transparent:true,opacity:0,blending:T3.AdditiveBlending,depthWrite:false});

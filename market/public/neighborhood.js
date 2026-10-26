@@ -57,7 +57,7 @@ window.Neighborhood = (() => {
     const rows = Math.floor((h - padY - 46) / ch);
     for (let ry = 0; ry < rows; ry++) for (let cx = 0; cx < cols; cx++) {
       const x = padX + cx * cw + 4, y = padY + ry * ch + 3, ww = cw - 8, hh = ch - 9;
-      const lit = r() < 0.5, blind = r() < 0.28;
+      const lit = r() < 0.16, blind = r() < 0.3;
       g.fillStyle = 'rgba(8,12,20,.6)'; g.fillRect(x - 2, y - 2, ww + 4, hh + 4);
       if (lit) {
         const wg = g.createLinearGradient(x, y, x, y + hh);
@@ -67,7 +67,7 @@ window.Neighborhood = (() => {
         g.fillStyle = wg;
       } else {
         const dg = g.createLinearGradient(x, y, x + ww, y + hh);
-        dg.addColorStop(0, '#6b7c74'); dg.addColorStop(0.45, '#3d4a44'); dg.addColorStop(0.5, '#7d8f84'); dg.addColorStop(1, '#2f3a35');
+        dg.addColorStop(0, '#5b6f78'); dg.addColorStop(0.42, '#2b3a42'); dg.addColorStop(0.52, '#7d94a0'); dg.addColorStop(1, '#1d2a31');
         g.fillStyle = dg;
       }
       g.fillRect(x, y, ww, hh);
@@ -292,7 +292,7 @@ window.Neighborhood = (() => {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.outputEncoding = T.sRGBEncoding;
     renderer.toneMapping = T.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.02;
+    renderer.toneMappingExposure = 0.94;
     /* Långa, mjuka skuggor från en låg sol ger staden djup – som en stadskarta. */
     renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap;
     renderer.domElement.style.display = 'block';
@@ -308,12 +308,14 @@ window.Neighborhood = (() => {
     tip.setAttribute('aria-hidden', 'true');
     host.appendChild(tip);
 
-    scene.add(new T.AmbientLight(0xfff6e8, 0.6));
-    const hemi = new T.HemisphereLight(0xfffbf1, 0x8ea15c, 0.68); scene.add(hemi);
-    const sun = new T.DirectionalLight(0xffe2ba, 1.32); sun.position.set(24, 34, 16); scene.add(sun);
-    sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024);
-    Object.assign(sun.shadow.camera, { left: -42, right: 42, top: 42, bottom: -42, near: 1, far: 150 });
-    sun.shadow.bias = -0.0012; sun.shadow.normalBias = 0.03;
+    scene.add(new T.AmbientLight(0xfff6e8, 0.4));
+    const hemi = new T.HemisphereLight(0xfffbf1, 0x8ea15c, 0.5); scene.add(hemi);
+    const sun = new T.DirectionalLight(0xffe2ba, 1.34); sun.position.set(-32, 27, 14); scene.add(sun);
+    sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048);
+    Object.assign(sun.shadow.camera, { left: -52, right: 52, top: 52, bottom: -52, near: 1, far: 160 });
+    sun.shadow.camera.updateProjectionMatrix();
+    sun.shadow.bias = -0.0009; sun.shadow.normalBias = 0.025;
+    sun.shadow.radius = 2.5;
     /* svagt svalt motljus ger byggnaderna form även när solen ligger på */
     const fill = new T.DirectionalLight(0xbfd6ea, 0.28); fill.position.set(-22, 16, -18); scene.add(fill);
     const heart = new T.PointLight(0xffcf8c, 0.75, 44); heart.position.set(0, 9, 0); scene.add(heart);
@@ -356,6 +358,12 @@ window.Neighborhood = (() => {
     const shadowTex = keepTex(radial('rgba(40,26,10,.5)', 'rgba(40,26,10,.18)'));
     const shadowGeo = keepGeo(new T.PlaneGeometry(7.6, 7.6));
     const shadowMat = keepMat(new T.MeshBasicMaterial({ map: shadowTex, transparent: true, opacity: 0.55, depthWrite: false }));
+    /* solens skugga: en lång, mjuk strimma som huset kastar över gatan.
+       Riktningen följer solen (-32, 27, 14) → skuggan faller mot +x/-z. */
+    const SUN_SHADOW = new T.Vector2(32, -14).normalize();
+    const SHADOW_ANGLE = Math.atan2(-SUN_SHADOW.y, SUN_SHADOW.x);
+    const shadowStripGeo = keepGeo(new T.PlaneGeometry(1, 1).rotateX(-Math.PI / 2));
+    const shadowStripMat = keepMat(new T.MeshBasicMaterial({ map: shadowTex, color: 0x2a3446, transparent: true, opacity: 0.5, depthWrite: false }));
 
     /* --- ljuspölar, skyltar och små ljus --- */
     const poolTex = keepTex(radial('rgba(255,216,158,.34)', 'rgba(255,196,120,.1)'));
@@ -435,16 +443,32 @@ window.Neighborhood = (() => {
       g.userData = { id: c.id, name: c.name, level: c.level, meters: c.meters, isCenter, topY: 0.2 + h, w, onPick: opts.onSelect || null };
 
       const shadow = new T.Mesh(shadowGeo, shadowMat); shadow.rotation.x = -Math.PI / 2; shadow.position.y = 0.19; g.add(shadow);
+      /* lång, mjuk skugga från solen som faller över gata och gräsmatta */
+      const slen = h * 0.9 + w * 0.35;
+      const strip = new T.Mesh(shadowStripGeo, shadowStripMat);
+      strip.rotation.y = SHADOW_ANGLE;
+      strip.scale.set(slen * 1.5, 1, w * 1.5);
+      strip.position.set(SUN_SHADOW.x * (slen / 2), 0.21, SUN_SHADOW.y * (slen / 2));
+      g.add(strip);
       const pad = new T.Mesh(padGeo, padMat); pad.position.y = 0.08; g.add(pad);
       const pave = new T.Mesh(paveGeo, paveMat); pave.position.y = 0.17; g.add(pave);
 
       const ft = facadeTex(tier, hashed, isCenter);
       keepTex(ft.map); keepTex(ft.emissive);
-      const bodyMat = keepMat(new T.MeshStandardMaterial({ color: isCenter ? 0xfff3d8 : 0xf3ead6, map: ft.map, emissive: 0xffffff, emissiveMap: ft.emissive, emissiveIntensity: 0.85, roughness: 0.72, metalness: 0.1 }));
+      const bodyMat = keepMat(new T.MeshStandardMaterial({ color: isCenter ? 0xfff6e2 : 0xf2ebdb, map: ft.map, emissive: 0xffffff, emissiveMap: ft.emissive, emissiveIntensity: 0.3, roughness: 0.78, metalness: 0.08 }));
       const bodyGeo = keepGeo(new T.BoxGeometry(w, h, w));
-      const body = new T.Mesh(bodyGeo, bodyMat);
+      /* de högsta husen får en smalare överdel – en modern, avtrappad silhuett */
+      const split = tier === 2 && !isCenter, lowH = split ? h * 0.68 : h, topW = split ? w * 0.64 : w;
+      const body = new T.Mesh(split ? keepGeo(new T.BoxGeometry(w, lowH, w)) : bodyGeo, bodyMat);
       body.castShadow = body.receiveShadow = true;
-      body.position.y = 0.2 + h / 2; g.add(body);
+      body.position.y = 0.2 + lowH / 2; g.add(body);
+      if (split) {
+        const upper = new T.Mesh(keepGeo(new T.BoxGeometry(topW, h - lowH, topW)), bodyMat);
+        upper.castShadow = upper.receiveShadow = true;
+        upper.position.y = 0.2 + lowH + (h - lowH) / 2; g.add(upper);
+        const ledge = new T.Mesh(keepGeo(new T.BoxGeometry(topW + 0.2, 0.14, topW + 0.2)), trimMat);
+        ledge.position.y = 0.2 + lowH + 0.05; g.add(ledge);
+      }
       if (isCenter) {
         const edges = new T.LineSegments(keepGeo(new T.EdgesGeometry(bodyGeo)), keepMat(new T.LineBasicMaterial({ color: 0xf3d093, transparent: true, opacity: 0.42 })));
         body.add(edges);
@@ -457,10 +481,10 @@ window.Neighborhood = (() => {
       lobbyTrim.position.y = 2.74; g.add(lobbyTrim);
 
       /* tak: list, räcke och teknik */
-      const roof = new T.Mesh(keepGeo(new T.BoxGeometry(w + 0.3, 0.34, w + 0.3)), darkMat);
+      const roof = new T.Mesh(keepGeo(new T.BoxGeometry(topW + 0.3, 0.34, topW + 0.3)), darkMat);
       roof.castShadow = true; roof.position.y = 0.2 + h + 0.17; g.add(roof);
       const parapetTop = 0.2 + h + 0.4;
-      [[0, w / 2 - 0.1], [0, -w / 2 + 0.1], [w / 2 - 0.1, 0], [-w / 2 + 0.1, 0]].forEach(([px, pz]) => {
+      [[0, topW / 2 - 0.1], [0, -topW / 2 + 0.1], [topW / 2 - 0.1, 0], [-topW / 2 + 0.1, 0]].forEach(([px, pz]) => {
         const rail = new T.Mesh(railGeo, trimMat);
         rail.scale.set(1, pz ? 1 : 1.3, 1);
         rail.position.set(px, parapetTop, pz);
@@ -509,8 +533,8 @@ window.Neighborhood = (() => {
       /* takskylt: bara de närmaste grannarna får en läsbar skylt */
       if (isCenter || c.level === 'granne') {
         const len = Math.hypot(g.position.x, g.position.z) || 1;
-        const ox = isCenter ? 0 : (g.position.x / len) * (w / 2 - 0.34);
-        const oz = isCenter ? w / 2 - 0.34 : (g.position.z / len) * (w / 2 - 0.34);
+        const ox = isCenter ? 0 : (g.position.x / len) * (topW / 2 - 0.34);
+        const oz = isCenter ? topW / 2 - 0.34 : (g.position.z / len) * (topW / 2 - 0.34);
         const post = new T.Mesh(keepGeo(new T.BoxGeometry(0.1, 1.3, 0.1)), trimMat);
         post.position.set(ox, 0.2 + h + 0.9, oz); g.add(post);
         const frame = new T.Mesh(keepGeo(new T.BoxGeometry((isCenter ? 4.5 : 3.4) + 0.08, (isCenter ? 1.06 : 0.82), 0.06)), darkMat);
@@ -737,6 +761,23 @@ window.Neighborhood = (() => {
       }
     });
 
+    /* parker på tomma tomter: träd, buskar och blommor så staden inte ekar tom */
+    const occupied = new Set(all.map((c) => c.x + ':' + c.z));
+    for (let i = -5; i <= 5; i++) for (let j = -5; j <= 5; j++) {
+      if (!i && !j) continue;
+      const gx = data.center.x + i, gz = data.center.z + j;
+      if (occupied.has(gx + ':' + gz)) continue;
+      const x = i * S, z = j * S;
+      if (Math.hypot(x, z) > 46) continue;
+      const n = 2 + Math.floor(rnd2() * 3);
+      for (let k = 0; k < n; k++) {
+        const ox = (rnd2() - 0.5) * 4.8, oz = (rnd2() - 0.5) * 4.8;
+        if (!nearBuilding(x + ox, z + oz, 2.2)) plantTree(x + ox, z + oz, 1.7 + rnd2() * 1.3, rnd2() > 0.76);
+      }
+      if (rnd2() > 0.45) plantBush(x + (rnd2() - 0.5) * 4, z + (rnd2() - 0.5) * 4, 0.38 + rnd2() * 0.2, rnd2() > 0.62);
+      if (rnd2() > 0.52) plantFlowers(x + (rnd2() - 0.5) * 4, z + (rnd2() - 0.5) * 4, 0.6);
+    }
+
     /* några träd och blommor på torget runt det egna kontoret */
     for (let i = 0; i < 10; i++) {
       const a = (i / 10) * 6.28 + 0.3, rad = 4.9 + rnd2() * 1.1;
@@ -779,18 +820,18 @@ window.Neighborhood = (() => {
       const sp = new T.Sprite(carGlowMat); sp.scale.set(0.28, 0.28, 1); sp.position.set(x, groundY + 1.02, z); root.add(sp);
     }
 
-    /* fyra tydliga gångstråk nära mitten */
-    const lanes = [
-      { axis: 'x', fixed: 5.15, min: -28, max: 28 },
-      { axis: 'x', fixed: -13.15, min: -28, max: 28 },
-      { axis: 'z', fixed: 5.15, min: -28, max: 28 },
-      { axis: 'z', fixed: -13.15, min: -28, max: 28 },
-    ];
-    lanes.forEach((ln, i) => {
-      const n = 2;
-      for (let k = 0; k < n; k++) {
-        const pos = ln.min + ((k + 0.5) / n) * (ln.max - ln.min) + (i % 2 ? 3 : -3);
-        addWalker({ axis: ln.axis, fixed: ln.fixed, pos, dir: (k + i) % 2 ? 1 : -1, speed: 0.42 + Math.random() * 0.24, min: ln.min, max: ln.max, kind: (k + i) % 2 ? 'woman' : 'man' });
+    /* gångstråk på trottoarerna längs de två närmaste avenyerna */
+    const walkLanes = [];
+    ['x', 'z'].forEach((axis) => {
+      const road = layout.avenues.filter((a) => a.axis === axis).sort((a, b) => Math.abs(a.c) - Math.abs(b.c))[0];
+      if (!road) return;
+      /* aveny: 3,0 bred väg + 1,15 trottoar → trottoarens mitt ligger 2,08 ut */
+      walkLanes.push({ axis, fixed: road.c + 2.08, dir: -1 }, { axis, fixed: road.c - 2.08, dir: 1 });
+    });
+    walkLanes.forEach((ln, i) => {
+      for (let k = 0; k < 2; k++) {
+        const pos = -26 + k * 26 + (i % 2 ? 5 : -5);
+        addWalker({ axis: ln.axis, fixed: ln.fixed, pos, dir: ln.dir, speed: 0.42 + Math.random() * 0.24, min: -34, max: 34, kind: (k + i) % 2 ? 'woman' : 'man' });
       }
     });
     /* några som står och pratar vid torget */
@@ -804,32 +845,48 @@ window.Neighborhood = (() => {
       addAgent(b.position.x - (b.position.x / dir) * 2.9, b.position.z - (b.position.z / dir) * 2.9, Math.atan2(-b.position.x, -b.position.z));
     });
 
-    /* bilar och taxibilar på gatorna */
+    /* bilar och taxibilar: höger­trafik i riktiga körfält på gator och avenyer */
+    const CAR_SPAN = 44;
+    const carShadowMat = keepMat(new T.MeshBasicMaterial({ map: shadowTex, transparent: true, opacity: 0.42, depthWrite: false }));
     function addCar(spec) {
       if (!A) return;
-      const c = A.car({ taxi: spec.taxi, color: A.CAR_COLORS[Math.floor(Math.random() * A.CAR_COLORS.length)], len: 1.45 });
+      const c = A.car({ taxi: spec.taxi, color: A.CAR_COLORS[Math.floor(Math.random() * A.CAR_COLORS.length)], len: 1.55 });
       if (!c.group.children.length) return;
-      const lane = spec.laneOff;
-      c.group.position.set(spec.axis === 'x' ? spec.pos : spec.fixed + lane, GY + 0.01, spec.axis === 'x' ? spec.fixed + lane : spec.pos);
+      /* sidled: i höger­trafik ligger körfältet på höger sida om vägens mitt */
+      const off = (spec.axis === 'x' ? spec.dir : -spec.dir) * spec.lane;
+      const side = spec.fixed + off;
+      c.group.position.set(spec.axis === 'x' ? spec.pos : side, GY + 0.015, spec.axis === 'x' ? side : spec.pos);
       c.group.rotation.y = spec.axis === 'x' ? (spec.dir > 0 ? 0 : Math.PI) : (spec.dir > 0 ? -Math.PI / 2 : Math.PI / 2);
+      const sh = new T.Mesh(shadowGeo, carShadowMat);
+      sh.rotation.x = -Math.PI / 2; sh.scale.set(0.3, 0.24, 1); sh.position.set(-0.04, 0.004, 0); c.group.add(sh);
+      const gl = new T.Sprite(carGlowMat); gl.scale.set(0.42, 0.24, 1); gl.position.set(0.84, 0.19, 0); c.group.add(gl);
       root.add(c.group);
-      const gl = new T.Sprite(carGlowMat); gl.scale.set(0.5, 0.5, 1); gl.position.set(0.62, 0.2, 0); c.group.add(gl);
-      life.cars.push({ c, axis: spec.axis, fixed: spec.fixed, lane, pos: spec.pos, dir: spec.dir, speed: spec.speed, min: -40, max: 40 });
+      life.cars.push({ c, axis: spec.axis, pos: spec.pos, dir: spec.dir, speed: spec.speed, min: -CAR_SPAN, max: CAR_SPAN });
     }
-    const carRoads = [
-      { axis: 'x', fixed: -4, wide: false },
-      { axis: 'x', fixed: 12, wide: false },
-      { axis: 'z', fixed: -4, wide: false },
-      { axis: 'z', fixed: 12, wide: false },
-    ];
-    carRoads.forEach((r, i) => {
+    /* körfält: alla avenyer inom kartan + de två närmaste smågatorna per riktning */
+    const traffic = [];
+    layout.avenues.forEach((r, i) => {
+      if (Math.abs(r.c) > 44) return;
+      traffic.push({ axis: r.axis, fixed: r.c, lane: 0.74, speed: 3.5 + (i % 3) * 0.32 });
+    });
+    ['x', 'z'].forEach((axis) => {
+      layout.streets
+        .filter((r) => r.axis === axis && Math.abs(r.c) < 20)
+        .sort((a, b) => Math.abs(a.c) - Math.abs(b.c))
+        .slice(0, 2)
+        .forEach((r, i) => traffic.push({ axis, fixed: r.c, lane: 0.4, speed: 2.6 + i * 0.28 }));
+    });
+    traffic.forEach((road, i) => {
       for (const dir of [1, -1]) {
-        const n = 1;
-        for (let k = 0; k < n; k++) {
-          addCar({ axis: r.axis, fixed: r.fixed, laneOff: dir * (r.wide ? 0.75 : 0.44), pos: -34 + k * 34 + i * 5, dir, speed: 2.8 + Math.random() * 1.6, taxi: Math.random() > 0.78 });
-        }
+        addCar({
+          axis: road.axis, fixed: road.fixed, lane: road.lane, dir, speed: road.speed,
+          pos: -CAR_SPAN + ((i * 0.37 + (dir > 0 ? 0.18 : 0.63)) % 1) * CAR_SPAN * 2,
+          taxi: (i + dir) % 5 === 0,
+        });
       }
-    });    /* cyklister på avenyns cykelbana – gratis cykelmodell med sittande person */
+    });
+
+    /* cyklister på avenyns cykelbana – gratis cykelmodell med sittande person */
     function cyclist(spec) {
       if (!A) return;
       const g = A.cyclist({ kind: spec.kind, len: 1.06 });
@@ -844,7 +901,8 @@ window.Neighborhood = (() => {
 
     if (bikeAv) {
       for (let i = 0; i < 4; i++) {
-        cyclist({ axis: bikeAv.axis === 'x' ? 'x' : 'z', fixed: bikeAv.c + (i % 2 ? 1.85 : -1.85), pos: -30 + i * 15, dir: i % 2 ? 1 : -1, speed: 2.4 + i * 0.22, kind: i % 2 ? 'woman' : 'man' });
+        const side = i % 2 ? 1 : -1, axis = bikeAv.axis === 'x' ? 'x' : 'z';
+        cyclist({ axis, fixed: bikeAv.c + side * 2.02, pos: -30 + i * 15, dir: axis === 'x' ? side : -side, speed: 2.4 + i * 0.22, kind: i % 2 ? 'woman' : 'man' });
       }
     }
 

@@ -311,10 +311,13 @@ window.CityAssets = (() => {
   const CAR_COLORS = [0xd8dde6, 0x2b3a50, 0x8e2f34, 0x2f6b57, 0xb8863f, 0x55606e, 0x7a2f55, 0xe7e2d8];
   function car(opts) {
     const THREE = T(), o = opts || {}, key = o.taxi ? 'taxi' : 'car', meta = cache[key];
-    const res = { group: new THREE.Group(), wheels: [], len: 1.5, kind: key };
+    const res = { group: new THREE.Group(), wheels: [], len: 1.55, kind: key };
     if (!meta) return res;
     const m = cloneScene(meta.scene);
-    const target = o.len || 1.55, s = target / (meta.size.x || 1);
+    /* Modellen har sin längd och sina strålkastare längs +Z. Vi mäter skalan
+       över längden och vrider karossen till +X, så att nosen pekar framåt i
+       körriktningen och bilen aldrig blir bredare än den är lång. */
+    const target = o.len || 1.55, s = target / (meta.size.z || meta.size.x || 1);
     m.scale.setScalar(s);
     m.position.set(-meta.center.x * s, -meta.min.y * s, -meta.center.z * s);
     const tint = o.color == null ? null : new THREE.Color(o.color);
@@ -329,24 +332,26 @@ window.CityAssets = (() => {
         x.material = out.length === 1 ? out[0] : out;
       });
     }
+    const inner = new THREE.Group();
+    inner.rotation.y = Math.PI / 2;   // modellens +Z blir scenens +X
+    inner.add(m);
+    res.group.add(inner);
+    const halfW = Math.max(0.26, ((meta.size.x || 1) * s) / 2);
+    const lightY = Math.max(0.16, (meta.size.y || 1) * s * 0.52);
     if (o.headlights !== false) {
       const hm = new THREE.MeshBasicMaterial({ color: 0xfff1c8 });
-      for (const z of [-0.26, 0.26]) {
-        const l = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.055, 0.12), hm);
-        l.position.set(target * 0.49, 0.24, z);
-        res.group.add(l);
-      }
       const tail = new THREE.MeshBasicMaterial({ color: 0xff3b30 });
-      for (const z of [-0.26, 0.26]) {
-        const l = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.05, 0.11), tail);
-        l.position.set(-target * 0.49, 0.24, z);
+      for (const z of [-halfW * 0.6, halfW * 0.6]) {
+        const l = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.05, 0.1), hm);
+        l.position.set(target * 0.5, lightY, z);
         res.group.add(l);
+        const tl = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.045, 0.09), tail);
+        tl.position.set(-target * 0.5, lightY, z);
+        res.group.add(tl);
       }
     }
-    res.group.add(m);
     res.len = target;
     res.wheels = [];
-    meta.wheelNodes.forEach(() => {});
     m.traverse((x) => { if (/wheel/i.test(x.name)) res.wheels.push(x); });
     return res;
   }

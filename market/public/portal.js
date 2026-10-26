@@ -334,8 +334,8 @@ let netLoad = null, netScene = null;
 const loadNet = () => netLoad || (netLoad = new Promise((ok, no) => {
   const add = (src, next) => { const el = document.createElement('script'); el.src = src; el.onload = next; el.onerror = () => { netLoad = null; no(new Error('3D')); }; document.head.appendChild(el); };
   // three.js → GLTFLoader → SkeletonUtils → CC0-modellerna → stadsscenen
-  const scene = () => add('neighborhood.js?v=39', ok);
-  const assets = () => add('cityassets.js?v=12', () => {
+  const scene = () => add('neighborhood.js?v=53', ok);
+  const assets = () => add('cityassets.js?v=13', () => {
     const A = window.CityAssets;
     if (!A) return scene();
     A.loadAll(['bush', 'bushFlower', 'flowers', 'grass', 'pine', 'treeRound', 'treeTall', 'bike', 'car', 'taxi', 'woman', 'man', 'lamp', 'bench']).then(scene, scene);

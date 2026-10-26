@@ -457,7 +457,7 @@ function cityLayout(){
   return out;
 }
 function outside(){
-  box(BW+1.2,.7,BD+1.2,M(0xb9b3a8),0,-.35,ZC,root);
+  box(BW+1.2,.66,BD+1.2,M(0xb9b3a8),0,-.37,ZC,root);   // toppen strax under golvplattan (y 0) så de inte z-fajtas
   groundMat=M(GROUNDC[VAR%GROUNDC.length],{roughness:1,map:lawnTex()});const ground=new T3.Mesh(new T3.PlaneGeometry(520,520),groundMat);ground.rotation.x=-Math.PI/2;ground.position.y=-.7;ground.receiveShadow=true;root.add(ground);
   box(BW+30,.15,3.2,M(0xd2c5a6),0,-.62,3.6,root);
   box(150,.1,5,M(0x6b6559),0,-.66,9.2,root);
@@ -507,7 +507,7 @@ function annexes(){
   const e=BW/2,H=FH-.2,side=M(STY.slab,{metalness:STY.gold?.5:.05,roughness:.5}),roofM=M(STY.roof),cap=STY.gold?goldM:M(0x3a4150);
   for(const sg of[-1,1]){
     const w=sg<0?AWL:AWR,cx=sg*(e+w/2);
-    box(w+.6,.7,BD+1.2,M(0xb9b3a8),cx+sg*.15,-.35,ZC,root);
+    box(w+.6,.66,BD+1.2,M(0xb9b3a8),cx+sg*.15,-.37,ZC,root);
     box(w+.5,.4,BD+.6,side,cx,-.2,ZC,root);
     box(w+.7,.4,BD+.9,roofM,cx,FH-.2,ZC,root); // taket = balkonggolv i våning 2:s nivå
   }
@@ -1624,5 +1624,5 @@ function snapshot(tier,staff,label,w=640,h=440,variant=0,logo=null){
   renderer.render(scene,camera);const url=renderer.domElement.toDataURL('image/jpeg',.9);
   hourNow=h0;WX=wxKeep;if(wxObj)wxObj.visible=true;Object.assign({zoom,az,el},keep);resize();return url;
 }
-return {init,build,send,say,busy,snapshot,resize,setHour,daylight,pick:f=>{onPick=f;},phone:()=>phoneCall(),obst:()=>OBST,dbgCars:()=>({cars,pack:!!CARPACK,keys:CARPACK?Object.keys(CARPACK):[]}),setWeather,sign:f=>{onSign=f;},zoomOut:f=>{onZoomOut=f;},preloadLogo,screen:f=>{onScreen=f;},select:id=>{selId=id;for(const k in agents)agents[k].tag.classList.toggle('on',k===id);},setStats:d=>{statsData=d;},visit,socialVisit,away:id=>agents[id]&&agents[id].away,pos:id=>{const g=agents[id],o=g&&(g.mover||g.p);return o?[+o.position.x.toFixed(2),+o.position.y.toFixed(2),+o.position.z.toFixed(2),g.away||'',g.seat?[g.seat.x,g.seat.y,g.seat.z,g.seat.facing]:null]:null;},toilet,kitchen,has:id=>!!agents[id],TIERS};
+return {init,build,send,say,busy,snapshot,resize,setHour,daylight,pick:f=>{onPick=f;},phone:()=>phoneCall(),obst:()=>OBST,dbgCars:()=>({cars,pack:!!CARPACK,keys:CARPACK?Object.keys(CARPACK):[],root,groundMat,scene,renderer}),setWeather,sign:f=>{onSign=f;},zoomOut:f=>{onZoomOut=f;},preloadLogo,screen:f=>{onScreen=f;},select:id=>{selId=id;for(const k in agents)agents[k].tag.classList.toggle('on',k===id);},setStats:d=>{statsData=d;},visit,socialVisit,away:id=>agents[id]&&agents[id].away,pos:id=>{const g=agents[id],o=g&&(g.mover||g.p);return o?[+o.position.x.toFixed(2),+o.position.y.toFixed(2),+o.position.z.toFixed(2),g.away||'',g.seat?[g.seat.x,g.seat.y,g.seat.z,g.seat.facing]:null]:null;},toilet,kitchen,has:id=>!!agents[id],TIERS};
 })();

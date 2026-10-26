@@ -346,7 +346,7 @@ const loadNet = () => netLoad || (netLoad = new Promise((ok, no) => {
 }));
 const loadOffice = () => cityLoad || (cityLoad = new Promise((ok, no) => {
   const add = (src, next) => { const el = document.createElement('script'); el.src = src; el.onload = next; el.onerror = () => { cityLoad = null; no(new Error('3D')); }; document.head.appendChild(el); };
-  const run = (list, i = 0) => { if (i >= list.length) return add('office.js?v=55', ok); const [src, have] = list[i]; if (have()) return run(list, i + 1); add(src, () => run(list, i + 1)); };
+  const run = (list, i = 0) => { if (i >= list.length) return add('office.js?v=56', ok); const [src, have] = list[i]; if (have()) return run(list, i + 1); add(src, () => run(list, i + 1)); };
   const full = () => run([['vendor/GLTFLoader.js', () => THREE.GLTFLoader], ['vendor/SkeletonUtils.js', () => THREE.SkeletonUtils], ['vendor/BufferGeometryUtils.js', () => THREE.BufferGeometryUtils], ['cityassets.js?v=13', () => window.CityAssets]]);
   window.THREE ? full() : add('vendor/three.min.js', full);
 }));
@@ -446,7 +446,7 @@ async function startChat(c) {
   try { const j = await api('POST', '/companies/' + c.id + '/inquiry'); location.hash = '#/chat/' + j.id; } catch (e) { toast(e.message); }
 }
 async function pageMap() {
-  $('#app').innerHTML = '<div class="map-head"><p class="kicker"><span class="kdot"></span>' + esc(t('brandTag')) + '</p><h1>' + esc(t('mapH')) + '</h1><p class="lede">' + esc(t('mapP')) + ' <a href="#/list">' + esc(t('mapList')) + '</a></p></div><div class="city-wrap"><input id="mq" placeholder="' + esc(t('mapSearch')) + '" value="' + esc(sq.q) + '" autocomplete="off" aria-label="' + esc(t('mapSearch')) + '"><div class="city-res" id="mres"></div><div class="city-bar" id="cityBar"></div><div id="cityHost" class="city"><div id="cityCard"></div><div class="city-tip">' + esc(t('cityTip')) + '</div></div></div>'
+  $('#app').innerHTML = '<div class="map-head"><p class="kicker"><span class="kdot"></span>' + esc(t('brandTag')) + '</p><h1>' + esc(t('mapH')) + '</h1><p class="lede">' + esc(t('mapP')) + ' <a href="#/list">' + esc(t('mapList')) + '</a></p></div><div class="city-wrap"><input id="mq" placeholder="' + esc(t('mapSearch')) + '" value="' + esc(sq.q) + '" autocomplete="off" aria-label="' + esc(t('mapSearch')) + '"><div class="city-res" id="mres"></div><div class="city-bar" id="cityBar"></div><div id="cityHost" class="city"><div id="cityCard"></div></div></div>'
     + '<section class="net-teaser map-net"><div class="net-teaser-copy"><p class="kicker"><span class="kdot"></span>' + esc(t('netTeaserK')) + '</p><h2>' + esc(t('netTeaserH')) + '</h2><p>' + esc(t('netTeaserP')) + '</p><a class="btn" href="#/network">' + esc(t('netTeaserCta')) + ' →</a></div><div class="net-teaser-side">' + netLegendHtml() + '</div></section>';
   const j = await api('GET', '/companies?map=1&sort=new');
   const all = j.companies.slice().sort((a, b) => a.created - b.created);

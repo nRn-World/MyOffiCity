@@ -741,12 +741,22 @@ function loadPeds(){
   if(pedTried||!window.CityAssets||!T3.SkeletonUtils)return;pedTried=true;
   window.CityAssets.loadAll(['man','woman']).then(()=>{if(root)placePeds();}).catch(()=>{});
 }
+const PED_SHIRT=['#c0392b','#2e86c1','#27ae60','#f1c40f','#8e44ad','#ecf0f1','#e67e22','#16a085','#d81b60','#7f8c8d'],PED_SKIN=['#e0b08a','#c68642','#8d5524','#f1c27d','#ffdbac','#6f4a2d','#b9835a'],PED_PANTS=['#2c3e50','#34495e','#1b1b1b','#5d4037','#455a64','#283593','#6b6b6b'],PED_HAIR=['#2b1b12','#4a2c17','#c9a05a','#111111','#8c8c8c','#a0522d','#6d4c2a'];
+function recolorPed(group,i){   // egen palett per person: ingen kopia ser likadan ut
+  const pick=(a,k)=>a[(i*3+k*5+Math.floor(i/a.length))%a.length],cols=[pick(PED_SHIRT,0),pick(PED_SKIN,1),pick(PED_PANTS,2),null,null,pick(PED_HAIR,3)];
+  group.traverse(o=>{if(!(o.isMesh&&o.material&&o.material.map&&o.material.map.image))return;
+    const img=o.material.map.image,c=document.createElement('canvas');c.width=img.width;c.height=img.height;const x=c.getContext('2d');x.drawImage(img,0,0);
+    const bw=Math.max(1,Math.round(img.width/8));cols.forEach((col,b)=>{if(col){x.fillStyle=col;x.fillRect(b*bw,0,bw,img.height);}});
+    const t=new T3.CanvasTexture(c);t.flipY=o.material.map.flipY;t.encoding=o.material.map.encoding;t.magFilter=T3.NearestFilter;t.minFilter=T3.NearestFilter;t.generateMipmaps=false;
+    o.material=o.material.clone();o.material.map=t;o.material.needsUpdate=true;});
+}
 function placePeds(){
   const A=window.CityAssets;
   if(!root||!A||root.userData.peds||!A.has('man')||!A.has('woman'))return;root.userData.peds=1;PEDS=[];
   PED_SPOTS.forEach(([kind,z,x,dir,v,lim],i)=>{
     let p;try{p=A.person({kind,h:1.72+(i%3)*.04});}catch(e){return;}
     if(!p||!p.mixer)return;
+    recolorPed(p.group,i);
     p.group.position.set(x,-.58,z);p.group.rotation.y=dir>0?Math.PI/2:-Math.PI/2;root.add(p.group);
     p.play('walk',v/1.4);PEDS.push({p,x,z,dir,v,lim});
   });
@@ -832,14 +842,14 @@ function moveCars(dt){
     const ls=cars.filter(c=>c.dir===lane);ls.forEach(c=>c.s=c.g.position.x*lane);
     ls.forEach(c=>{
       let gap=1e9,lead=null;
-      ls.forEach(o=>{if(o===c)return;let d=o.s-c.s;if(d<0)d+=124;if(d>124)return;const gg=d-(o.len+c.len)/2;if(gg<gap){gap=gg;lead=o;}});
+      ls.forEach(o=>{if(o===c)return;let d=o.s-c.s;if(d<0)d+=124;if(d<0||d>124)return;const gg=d-(o.len+c.len)/2;if(gg<gap){gap=gg;lead=o;}});
       let target=c.v0;if(lead&&gap<12)target=Math.max(0,Math.min(target,lead.cur+(gap-3)*.9));
       c.cur+=(target-c.cur)*Math.min(1,dt*4);
     });
     ls.forEach(c=>{
       c.g.position.x+=c.cur*lane*dt;
       if(c.g.position.x*lane>62){ // ut ur bild: en ny slumpad bil ställer sig sist i kön
-        const others=ls.filter(o=>o!==c).map(o=>o.g.position.x*lane),back=others.length?Math.min(...others):62;
+        const others=ls.filter(o=>o!==c).map(o=>o.g.position.x*lane).filter(x=>x>-100),back=others.length?Math.min(...others):62;
         root.remove(c.g);
         if(c.type==='moto'){const nl=Math.random()<.5?1:-1,nz=nl===1?8:10.4,n=spawnCar(nl,nz,0,'moto'),wait=Math.random()*Math.random()*260;   // slumpat körfält och paus innan nästa tur
           n.g.position.x=-(62+wait)*nl;cars[cars.indexOf(c)]=n;}
@@ -1624,6 +1634,14 @@ function init(c,ov){
     r.addColorStop(0,'rgba(255,255,255,1)');r.addColorStop(.35,'rgba(255,255,255,.55)');r.addColorStop(1,'rgba(255,255,255,0)');g2.fillStyle=r;g2.fillRect(0,0,64,64);GT=new T3.CanvasTexture(c2);}
   glowMat=new T3.SpriteMaterial({map:GT,color:0xfff1c8,transparent:true,opacity:0,blending:T3.AdditiveBlending,depthWrite:false});
   tailMat=new T3.SpriteMaterial({map:GT,color:0xff2a2a,transparent:true,opacity:0,blending:T3.AdditiveBlending,depthWrite:false});
+  canvas.style.touchAction='none';
+  const ptrs=new Map();let pinch=null;   // två fingrar: zooma
+  const pdist=()=>{const [a,b]=[...ptrs.values()];return Math.hypot(a.x-b.x,a.y-b.y)||1;};
+  canvas.addEventListener('pointerdown',e=>{ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});if(ptrs.size===2){pinch={d:pdist(),z:zoom};drag=null;down=null;e.stopImmediatePropagation();}});
+  canvas.addEventListener('pointermove',e=>{if(!ptrs.has(e.pointerId))return;ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(pinch&&ptrs.size===2){e.stopImmediatePropagation();zoom=Math.min(2.6,Math.max(.7,pinch.z*pdist()/pinch.d));fit();}});
+  const endPtr=e=>{ptrs.delete(e.pointerId);if(ptrs.size<2&&pinch){pinch=null;drag=null;down=null;e.stopImmediatePropagation();}};
+  canvas.addEventListener('pointerup',endPtr);canvas.addEventListener('pointercancel',endPtr);
   let drag=null;
   canvas.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);});
   canvas.addEventListener('pointermove',e=>{if(!drag)return;az-=(e.clientX-drag.x)*.005;el=Math.min(1.2,Math.max(.08,el+(e.clientY-drag.y)*.004));az=Math.min(1.5,Math.max(-.6,az));drag={x:e.clientX,y:e.clientY};fit();});

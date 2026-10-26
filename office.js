@@ -53,7 +53,7 @@ function loadGrassKit(){
   if(GK_TRIED)return;GK_TRIED=true;
   Promise.all([
     new Promise((ok,no)=>new T3.TextureLoader().load('models/grasscarpet.jpg?v=2',ok,undefined,no)),
-    fetch('models/grassblades.bin').then(r=>r.ok?r.arrayBuffer():Promise.reject())
+    fetch('models/grassblades.bin?v=2').then(r=>r.ok?r.arrayBuffer():Promise.reject())
   ]).then(([tex,buf])=>{
     tex.encoding=T3.sRGBEncoding;tex.wrapS=tex.wrapT=T3.RepeatWrapping;tex.repeat.set(110,110);tex.anisotropy=8;
     const dv=new DataView(buf),n=dv.getUint32(0,true),geos=[];let off=4;
@@ -67,25 +67,27 @@ function loadGrassKit(){
   }).catch(()=>{});
 }
 function applyCarpet(){if(!GK||!groundMat)return;groundMat.map=GK.tex;groundMat.needsUpdate=true;if(root)applyTime();}
-const GK_XZ=3,GK_Y=1.8;
+const GK_NEAR=2,GK_FAR=2.6;
 function placeGrass(e){
   if(!root)return;root.userData.gpE=e;
   if(!GK||root.userData.gp)return;root.userData.gp=1;
   // allt som är asfalt, trottoar, torg eller hus får inga strån; resten av den gröna marken har gräsmattan som marktextur
   const bl=-(e+AWL+.7),br=e+AWR+.7;
   const paved=(x,z)=>(x>bl&&x<br&&z>-6.7&&z<2.7)||(Math.abs(x)<e+15.2&&z>1.9&&z<5.3)||z<-7.1||(z>6.65&&z<11.75)||(STY.gold&&Math.abs(x)<e+9.4&&z>-10.6&&z<8.4);
-  const coarse=matchMedia('(pointer:coarse)').matches,dens=coarse?.7:1.5;
-  const spots=[];
-  const n=Math.round(92*(14+7.2)*dens);
-  for(let i=0;i<n;i++){const x=-46+Math.random()*92,z=-7.2+Math.random()*21.2;if(!paved(x,z))spots.push([x,z]);}
-  const per=geos=>geos.map(()=>[]);const bins=per(GK.geos);spots.forEach(p=>bins[Math.floor(Math.random()*bins.length)].push(p));
+  const coarse=matchMedia('(pointer:coarse)').matches,k=coarse?.5:1;
+  const near=(x,z)=>Math.abs(x)<34&&z<16;
+  const spots=[];   // [x,z,avstånd=0|1]
+  const fill=(x0,x1,z0,z1,dens,keep,far)=>{const n=Math.round((x1-x0)*(z1-z0)*dens);for(let i=0;i<n;i++){const x=x0+Math.random()*(x1-x0),z=z0+Math.random()*(z1-z0);if(!paved(x,z)&&keep(x,z))spots.push([x,z,far]);}};
+  fill(-34,34,-7.2,16,4.2*k,near,0);                       // nära: tätt
+  fill(-70,70,-7.2,44,.8*k,(x,z)=>!near(x,z),1);            // längre bort: glesare och större tuvor
+  const bins=GK.geos.map(()=>[]);spots.forEach(p=>bins[Math.floor(Math.random()*bins.length)].push(p));
   const m=new T3.Matrix4(),q=new T3.Quaternion(),up=new T3.Vector3(0,1,0),pos=new T3.Vector3(),sc=new T3.Vector3(),col=new T3.Color();
   GK.geos.forEach((geo,gi)=>{
     const list=bins[gi],mesh=new T3.InstancedMesh(geo,gpMat,list.length);
-    list.forEach(([x,z],i)=>{
-      const r=.8+Math.random()*.45;
-      pos.set(x,-.7,z);q.setFromAxisAngle(up,Math.random()*Math.PI*2);sc.set(GK_XZ*r,GK_Y*(.8+Math.random()*.4),GK_XZ*r);
-      m.compose(pos,q,sc);mesh.setMatrixAt(i,m);const v=.8+Math.random()*.25;mesh.setColorAt(i,col.setRGB(v,v,v));
+    list.forEach(([x,z,far],i)=>{
+      const r=(far?GK_FAR:GK_NEAR)*(.8+Math.random()*.4);
+      pos.set(x,-.7,z);q.setFromAxisAngle(up,Math.random()*Math.PI*2);sc.set(r,r*(.85+Math.random()*.3),r);
+      m.compose(pos,q,sc);mesh.setMatrixAt(i,m);const v=.78+Math.random()*.25;mesh.setColorAt(i,col.setRGB(v,v,v));
     });
     mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;
     mesh.frustumCulled=false;mesh.castShadow=false;mesh.receiveShadow=false;root.add(mesh);

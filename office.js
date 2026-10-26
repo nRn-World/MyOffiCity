@@ -635,7 +635,7 @@ function taxiTex(){
 }
 function spawnCar(lane,z,s,forced){
   const type=forced||pickR(CAR_TYPES),c=type==='moto'?makeMoto(pickR(CAR_COLORS),lane):makeCar(type,pickR(CAR_COLORS),lane);
-  const v0=CAR_SPEED[type]*(type==='moto'?.55+Math.random()*.95:.8+Math.random()*.45);
+  const v0=(CIVIL_SPEED[type]||CAR_SPEED[type])*(type==='moto'?.55+Math.random()*.95:.8+Math.random()*.45);
   c.g.position.set(s*lane,-.62,z);root.add(c.g);
   return {...c,dir:lane,z,v0,cur:v0,type};
 }
@@ -674,6 +674,7 @@ function buildCarTemplates(scene){
 }
 
 function makeCar(type,col,dir){
+  if(CIVIL&&CIVIL[type]){const g=new T3.Group(),w=new T3.Group();if(dir<0)w.rotation.y=Math.PI;w.add(CIVIL[type].g.clone(true));g.add(w);return {g,len:CIVIL[type].len};}
   const g=new T3.Group(),paint=M(type==='taxi'?0xf6c343:col,{metalness:.45,roughness:.3}),gl=M(0x1d2a3a,{metalness:.6,roughness:.15});
   // [längd, karosshöjd, bredd, hjulradie, hyttlängd, hytthöjd, hyttförskjutning]
   const [L,H,Wd,R,CL,CH,CO]={sedan:[3.9,.75,1.7,.36,2.1,.66,-.25],small:[3.0,.85,1.55,.32,2.0,.75,-.1],jeep:[4.1,1.1,1.85,.46,2.9,.85,-.4],van:[5.2,1.15,1.9,.4,4.3,1.15,-.35],sport:[4.3,.5,1.8,.33,1.6,.42,-.45],taxi:[3.9,.75,1.7,.36,2.1,.66,-.25]}[type];
@@ -715,6 +716,24 @@ function makeCar(type,col,dir){
 }
 /* Motorcykel: "Honda CB500X" av DevanirGrau (CC BY 4.0, se CREDITS.md). Modellen är förenklad (ca 50 000 trianglar, 59 delar, texturer 512 px)
    och fronten pekar mot +x; föraren är kvar från den gamla enkla motorcykeln. */
+/* Servicefordon: "Generic civil service vehicles pack" av Comrade1280 (CC BY 4.0, se CREDITS.md): stadsbuss, skolbuss, ambulans, brandbil, sopbil, polisbil,
+   postbil, servicebil och bärgare. Fronten pekar mot +x. De ersätter slumpvis vanliga bilar när de kör ut ur bild och kommer tillbaka. */
+let CIVIL=null,civilTried=false;const CIVIL_KEYS=['citybus','ambulance','fire_truck','garbage_truck','police_sedan','rdservtruck','school_bus','towtruck','postvan'];
+const CIVIL_SPEED={citybus:6.5,ambulance:9,fire_truck:7.5,garbage_truck:5.5,police_sedan:10,rdservtruck:7,school_bus:5.5,towtruck:6.5,postvan:8};
+function loadCivil(){
+  if(civilTried)return;civilTried=true;
+  fetch('models/civ.json?v=1').then(r=>r.json()).then(async J=>{
+    const buf=await (await fetch('models/civ.bin?v=1')).arrayBuffer();
+    const texs=await Promise.all(J.tex.map(f=>new Promise(ok=>new T3.TextureLoader().load('models/'+f+'?v=1',t=>{t.encoding=T3.sRGBEncoding;t.flipY=false;t.anisotropy=4;ok(t);},undefined,()=>ok(null)))));
+    const mats=J.mats.map(m=>{const mt=new T3.MeshStandardMaterial({color:new T3.Color().setRGB(m.c[0],m.c[1],m.c[2]),metalness:m.m,roughness:m.r,side:T3.DoubleSide});if(m.t>=0&&texs[m.t])mt.map=texs[m.t];if(m.o<1){mt.transparent=true;mt.opacity=m.o;mt.depthWrite=false;}else if(m.t>=0&&texs[m.t]&&J.tex[m.t].endsWith('.png')){mt.transparent=true;mt.depthWrite=false;mt.alphaTest=.02;}return mt;});
+    const out={};
+    J.vehicles.forEach(V=>{const grp=new T3.Group();V.parts.forEach(p=>{let o=p.o;const pos=new Float32Array(buf,o,p.nV*3);o+=p.nV*12;const nrm=new Float32Array(buf,o,p.nV*3);o+=p.nV*12;const uv=new Float32Array(buf,o,p.nV*2);o+=p.nV*8;const idx=new Uint16Array(buf,o,p.nI);
+      const g=new T3.BufferGeometry();g.setAttribute('position',new T3.BufferAttribute(pos,3));g.setAttribute('normal',new T3.BufferAttribute(nrm,3));g.setAttribute('uv',new T3.BufferAttribute(uv,2));g.setIndex(new T3.BufferAttribute(idx,1));g.computeBoundingSphere();
+      const m=new T3.Mesh(g,mats[p.mat]);m.castShadow=true;grp.add(m);});out[V.name]={g:grp,len:V.len};});
+    CIVIL=out;
+    if(root)cars.forEach((o,i)=>{if(o.type==='moto'||i%2)return;const t=pickR(CIVIL_KEYS),lane=o.dir,n=spawnCar(lane,o.z,0,t);n.g.position.x=o.g.position.x;root.remove(o.g);cars[i]=n;});
+  }).catch(()=>{});
+}
 let BIKES=[],bikeTried=false,motoN=0;
 const BIKE_FILES=['bike','duc'];   // Honda CB500X och Ducati Panigale V4
 function loadBike(){
@@ -803,7 +822,7 @@ function moveCars(dt){
         root.remove(c.g);
         if(c.type==='moto'){const nl=Math.random()<.5?1:-1,nz=nl===1?8:10.4,n=spawnCar(nl,nz,0,'moto'),wait=Math.random()*Math.random()*260;   // slumpat körfält och paus innan nästa tur
           n.g.position.x=-(62+wait)*nl;cars[cars.indexOf(c)]=n;}
-        else{const n=spawnCar(lane,c.z,0,c.type);
+        else{let nt=c.type;if(CIVIL&&Math.random()<.45)nt=Math.random()<.5?pickR(CIVIL_KEYS):pickR(['sedan','small','jeep','van','sport','taxi']);else if(CIVIL&&CIVIL[nt])nt=pickR(['sedan','small','jeep','van','sport','taxi']);const n=spawnCar(lane,c.z,0,nt);
         n.g.position.x=Math.min(-62,back-n.len-8-Math.random()*20)*lane;cars[cars.indexOf(c)]=n;}
       }
     });
@@ -1039,7 +1058,7 @@ function build(o){
   if(root){disposeTree(root);scene.remove(root);}
   glassMat=null;
   root=new T3.Group();scene.add(root);
-  TREES=[];loadCarPack();loadBike();loadOak();screens=[];leds=[];holos=[];lights=[];cars=[];bikes=[];screenHits=[];cityTex=[];flames=[];OBST=[];
+  TREES=[];loadCarPack();loadBike();loadCivil();loadOak();screens=[];leds=[];holos=[];lights=[];cars=[];bikes=[];screenHits=[];cityTex=[];flames=[];OBST=[];
   cityFaces.forEach(f=>f.t.dispose());cityFaces=CITY_STYLES.map((_,i)=>makeCityFace(i));cityMats=[];cityBeacons=[];
   Object.values(agents).forEach(a=>{a.tag.remove();a.bub.remove();});for(const k in agents)delete agents[k];
   packets.forEach(p=>p.res());packets=[];trails=[];

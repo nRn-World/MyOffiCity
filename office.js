@@ -677,10 +677,10 @@ function buildCarTemplates(scene){
   return out;
 }
 
-const CIVIL_LAMPS={   // [x,y,|z|] per fordon, speglas till båda sidor (uppmätt ur modellernas "optics"-delar)
-  ambulance:{f:[3.3,.88,.66],r:[-3.0,1.34,.97]},citybus:{f:[4.7,1.56,.9],r:[-4.4,2.03,.65]},fire_truck:{f:[3.55,1.46,.68],r:[-4.05,1.38,.82]},
-  garbage_truck:{f:[3.5,1.58,.72],r:[-3.3,1.03,.86]},police_sedan:{f:[2.25,.62,.69],r:[-2.4,.8,.64]},postvan:{f:[2.38,.97,.72],r:[-2.5,1.45,.78]},
-  rdservtruck:{f:[2.5,.98,.68],r:[-2.3,1.04,.8]},school_bus:{f:[3.25,1.43,.71],r:[-3.8,1.6,.72]},taxi:{f:[2.3,.63,.69],r:[-2.36,.8,.63]},towtruck:{f:[3.4,.9,.8],r:[-3.0,.68,.8]}};
+const CIVIL_LAMPS={   // [x,y,|z|] per fordon, speglas till båda sidor (uppmätt ur modellernas "optics"-delar: låga strålkastare vid främre stötfångaren)
+  ambulance:{f:[3.24,.95,.7],r:[-3.0,1.34,.97]},citybus:{f:[4.68,.9,.87],r:[-4.6,1.5,.85]},fire_truck:{f:[3.84,.9,.78],r:[-4.17,.6,.75]},
+  garbage_truck:{f:[3.7,.9,.89],r:[-3.71,.6,.75]},police_sedan:{f:[2.25,.62,.69],r:[-2.4,.8,.64]},postvan:{f:[2.38,.97,.72],r:[-2.5,1.45,.78]},
+  rdservtruck:{f:[2.5,.98,.68],r:[-2.3,1.04,.8]},school_bus:{f:[3.8,.85,.76],r:[-3.9,1.0,.74]},taxi:{f:[2.3,.63,.69],r:[-2.36,.8,.63]},towtruck:{f:[3.38,.75,.74],r:[-3.04,.6,.7]}};
 const BIKE_LAMPS={bike:{f:[[.69,.85,0]],r:[[-1.06,.75,0]]},duc:{f:[[.96,.76,0]],r:[[-1.05,.7,0]]}};
 function sym(l){return {f:l.f[2]?[[l.f[0],l.f[1],-l.f[2]],[l.f[0],l.f[1],l.f[2]]]:[l.f],r:l.r[2]?[[l.r[0],l.r[1],-l.r[2]],[l.r[0],l.r[1],l.r[2]]]:[l.r]};}
 function lampSet(g,dir,lamps,k=1){   // strålkastare (glöd, ljuskägla, ljusfläck på vägen) och baklyktor exakt vid lyktorna; dir -1 = modellen vänd 180 grader
@@ -747,8 +747,8 @@ let CIVIL=null,civilTried=false;const CIVIL_KEYS=['citybus','ambulance','fire_tr
 const CIVIL_SPEED={citybus:6.5,ambulance:9,fire_truck:7.5,garbage_truck:5.5,police_sedan:10,rdservtruck:7,school_bus:5.5,towtruck:6.5,postvan:8};
 function loadCivil(){
   if(civilTried)return;civilTried=true;
-  fetch('models/civ.json?v=1').then(r=>r.json()).then(async J=>{
-    const buf=await (await fetch('models/civ.bin?v=1')).arrayBuffer();
+  fetch('models/civ.json?v=2').then(r=>r.json()).then(async J=>{
+    const buf=await (await fetch('models/civ.bin?v=2')).arrayBuffer();
     const texs=await Promise.all(J.tex.map(f=>new Promise(ok=>new T3.TextureLoader().load('models/'+f+'?v=1',t=>{t.colorSpace=T3.SRGBColorSpace;t.flipY=false;t.anisotropy=4;ok(t);},undefined,()=>ok(null)))));
     const mats=J.mats.map(m=>{const mt=new T3.MeshStandardMaterial({color:new T3.Color().setRGB(m.c[0],m.c[1],m.c[2]),metalness:m.m,roughness:m.r,side:T3.DoubleSide});if(m.t>=0&&texs[m.t])mt.map=texs[m.t];if(m.o<1){mt.transparent=true;mt.opacity=m.o;mt.depthWrite=false;}else if(m.t>=0&&texs[m.t]&&J.tex[m.t].endsWith('.png')){mt.transparent=true;mt.depthWrite=false;mt.alphaTest=.02;}return mt;});
     const out={};

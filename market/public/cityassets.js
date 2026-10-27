@@ -49,8 +49,8 @@ window.CityAssets = (() => {
       mats.forEach((m) => {
         if (!m) return;
         m.side = THREE.FrontSide;
-        if (m.map) m.encoding = THREE.sRGBEncoding;
-        if (m.emissiveMap) m.emissiveMap.encoding = THREE.sRGBEncoding;
+        if (m.map) m.colorSpace = THREE.SRGBColorSpace;
+        if (m.emissiveMap) m.emissiveMap.colorSpace = THREE.SRGBColorSpace;
         if (/^(windows|black|grey|headlights|taillights|material\.007)$/i.test(m.name)) return;
         if (/wheel/i.test(o.name)) return;
         meta.bodyMats.push({ mesh: o, mat: m });
@@ -80,7 +80,7 @@ window.CityAssets = (() => {
           if (/leaves|leaf/i.test(m.name || '')) {
             m.alphaTest = 0.38; m.transparent = false; m.depthWrite = true;
             if (!meta.leafMats.includes(m)) meta.leafMats.push(m);
-          } else if (m.map) m.map.encoding = THREE.sRGBEncoding;
+          } else if (m.map) m.map.colorSpace = THREE.SRGBColorSpace;
         });
       });
       meta.leafVariants = meta.leafMats.map((m) => colors.map((hex, i) => {
@@ -166,7 +166,7 @@ window.CityAssets = (() => {
     const g = c.getContext('2d'), gr = g.createRadialGradient(64, 64, 2, 64, 64, 62);
     gr.addColorStop(0, inner); gr.addColorStop(0.55, outer); gr.addColorStop(1, 'rgba(0,0,0,0)');
     g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
-    const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding;
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
     return t;
   }
   function pool() {

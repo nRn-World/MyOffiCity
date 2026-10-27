@@ -95,7 +95,7 @@ window.Neighborhood = (() => {
     e.fillStyle = 'rgba(255,204,140,.32)'; e.fillRect(10, sy + 4, w - 20, 38);
 
     const t1 = new T.CanvasTexture(map), t2 = new T.CanvasTexture(glow);
-    t1.encoding = T.sRGBEncoding; t2.encoding = T.sRGBEncoding;
+    t1.colorSpace = T.SRGBColorSpace; t2.colorSpace = T.SRGBColorSpace;
     t1.anisotropy = t2.anisotropy = 4;
     return { map: t1, emissive: t2 };
   }
@@ -117,7 +117,7 @@ window.Neighborhood = (() => {
     let label = String(name || 'Company');
     while (g.measureText(label).width > 470 && label.length > 4) label = label.slice(0, -2);
     g.fillText(label, 256, 60);
-    const t = new T.CanvasTexture(c); t.encoding = T.sRGBEncoding; t.anisotropy = 4;
+    const t = new T.CanvasTexture(c); t.colorSpace = T.SRGBColorSpace; t.anisotropy = 4;
     signCache[name] = t;
     return t;
   }
@@ -259,7 +259,7 @@ window.Neighborhood = (() => {
     }
 
     const t = new T.CanvasTexture(c);
-    t.encoding = T.sRGBEncoding; t.anisotropy = 4;
+    t.colorSpace = T.SRGBColorSpace; t.anisotropy = 4;
     return t;
   }
 
@@ -269,7 +269,7 @@ window.Neighborhood = (() => {
     const g = c.getContext('2d'), gr = g.createRadialGradient(64, 64, 2, 64, 64, 62);
     gr.addColorStop(0, inner); gr.addColorStop(0.5, outer); gr.addColorStop(1, 'rgba(0,0,0,0)');
     g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
-    const t = new T.CanvasTexture(c); t.encoding = T.sRGBEncoding;
+    const t = new T.CanvasTexture(c); t.colorSpace = T.SRGBColorSpace;
     return t;
   }
 
@@ -282,19 +282,19 @@ window.Neighborhood = (() => {
 
     const ac = new AbortController();
     const scene = new T.Scene();
-    /* Varm kvällshimmel: mjuk persika i fjärran så att staden läser som en
-       stadskarta i eftermiddagsljus i stället för en nattlig kuliss. */
-    scene.fog = new T.Fog(0xf0d9b0, 88, 225);
+    /* Blå dagshimmel: ljus himmelsdis i fjärran så att staden läser som en
+       stadskarta i dagsljus i stället för en nattlig kuliss. */
+    scene.fog = new T.Fog(0xbfdcf5, 88, 225);
 
     const camera = new T.PerspectiveCamera(42, 1, 0.5, 460);
     const renderer = new T.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
     renderer.setClearColor(0x000000, 0);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    renderer.outputEncoding = T.sRGBEncoding;
+    renderer.outputColorSpace = T.SRGBColorSpace;
     renderer.toneMapping = T.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 0.94;
     /* Långa, mjuka skuggor från en låg sol ger staden djup – som en stadskarta. */
-    renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap;
+    renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFShadowMap;
     renderer.domElement.style.display = 'block';
     renderer.domElement.style.width = '100%';
     renderer.domElement.style.height = '100%';
@@ -308,19 +308,19 @@ window.Neighborhood = (() => {
     tip.setAttribute('aria-hidden', 'true');
     host.appendChild(tip);
 
-    scene.add(new T.AmbientLight(0xfff6e8, 0.4));
-    const hemi = new T.HemisphereLight(0xfffbf1, 0x8ea15c, 0.5); scene.add(hemi);
-    const sun = new T.DirectionalLight(0xffe2ba, 1.34); sun.position.set(-32, 27, 14); scene.add(sun);
+    scene.add(new T.AmbientLight(0xfff6e8, 0.4 * Math.PI));
+    const hemi = new T.HemisphereLight(0xfffbf1, 0x8ea15c, 0.5 * Math.PI); scene.add(hemi);
+    const sun = new T.DirectionalLight(0xfff1dc, 1.34 * Math.PI); sun.position.set(-32, 27, 14); scene.add(sun);
     sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048);
     Object.assign(sun.shadow.camera, { left: -52, right: 52, top: 52, bottom: -52, near: 1, far: 160 });
     sun.shadow.camera.updateProjectionMatrix();
     sun.shadow.bias = -0.0009; sun.shadow.normalBias = 0.025;
     sun.shadow.radius = 2.5;
     /* svagt svalt motljus ger byggnaderna form även när solen ligger på */
-    const fill = new T.DirectionalLight(0xbfd6ea, 0.28); fill.position.set(-22, 16, -18); scene.add(fill);
-    const heart = new T.PointLight(0xffcf8c, 0.75, 44); heart.position.set(0, 9, 0); scene.add(heart);
+    const fill = new T.DirectionalLight(0xbfd6ea, 0.28 * Math.PI); fill.position.set(-22, 16, -18); scene.add(fill);
+    const heart = new T.PointLight(0xffcf8c, 0.75 * Math.PI, 44); heart.position.set(0, 9, 0); scene.add(heart);
     [[-1, 1], [1, -1], [1, 1], [-1, -1]].forEach(([dx, dz]) => {
-      const warm = new T.PointLight(0xffc287, 0.4, 26);
+      const warm = new T.PointLight(0xffc287, 0.4 * Math.PI, 26);
       warm.position.set(dx * S, 3.4, dz * S); scene.add(warm);
     });
 
@@ -377,7 +377,7 @@ window.Neighborhood = (() => {
     /* --- himmelssilhuetten av resten av staden --- */
     /* Fjärran stad: platt silhuettfärg (påverkas bara av dimman) så att horisonten
        läser som en målning i stället för en rad överljusa kuber. */
-    const farMat = keepMat(new T.MeshBasicMaterial({ color: 0x564e32, fog: true }));
+    const farMat = keepMat(new T.MeshBasicMaterial({ color: 0x5d6f82, fog: true }));
     const farGeo = keepGeo(new T.BoxGeometry(1, 1, 1));
     const farLitMat = keepMat(new T.MeshBasicMaterial({ color: 0xfff0d4, transparent: true, opacity: 0.08, blending: T.AdditiveBlending, depthWrite: false }));
     const FAR_N = 40;
@@ -426,7 +426,7 @@ window.Neighborhood = (() => {
           return g;
         });
         let merged = null;
-        try { merged = U2.mergeBufferGeometries(geos, false); } catch (e) { merged = null; }
+        try { merged = U2.mergeGeometries(geos, false); } catch (e) { merged = null; }
         if (!merged) { geos.forEach((g) => g.dispose()); return; }
         merged.computeBoundingSphere();
         list.forEach((o) => { if (o.parent) o.parent.remove(o); });
@@ -649,7 +649,7 @@ window.Neighborhood = (() => {
       batches.forEach((geos, mat) => {
         if (!geos.length) return;
         let merged = null;
-        if (geos.length > 1) { try { merged = U.mergeBufferGeometries(geos, false); } catch { merged = null; } }
+        if (geos.length > 1) { try { merged = U.mergeGeometries(geos, false); } catch { merged = null; } }
         if (merged) {
           merged.computeBoundingSphere();
           const msh = new T.Mesh(merged, mat); msh.castShadow = true; msh.receiveShadow = true;
@@ -660,6 +660,9 @@ window.Neighborhood = (() => {
       batches.clear();
     }
     const nearBuilding = (x, z, pad = 3.1) => buildings.some((b) => Math.abs(b.position.x - x) < pad && Math.abs(b.position.z - z) < pad);
+    /* asfalt + trottoar: gator är 2,8 breda, avenyer 5,3. Inga träd eller buskar där. */
+    const roads = [...layout.streets.map((r) => [r, 1.4]), ...layout.avenues.map((r) => [r, 2.65])];
+    const onRoad = (x, z, pad = 0.35) => roads.some(([r, h]) => Math.abs((r.axis === 'x' ? x : z) - r.c) < h + pad);
     const addBed = (x, z, w, d) => {
       const b = new T.Mesh(bedGeo, bedMat); b.scale.set(w, 1, d); b.position.set(x, 0.12, z); root.add(b);
       const s = new T.Mesh(keepGeo(new T.PlaneGeometry(w * 0.9, d * 0.9)), soilMat);
@@ -667,14 +670,14 @@ window.Neighborhood = (() => {
     };
 
     function plantTree(x, z, h, pine) {
-      if (!A) return;
+      if (!A || onRoad(x, z)) return;
       const tree = pine ? A.pine({ h, rnd: rnd2 }) : A.tree({ h, rnd: rnd2 });
       if (!tree.children.length) return;
       tree.position.set(x, groundY, z);
       batch(tree);
     }
     function plantBush(x, z, h, flower) {
-      if (!A) return;
+      if (!A || onRoad(x, z)) return;
       const b = A.bush({ h, flower, rnd: rnd2 });
       if (!b.children.length) return;
       b.position.set(x, groundY + 0.02, z);
@@ -682,14 +685,14 @@ window.Neighborhood = (() => {
       batch(b);
     }
     function plantFlowers(x, z, spread) {
-      if (!A) return;
+      if (!A || onRoad(x, z)) return;
       const f = A.flowers({ n: 3, spread, h: 0.85, rnd: rnd2 });
       if (!f.children.length) return;
       f.position.set(x, groundY + 0.02, z);
       batch(f);
     }
     function plantGrass(x, z, h) {
-      if (!A) return;
+      if (!A || onRoad(x, z)) return;
       const gr = A.grass({ h, rnd: rnd2 });
       if (!gr.children.length) return;
       gr.position.set(x, groundY + 0.01, z);
@@ -826,7 +829,8 @@ window.Neighborhood = (() => {
       const road = layout.avenues.filter((a) => a.axis === axis).sort((a, b) => Math.abs(a.c) - Math.abs(b.c))[0];
       if (!road) return;
       /* aveny: 3,0 bred väg + 1,15 trottoar → trottoarens mitt ligger 2,08 ut */
-      walkLanes.push({ axis, fixed: road.c + 2.08, dir: -1 }, { axis, fixed: road.c - 2.08, dir: 1 });
+      const travel = axis === 'x' ? 'z' : 'x';
+      walkLanes.push({ axis: travel, fixed: road.c + 2.08, dir: -1 }, { axis: travel, fixed: road.c - 2.08, dir: 1 });
     });
     walkLanes.forEach((ln, i) => {
       for (let k = 0; k < 2; k++) {
@@ -861,20 +865,64 @@ window.Neighborhood = (() => {
       sh.rotation.x = -Math.PI / 2; sh.scale.set(0.3, 0.24, 1); sh.position.set(-0.04, 0.004, 0); c.group.add(sh);
       const gl = new T.Sprite(carGlowMat); gl.scale.set(0.42, 0.24, 1); gl.position.set(0.84, 0.19, 0); c.group.add(gl);
       root.add(c.group);
-      life.cars.push({ c, axis: spec.axis, pos: spec.pos, dir: spec.dir, speed: spec.speed, min: -CAR_SPAN, max: CAR_SPAN });
+      const rec = { c, axis: spec.axis, lat: side, pos: spec.pos, dir: spec.dir, speed: spec.speed, v: spec.speed, wait: 0, min: -CAR_SPAN, max: CAR_SPAN, cross: carCrossings(spec.axis, spec.fixed), res: new Set() };
+      /* ny bil: flytta fram den tills den inte står i någon annan */
+      for (let k = 0; k < 60 && !carFree(rec, rec.pos, life.cars); k++) rec.pos += rec.dir * 0.9;
+      if (rec.axis === 'x') c.group.position.x = rec.pos; else c.group.position.z = rec.pos;
+      life.cars.push(rec);
+    }
+    /* bilarna får aldrig åka genom varandra:
+       - i samma fil håller de avstånd till bilen framför
+       - varje korsning reserveras av en körriktning i taget, den andra väntar vid kanten */
+    const CAR_HEADWAY = 2.4;                 // bil 1,55 + marginal
+    const CAR_NOSE = 0.8, CAR_APPROACH = 1.3;
+    function carCrossings(axis, fixed) {
+      return [...layout.streets, ...layout.avenues]
+        .filter((r) => r.axis === axis && Math.abs(r.c) <= CAR_SPAN + 5)
+        .map((r) => ({
+          key: axis === 'x' ? 'x' + r.c + ':z' + fixed : 'x' + fixed + ':z' + r.c,
+          ctr: r.c,
+          half: (layout.avenues.includes(r) ? 1.5 : 0.85) + CAR_NOSE,
+        }));
+    }
+    function carsOverlap(a, b, margin) {
+      const lim = (0.8 + margin) ** 2;
+      for (const ao of [-0.55, 0, 0.55]) for (const bo of [-0.55, 0, 0.55]) {
+        const ax = a.axis === 'x' ? a.pos + ao : a.lat, az = a.axis === 'x' ? a.lat : a.pos + ao;
+        const bx = b.axis === 'x' ? b.pos + bo : b.lat, bz = b.axis === 'x' ? b.lat : b.pos + bo;
+        if ((ax - bx) ** 2 + (az - bz) ** 2 < lim) return true;
+      }
+      return false;
+    }
+    const carFree = (c, p, cars) => !cars.some((o) => o !== c && carsOverlap({ axis: c.axis, lat: c.lat, pos: p }, o, 0.7));
+    function carBlocked(c, cars) {
+      for (const o of cars) {
+        if (o === c || o.axis !== c.axis || o.dir !== c.dir || Math.abs(o.lat - c.lat) > 0.1) continue;
+        const d = (o.pos - c.pos) * c.dir;
+        if (d > 0 && d < CAR_HEADWAY) return true;
+      }
+      let stop = false;
+      for (const x of c.cross) {
+        const rel = (x.ctr - c.pos) * c.dir;                // avstånd framåt till korsningens mitt
+        if (rel + x.half <= 0) { c.res.delete(x.key); continue; }   // bilen har passerat
+        if (c.res.has(x.key) || rel - x.half > CAR_APPROACH) continue;
+        if (cars.some((o) => o !== c && o.axis !== c.axis && o.res.has(x.key))) stop = true;
+        else c.res.add(x.key);
+      }
+      return stop;
     }
     /* körfält: alla avenyer inom kartan + de två närmaste smågatorna per riktning */
     const traffic = [];
     layout.avenues.forEach((r, i) => {
       if (Math.abs(r.c) > 44) return;
-      traffic.push({ axis: r.axis, fixed: r.c, lane: 0.74, speed: 3.5 + (i % 3) * 0.32 });
+      traffic.push({ axis: r.axis === 'x' ? 'z' : 'x', fixed: r.c, lane: 0.74, speed: 3.5 + (i % 3) * 0.32 });
     });
     ['x', 'z'].forEach((axis) => {
       layout.streets
         .filter((r) => r.axis === axis && Math.abs(r.c) < 20)
         .sort((a, b) => Math.abs(a.c) - Math.abs(b.c))
         .slice(0, 2)
-        .forEach((r, i) => traffic.push({ axis, fixed: r.c, lane: 0.4, speed: 2.6 + i * 0.28 }));
+        .forEach((r, i) => traffic.push({ axis: axis === 'x' ? 'z' : 'x', fixed: r.c, lane: 0.48, speed: 2.6 + i * 0.28 }));
     });
     traffic.forEach((road, i) => {
       for (const dir of [1, -1]) {
@@ -901,7 +949,7 @@ window.Neighborhood = (() => {
 
     if (bikeAv) {
       for (let i = 0; i < 4; i++) {
-        const side = i % 2 ? 1 : -1, axis = bikeAv.axis === 'x' ? 'x' : 'z';
+        const side = i % 2 ? 1 : -1, axis = bikeAv.axis === 'x' ? 'z' : 'x';
         cyclist({ axis, fixed: bikeAv.c + side * 2.02, pos: -30 + i * 15, dir: axis === 'x' ? side : -side, speed: 2.4 + i * 0.22, kind: i % 2 ? 'woman' : 'man' });
       }
     }
@@ -1016,10 +1064,15 @@ window.Neighborhood = (() => {
       life.mixers.forEach((m) => m.update(dt));
 
       /* bilar */
+      const cdt = Math.min(dt, 0.05);
       life.cars.forEach((c) => {
-        c.pos += c.dir * c.speed * dt;
-        if (c.pos > c.max) c.pos = c.min;
-        if (c.pos < c.min) c.pos = c.max;
+        const blocked = carBlocked(c, life.cars);
+        c.v += ((blocked ? 0 : c.speed) - c.v) * Math.min(1, cdt * (blocked ? 10 : 4));
+        c.wait = blocked && c.v < 0.05 ? c.wait + cdt : 0;
+        c.pos += c.dir * c.v * cdt;
+        if (c.wait > 10) { if (carFree(c, c.min, life.cars)) { c.pos = c.min; c.v = c.speed; c.res.clear(); } c.wait = 0; }   // ur en ev. dödlåsning
+        if (c.pos > c.max) { if (carFree(c, c.min, life.cars)) { c.pos = c.min; c.res.clear(); } else c.pos = c.max; }
+        if (c.pos < c.min) { if (carFree(c, c.max, life.cars)) { c.pos = c.max; c.res.clear(); } else c.pos = c.min; }
         if (c.axis === 'x') c.c.group.position.x = c.pos;
         else c.c.group.position.z = c.pos;
       });

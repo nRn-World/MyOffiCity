@@ -334,21 +334,19 @@ let netLoad = null, netScene = null;
 const loadNet = () => netLoad || (netLoad = new Promise((ok, no) => {
   const add = (src, next) => { const el = document.createElement('script'); el.src = src; el.onload = next; el.onerror = () => { netLoad = null; no(new Error('3D')); }; document.head.appendChild(el); };
   // three.js → GLTFLoader → SkeletonUtils → CC0-modellerna → stadsscenen
-  const scene = () => add('neighborhood.js?v=53', ok);
-  const assets = () => add('cityassets.js?v=13', () => {
+  const scene = () => add('neighborhood.js?v=60', ok);
+  const assets = () => add('cityassets.js?v=14', () => {
     const A = window.CityAssets;
     if (!A) return scene();
     A.loadAll(['bush', 'bushFlower', 'flowers', 'grass', 'pine', 'treeRound', 'treeTall', 'bike', 'car', 'taxi', 'woman', 'man', 'lamp', 'bench']).then(scene, scene);
   });
-  const utils = () => add('vendor/SkeletonUtils.js', () => add('vendor/BufferGeometryUtils.js', assets));
-  const gltf = () => add('vendor/GLTFLoader.js', utils);
-  window.THREE ? gltf() : add('vendor/three.min.js', gltf);
+  window.THREE ? assets() : import("./three-shim.js").then(assets, () => { netLoad = null; no(new Error("3D")); });
 }));
 const loadOffice = () => cityLoad || (cityLoad = new Promise((ok, no) => {
   const add = (src, next) => { const el = document.createElement('script'); el.src = src; el.onload = next; el.onerror = () => { cityLoad = null; no(new Error('3D')); }; document.head.appendChild(el); };
-  const run = (list, i = 0) => { if (i >= list.length) return add('office.js?v=60', ok); const [src, have] = list[i]; if (have()) return run(list, i + 1); add(src, () => run(list, i + 1)); };
-  const full = () => run([['vendor/GLTFLoader.js', () => THREE.GLTFLoader], ['vendor/SkeletonUtils.js', () => THREE.SkeletonUtils], ['vendor/BufferGeometryUtils.js', () => THREE.BufferGeometryUtils], ['cityassets.js?v=13', () => window.CityAssets]]);
-  window.THREE ? full() : add('vendor/three.min.js', full);
+  const run = (list, i = 0) => { if (i >= list.length) return add('office.js?v=63', ok); const [src, have] = list[i]; if (have()) return run(list, i + 1); add(src, () => run(list, i + 1)); };
+  const full = () => run([["cityassets.js?v=14", () => window.CityAssets]]);
+  window.THREE ? full() : import("./three-shim.js").then(full, () => { cityLoad = null; no(new Error("3D")); });
 }));
 let officeCv = null, showCb = null;
 function ensureOffice() {
@@ -531,14 +529,18 @@ function pageChoose() {
   $('#rr').onclick = () => rail.scrollBy({ left: rail.clientWidth * 0.8, behavior: 'smooth' });
   api('GET', '/companies?map=1&sort=best').then((j) => {
     if (gen !== chooseGen || !document.body.contains(rail)) return;
-    const all = j.companies || [], real = all.filter(c => !c.demo), list = (real.length ? real : all).slice(0, 12);
-    const jobs = real.reduce((n, c) => n + (c.done || 0), 0);
-    let rn = 0, rs = 0; real.forEach(c => { if (c.rating && c.rating.count) { rn += c.rating.count; rs += c.rating.avg * c.rating.count; } });
+    const all = j.companies || [];
+    // Visa staden som den är: alla kontor, men de mest kompletta först
+    // (logotyp, slogan, tjänster och taggar) så att utvalda kort aldrig ser tomma ut.
+    const score = (c) => (c.logo ? 4 : 0) + (c.tagline ? 3 : 0) + ((c.services && c.services.length) ? 3 : 0) + ((c.tags && c.tags.length) ? 2 : 0) + (c.demo ? 0 : 2);
+    const list = all.slice().sort((a, b) => score(b) - score(a)).slice(0, 12);
+    const jobs = all.reduce((n, c) => n + (c.done || 0), 0);
+    let rn = 0, rs = 0; all.forEach(c => { if (c.rating && c.rating.count) { rn += c.rating.count; rs += c.rating.avg * c.rating.count; } });
     const avg = rn ? (rs / rn) : null;
     const num = (n) => Number(n).toLocaleString(lang === 'sv' ? 'sv-SE' : 'en-GB');
-    $('#stCos').textContent = num(real.length);
+    $('#stCos').textContent = num(all.length);
     $('#stJobs').textContent = num(jobs);
-    $('#stRating').textContent = avg ? avg.toFixed(1) + ' ★' : t('statNew');
+    $('#stRating').textContent = avg ? avg.toFixed(1) + ' ★' : '–';
     if (!list.length) { rail.innerHTML = '<p class="muted">' + esc(t('homeEmpty')) + '</p>'; return; }
     const hero = list.find(c => c.logo) || list[0];
     if (avg) { $('#fc1').hidden = false; $('#fc1 b').textContent = avg.toFixed(1); }

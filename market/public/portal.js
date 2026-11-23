@@ -1279,11 +1279,33 @@
     $('#app').innerHTML = '<div class="dash"><aside class="dsb"><div class="dbrand">' + document.querySelector('.brand').outerHTML.replace('href="#/"', 'href="#/"') + '</div><nav class="dnav">'
       + TABS.map(([id, k, ico]) => '<button class="dn' + (id === tab ? ' on' : '') + '" data-t="' + id + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + ico + '" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>' + esc(t(k)) + '</span></button>').join('')
       + '</nav><div class="dfoot"><a href="#/">' + esc(t('dSite')) + '</a><div class="duser"><b>' + esc(me.user.username) + '</b><small>' + esc(t('dOwner')) + ' ' + esc(c.name) + '</small></div></div></aside>'
-      + '<section class="dmain"><header class="dtop"><h2>' + esc(c.name) + '</h2><span class="co-tier t' + c.building + '">' + esc(t('bTier' + c.building)) + '</span><div class="dchips">'
+      + '<section class="dmain"><header class="dtop"><button type="button" class="dsb-tog" id="dsbtog" title="' + esc(lang === 'sv' ? 'Visa / dölj sidomeny' : 'Toggle sidebar') + '">◀</button><h2>' + esc(c.name) + '</h2><span class="co-tier t' + c.building + '">' + esc(t('bTier' + c.building)) + '</span><div class="dchips">'
+      + (tab === 'office' ? '<button type="button" class="dsb-tog fs" id="dfs3d" title="' + esc(lang === 'sv' ? 'Fullskärm 3D' : 'Fullscreen 3D') + '">⛶</button>' : '')
       + '<span class="dchip"><small>' + esc(t('dChipOrders')) + '</small><b>' + orders.orders.length + '</b></span><span class="dchip"><small>' + esc(t('dChipChats')) + '</small><b>' + myChats.length + '</b></span>'
-      + '<span class="dchip"><small>' + esc(t('dChipRating')) + '</small><b>' + (c.rating && c.rating.count ? c.rating.avg.toFixed(1) + ' ★' : '–') + '</b></span><span class="dchip"><small>' + esc(t('dChipWeather')) + '</small><b id="dwx">–</b></span><span class="dchip"><small>' + esc(t('dChipTime')) + '</small><b id="dclock"></b></span></div></header><div class="dpane" id="dp"></div></section></div>';
+      + '<span class="dchip"><small>' + esc(t('dChipRating')) + '</small><b>' + (c.rating && c.rating.count ? c.rating.avg.toFixed(1) + ' ★' : '–') + '</b></span><span class="dchip"><small>' + esc(t('dChipWeather')) + '</small><b id="dwx">–</b></span><span class="dchip"><small>' + esc(t('dChipTime')) + '</small><b id="dclock"></b></span></div></header><div class="dpane" id="dp"></div>'
+      + '<button type="button" class="fs3d-exit" id="dfs3dx" hidden>' + esc(lang === 'sv' ? '✕ Avsluta fullskärm' : '✕ Exit fullscreen') + '</button></section></div>';
     $('#app').classList.remove('pg');   // ingen transform runt en fixed panel
     document.body.classList.add('in-dash');
+    const dashEl = $('.dash'), sbBtn = $('#dsbtog'), fsBtn = $('#dfs3d'), fsExit = $('#dfs3dx');
+    const syncLayout = () => { setTimeout(() => { if (window.Office && Office.resize) Office.resize(); }, 230); };
+    const setSbMin = (min) => {
+      if (!dashEl) return;
+      dashEl.classList.toggle('sb-min', min);
+      if (sbBtn) sbBtn.textContent = min ? '☰' : '◀';
+      try { sessionStorage.setItem('nrn.dash.sbmin', min ? '1' : '0'); } catch { /* */ }
+      syncLayout();
+    };
+    const setFs3d = (on) => {
+      if (!dashEl) return;
+      dashEl.classList.toggle('fs3d', on);
+      if (fsExit) fsExit.hidden = !on;
+      syncLayout();
+    };
+    try { if (sessionStorage.getItem('nrn.dash.sbmin') === '1') setSbMin(true); } catch { /* */ }
+    if (sbBtn) sbBtn.onclick = () => setSbMin(!dashEl.classList.contains('sb-min'));
+    if (fsBtn) fsBtn.onclick = () => setFs3d(!dashEl.classList.contains('fs3d'));
+    if (fsExit) fsExit.onclick = () => setFs3d(false);
+    document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && dashEl && dashEl.classList.contains('fs3d')) setFs3d(false); });
     let dw = null;
     const showW = (w) => { dw = w; const e = $('#dwx'); if (e) e.textContent = w ? w.temp + '°C · ' + t('wx' + w.kind) : (c.city || '–'); tick(); };
     const tick0 = () => { const el = $('#dclock'); if (el) el.textContent = new Date().toLocaleTimeString(lang === 'sv' ? 'sv-SE' : 'en-GB', { hour: '2-digit', minute: '2-digit' }); };

@@ -1718,6 +1718,24 @@ async function runSprintStep(env, sprint) {
 
   await env.DB.prepare('UPDATE sprints SET last_run=?, last_error=? WHERE id=?').bind(ts, '', sprint.id).run();
 
+  // 0. Håll arbetsbranchen synkad med main så att GitHub Actions & auto-merge aldrig fastnar på merge-konflikter
+  try {
+    await ghApi(sprint.gh_token, `/repos/${sprint.repo}/merges`, 'POST', {
+      base: sprint.work_branch,
+      head: sprint.base_branch,
+      commit_message: `Sync ${sprint.work_branch} with ${sprint.base_branch}`,
+    });
+  } catch (syncErr) {
+    if (String(syncErr && syncErr.message || '').toLowerCase().includes('conflict')) {
+      try {
+        const refInfo = await ghApi(sprint.gh_token, `/repos/${sprint.repo}/git/ref/heads/${encodeURIComponent(sprint.base_branch)}`);
+        if (refInfo?.object?.sha) {
+          await ghApi(sprint.gh_token, `/repos/${sprint.repo}/git/refs/heads/${encodeURIComponent(sprint.work_branch)}`, 'PATCH', { sha: refInfo.object.sha, force: true });
+        }
+      } catch { /* */ }
+    }
+  }
+
   try {
     // 1. Läs nuvarande filstruktur på arbetsbranchen
     let treePaths = [];

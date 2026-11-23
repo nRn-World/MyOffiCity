@@ -719,10 +719,10 @@ class Handler(SimpleHTTPRequestHandler):
     def same_origin(self):
         host = (self.headers.get("Host") or "").lower()
         allowed = {f"localhost:{PORT}", f"127.0.0.1:{PORT}"}
-        if host and host not in allowed:
+        if host and host not in allowed and not host.endswith(".e2b.app"):
             return False
         origin = self.headers.get("Origin")
-        if origin and origin not in (f"http://localhost:{PORT}", f"http://127.0.0.1:{PORT}"):
+        if origin and origin not in (f"http://localhost:{PORT}", f"http://127.0.0.1:{PORT}") and not origin.endswith(".e2b.app"):
             return False
         return True
 
@@ -832,7 +832,7 @@ def main():
         print("Kör server.py från nrn-company-mappen.")
         return 1
     try:
-        httpd = ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
+        httpd = ThreadingHTTPServer(("0.0.0.0", PORT), Handler)
     except OSError as err:
         print(f"Kan inte starta på port {PORT}: {err}")
         print("Stäng appen som redan körs på porten, eller sätt PORT=... i .env.")

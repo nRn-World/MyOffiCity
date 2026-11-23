@@ -115,4 +115,22 @@ assert(I18N.en.st_rejected && I18N.sv.only_leader_chat, 'nya nycklar finns');
   assert.strictEqual(Core.shiftDue({ ...base, runs: 1, lastRun: '' }, 8, D, 1e12), true, 'runs=1 körs en gång per dag');
 }
 
+// summarizeChanges & mergeProjectMemory
+{
+  const before = [{ path: 'a.js', content: 'const x = 1;\nconst y = 2;' }];
+  const after = [
+    { path: 'a.js', content: 'const x = 1;\nconst y = 3;' },
+    { path: 'b.js', content: 'console.log(1);' }
+  ];
+  const diff = Core.summarizeChanges(before, after);
+  assert(diff.includes('~ MOD a.js'), 'visar ändrad fil');
+  assert(diff.includes('- 2: const y = 2;') && diff.includes('+ 2: const y = 3;'), 'visar ändrad rad');
+  assert(diff.includes('+ NEW b.js'), 'visar ny fil');
+
+  let mem = Core.mergeProjectMemory([], 'Använd alltid strict mode');
+  mem = Core.mergeProjectMemory(mem, 'Använd alltid strict mode');
+  mem = Core.mergeProjectMemory(mem, 'Undvik globala variabler');
+  assert.deepStrictEqual(mem, ['Använd alltid strict mode', 'Undvik globala variabler'], 'deduplicerar minne');
+}
+
 console.log('core.js + i18n OK');

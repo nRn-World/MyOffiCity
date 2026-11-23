@@ -166,6 +166,38 @@ const Core = (() => {
       && typeof e.model === 'string' && ['leader', 'lead', 'worker'].includes(e.rank));
   }
 
-  return { parse, plan, review, decision, files, audit, routineDue, shiftDue, reportCounts, tierFor, validState };
+  function summarizeChanges(beforeFiles, afterFiles, maxLines = 120) {
+    const before = new Map((beforeFiles || []).map(f => [f.path, String(f.content || '')]));
+    const out = [];
+    for (const f of (afterFiles || [])) {
+      if (!f || !f.path) continue;
+      const prev = before.get(f.path);
+      const next = String(f.content || '');
+      if (prev === undefined) {
+        out.push(`+ NEW ${f.path} (${next.split('\n').length} lines)`);
+      } else if (prev !== next) {
+        const pLines = prev.split('\n'), nLines = next.split('\n');
+        const changed = [];
+        const len = Math.max(pLines.length, nLines.length);
+        for (let i = 0; i < len && changed.length < maxLines; i++) {
+          if (pLines[i] !== nLines[i]) {
+            if (pLines[i] !== undefined) changed.push(`- ${i + 1}: ${pLines[i]}`);
+            if (nLines[i] !== undefined) changed.push(`+ ${i + 1}: ${nLines[i]}`);
+          }
+        }
+        out.push(`~ MOD ${f.path}\n${changed.join('\n')}`);
+      }
+    }
+    return out.join('\n\n');
+  }
+
+  function mergeProjectMemory(memory, note, maxItems = 12) {
+    const list = Array.isArray(memory) ? memory.filter(x => typeof x === 'string' && x.trim()) : [];
+    const clean = typeof note === 'string' ? note.trim() : '';
+    if (!clean || list.includes(clean)) return list.slice(-maxItems);
+    return [...list, clean].slice(-maxItems);
+  }
+
+  return { parse, plan, review, decision, files, audit, routineDue, shiftDue, reportCounts, tierFor, validState, summarizeChanges, mergeProjectMemory };
 })();
 if (typeof module !== 'undefined') module.exports = Core;

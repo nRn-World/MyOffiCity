@@ -371,8 +371,8 @@ const Office = (() => {
       obst(-BW / 2, y, -3.18, .12, 2.22, 0);
       obst(-BW / 2, y, .78, .12, .42, 0);
     } else holeWall('z', ZC, BD, -BW / 2 - .15, y, WH, [-3.9, -.3], 2.4);
-    if (n === 0 || n === 1) {
-      // Öppen dörröppning vid z=-2.1 (bredd 1.2, höjd 2.5) in till köket (vån 1) och ut på balkongen (vån 2)
+    if (n === 0 || n === 1 || n === 2) {
+      // Öppen dörröppning vid z=-2.1 (bredd 1.2, höjd 2.5) in till köket (vån 1), gymmet (vån 2) och ut på balkongen (vån 3)
       glass(2.7, WH - .3, BW / 2, y + WH / 2, -4.05, Math.PI / 2);
       glass(2.7, WH - .3, BW / 2, y + WH / 2, -.15, Math.PI / 2);
       const th = WH - 2.65; glass(1.2, th, BW / 2, y + 2.5 + th / 2, -2.1, Math.PI / 2);
@@ -622,9 +622,76 @@ const Office = (() => {
       const L = new T3.PointLight(0xffbd80, .55 * Math.PI, 14, 1); L.position.set(cx, 3.6, ZC); root.add(L); lights.push(L);
       kit = { door: [e + .5, -2.1], inn: [e + 1.7, -2.1], sink: [e + 1.0, -3.8], coffee: [e + 2.3, -3.8], micro: [e + 3.5, -3.8], fridge: [fx, -3.8], seats, fd: { g: dg, k: 0, t: 0 }, mm: mmat, users: 0 };
     }
-    /* Balkong ovanpå köket (våning 2:s nivå): trädäck, halvhög tät mur med glas ovanför, dörr från kontoret, utemöbler */
+    /* Gym ovanpå köket (våning 2:s nivå): inglasat kontorsgym med löpband, bänkpress, hantlar och träningsmatta */
     {
-      const w = AWR, gx = e + w, y0 = FH, wood = M(0xb08a5a, { roughness: .8 }), gm = new T3.MeshStandardMaterial({ color: 0xcfe8ff, transparent: true, opacity: .2, roughness: .05, depthWrite: false });
+      const w = AWR, cx = e + w / 2, gx = e + w, y0 = FH, gH = FH - .2;
+      const rubber = M(0x232730, { roughness: .92 }), chrome = M(0xd8dde6, { metalness: .85, roughness: .22 }), blk = M(0x181b22, { roughness: .6 });
+      // Golv + takbjälklag (taket = golv för utebalkongen på våning 3)
+      box(w + .1, .06, BD + .1, rubber, cx, y0 + .03, ZC, root);
+      box(w + .35, .4, BD + .9, roofM, cx + .175, y0 + FH - .2, ZC, root);
+      // Inglasad fasad i samma stil som köket
+      glass(w, gH - .1, cx, y0 + gH / 2, Z1, 0);
+      glass(BD, gH - .1, gx, y0 + gH / 2, ZC, Math.PI / 2);
+      glass(w, gH - .1, cx, y0 + gH / 2, Z0, 0);
+      for (const [x, z] of [[gx - .1, Z1 - .1], [gx - .1, Z0 + .1]]) box(.4, gH, .4, frameM, x, y0 + gH / 2, z, root);
+      for (let i = 1; i < 3; i++) box(.12, gH, .12, frameM, e + i * w / 3, y0 + gH / 2, Z1 - .02, root);
+      // Dörrkarm från kontoret in i gymmet (z=-2.1)
+      box(.14, 2.5, .14, frameM, e, y0 + 1.25, -2.7, root); box(.14, 2.5, .14, frameM, e, y0 + 1.25, -1.5, root); box(.14, .14, 1.34, frameM, e, y0 + 2.5, -2.1, root);
+      // 2 Löpband (treadmills) framme vid fönstret
+      for (const tx of [e + 1.45, e + 2.95]) {
+        const tz = -.15;
+        box(.82, .14, 1.85, blk, tx, y0 + .1, tz, root); // löpband-bas
+        box(.66, .02, 1.65, M(0x303642, { roughness: .95 }), tx, y0 + .18, tz - .02, root); // matta
+        for (const sx of [-.36, .36]) {
+          box(.07, 1.15, .07, chrome, tx + sx, y0 + .68, tz + .72, root); // stolpar
+          box(.06, .06, .62, blk, tx + sx, y0 + 1.05, tz + .42, root); // handtag
+        }
+        box(.78, .32, .16, blk, tx, y0 + 1.26, tz + .72, root); // konsol
+        box(.58, .20, .02, new T3.MeshBasicMaterial({ color: 0x3fe08f }), tx, y0 + 1.28, tz + .63, root); // skärm
+        bossObst(tx, y0, tz, .45, .95, 0);
+      }
+      // Bänkpress + skivstång med viktskivor (högra delen)
+      {
+        const bx = e + 4.75, bz = -1.65;
+        box(.42, .10, 1.45, M(0x2a3140, { roughness: .7 }), bx, y0 + .46, bz, root); // bänkdyna
+        box(.10, .42, .10, chrome, bx, y0 + .22, bz - .52, root); box(.10, .42, .10, chrome, bx, y0 + .22, bz + .52, root);
+        for (const sx of [-.48, .48]) box(.08, 1.28, .08, chrome, bx + sx, y0 + .64, bz - .58, root); // rackstolpar
+        const bar = new T3.Mesh(new T3.CylinderGeometry(.024, .024, 1.95, 10), chrome);
+        bar.rotation.z = Math.PI / 2; bar.position.set(bx, y0 + 1.16, bz - .58); root.add(bar);
+        for (const sx of [-.82, -.74, .74, .82]) {
+          const pl = new T3.Mesh(new T3.CylinderGeometry(.21, .21, .045, 16), M(0x1f2937, { metalness: .4, roughness: .45 }));
+          pl.rotation.z = Math.PI / 2; pl.position.set(bx + sx, y0 + 1.16, bz - .58); root.add(pl);
+        }
+        bossObst(bx, y0, bz, .85, .8, 0);
+      }
+      // Hantelställ längs bakväggen
+      {
+        const rx = e + 2.4, rz = Z0 + .48;
+        box(2.5, .08, .42, blk, rx, y0 + .55, rz, root);
+        box(2.5, .08, .42, blk, rx, y0 + .92, rz, root);
+        for (const sx of [-1.15, 0, 1.15]) box(.08, .92, .38, chrome, rx + sx, y0 + .46, rz, root);
+        for (let i = 0; i < 6; i++) {
+          const dx = rx - 1.0 + i * .4;
+          for (const dy of [.64, 1.01]) {
+            box(.20, .04, .04, chrome, dx, y0 + dy, rz, root);
+            box(.06, .11, .11, blk, dx - .11, y0 + dy, rz, root);
+            box(.06, .11, .11, blk, dx + .11, y0 + dy, rz, root);
+          }
+        }
+      }
+      // Träningsmatta + blå pilatesboll + GYM-skylt på bakväggen
+      box(1.5, .025, .75, M(0x1f6f78, { roughness: .9 }), e + 4.7, y0 + .07, .15, root);
+      const ball = new T3.Mesh(new T3.SphereGeometry(.32, 16, 14), M(0x2e86c1, { roughness: .35 }));
+      ball.position.set(e + 5.65, y0 + .35, Z0 + .72); root.add(ball);
+      box(1.4, .42, .05, M(0x111827), e + 4.8, y0 + 2.45, Z0 + .12, root);
+      box(1.26, .06, .06, new T3.MeshBasicMaterial({ color: 0x3fe08f }), e + 4.8, y0 + 2.24, Z0 + .13, root);
+      plant(e + .5, y0, Z1 - .45, 1.0);
+      pendant(e + 2.0, y0 + gH - .05, ZC); pendant(e + 4.6, y0 + gH - .05, ZC);
+      const Lg = new T3.PointLight(0xeef6ff, .65 * Math.PI, 14, 1); Lg.position.set(cx, y0 + 3.4, ZC); root.add(Lg); lights.push(Lg);
+    }
+    /* Balkong flyttad upp ovanpå gymmet (våning 3:s nivå): trädäck, halvhög tät mur med glas ovanför, dörr från kontoret, utemöbler */
+    {
+      const w = AWR, gx = e + w, y0 = 2 * FH, wood = M(0xb08a5a, { roughness: .8 }), gm = new T3.MeshStandardMaterial({ color: 0xcfe8ff, transparent: true, opacity: .2, roughness: .05, depthWrite: false });
       const xr = gx + .25, zf = Z1 + .45, zb = Z0 - .15;
       box(xr - e + .1, .05, zf - zb + .1, wood, (e + xr) / 2, y0 + .025, (zb + zf) / 2, root);
       const rail = (x0, z0, x1, z1) => {
@@ -2282,7 +2349,7 @@ const Office = (() => {
     const e = BW / 2, r = .28, zMin = Z0 + r + .1, zMax = Z1 - r - .1;
     // Yttre gränser per våning (kök på vån 1, balkonger på vån 2); inre glasväggar & dörröppningar sköts av OBST nedan
     const xMin = fl === 1 ? -(e + AWL) + r + .15 : -e + r + .15;
-    const xMax = (fl === 0 || fl === 1) ? e + AWR - r - .15 : e - r - .15;
+    const xMax = (fl === 0 || fl === 1 || fl === 2) ? e + AWR - r - .15 : e - r - .15;
     nx = Math.max(xMin, Math.min(xMax, nx));
     nz = Math.max(zMin, Math.min(zMax, nz));
     // Håll personen utanför alla glasväggar, stängda väggar, skrivbord, stolar, möbler och kollegor

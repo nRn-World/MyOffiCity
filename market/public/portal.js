@@ -810,7 +810,7 @@
     const saveThreads = () => {
       try {
         const slim = threads.slice(0, 30).map((th) => ({
-          id: th.id, title: th.title || '', updated: th.updated || Date.now(), sprintId: th.sprintId || '',
+          id: th.id, title: th.title || '', updated: th.updated || Date.now(), sprintId: th.sprintId || '', lastLogId: th.lastLogId || 0,
           messages: (th.messages || []).slice(-30).map((m) => ({ role: m.role, content: m.content, transcript: m.transcript || '', ts: m.ts || 0 })),
         }));
         localStorage.setItem(storeKey, JSON.stringify(slim));
@@ -947,12 +947,44 @@
         toast('📅 ' + (ghInt.options[ghInt.selectedIndex]?.text || 'OK'));
       } catch (err) { toast(err.message); }
     };
-    const loadSprintsForChat = () => {
+    const syncSprintLogs = (initial = false) => {
+      const th = curThread(), sp = curSprint();
+      if (!sp || !Array.isArray(sp.logs) || !sp.logs.length) return;
+      const asc = [...sp.logs].sort((a, b) => a.id - b.id);
+      const maxId = asc[asc.length - 1].id;
+      if (!th.lastLogId) {
+        th.lastLogId = maxId;
+        saveThreads();
+        return;
+      }
+      const fresh = asc.filter((l) => l.id > th.lastLogId);
+      if (!fresh.length) return;
+      th.lastLogId = maxId;
+      if (!initial) {
+        fresh.forEach((l) => {
+          th.messages.push({ role: 'assistant', ts: l.created || Date.now(), content: `🤖 **${l.agent}:** ${l.message}` });
+        });
+        th.updated = Date.now();
+        saveThreads(); render();
+      } else {
+        fresh.forEach((l) => {
+          th.messages.push({ role: 'assistant', ts: l.created || Date.now(), content: `🤖 **${l.agent}:** ${l.message}` });
+        });
+        th.updated = Date.now();
+        saveThreads(); render();
+      }
+    };
+    const loadSprintsForChat = (initial = false) => {
       api('GET', '/sprints').then((j) => {
         sprints = (j && j.sprints) || [];
         renderGhBar();
+        syncSprintLogs(initial);
       }).catch(() => { renderGhBar(); });
     };
+    const sprintPoll = setInterval(() => {
+      if (!document.body.contains(wrap)) { clearInterval(sprintPoll); return; }
+      if (!document.hidden && curSprint()) loadSprintsForChat(false);
+    }, 30000);
     ghSel.onchange = () => { curThread().sprintId = ghSel.value; saveThreads(); renderGhBar(); };
     wrap.querySelector('#tcghadd').onclick = () => { ghForm.hidden = !ghForm.hidden; if (!ghForm.hidden) wrap.querySelector('#tcgh-repo').focus(); };
     wrap.querySelector('#tcgh-x').onclick = () => { ghForm.hidden = true; };
@@ -1078,7 +1110,7 @@
         }
       }).catch(() => { });
     };
-    renderThreads(); render(); refreshQuota(); loadSprintsForChat();
+    renderThreads(); render(); refreshQuota(); loadSprintsForChat(true);
     if (opts.forceOpen) setTimeout(() => ta.focus(), 60);
 
     const setFull = (on) => {

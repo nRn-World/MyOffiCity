@@ -846,11 +846,11 @@
           ? `\n\nKOPPLAT GITHUB-PROJEKT: ${sp.repo} (branch: ${sp.workBranch}, status: ${sp.status}, ${sp.progress.done}/${sp.progress.total} uppgifter klara). Mål: ${sp.goal}.`
           + (sp.prUrl ? ` Pull Request: ${sp.prUrl}.` : '')
           + ' Backlog: ' + sp.tasks.map((tk) => `#${tk.seq} [${tk.status}] ${tk.title} (${tk.assignee})`).join('; ') + '.'
-          + ' Utgå alltid från det här kopplade GitHub-projektet när chefen pratar om projektet eller ger nya order.'
+          + ' Utgå alltid från det här kopplade GitHub-projektet när chefen pratar om projektet eller ger nya order. VIKTIGT: Hitta ALDRIG på fejkade GitHub commit-hashar eller låtsaslänkar. Säg aldrig att du redan har pushat kod i en vanlig chatt – riktiga commits görs automatiskt av bakgrundsjobbet varannan timme eller när chefen klickar "▶ Kör steg".'
           : `\n\nLINKED GITHUB PROJECT: ${sp.repo} (branch: ${sp.workBranch}, status: ${sp.status}, ${sp.progress.done}/${sp.progress.total} tasks done). Goal: ${sp.goal}.`
           + (sp.prUrl ? ` Pull Request: ${sp.prUrl}.` : '')
           + ' Backlog: ' + sp.tasks.map((tk) => `#${tk.seq} [${tk.status}] ${tk.title} (${tk.assignee})`).join('; ') + '.'
-          + ' Always base your answers and plans on this linked GitHub repository.')
+          + ' Always base your answers and plans on this linked GitHub repository. IMPORTANT: NEVER invent fake GitHub commit hashes or URLs. Real commits are created by the background cron runner every 2 hours or when the user clicks "Run step".')
         : '';
       return (lang === 'sv'
         ? `Du är ${leaderFull}, AI-teamledare på företaget "${c.name}" i MyOffiCity. Din chef (företagsägaren) ger dig order och frågor direkt i kontoret. Teamet består av: ${teamList}.`
@@ -1117,12 +1117,44 @@
       if ((!v && !imgNow && !audNow) || busy) return;
       busy = true; sb.disabled = true; ta.value = ''; pendImg = ''; pendAud = ''; pendAudName = ''; renderAtt();
       const th = curThread();
+      const sp = curSprint();
       const displayTxt = v || (imgNow && audNow ? t('tChatImgLbl') + ' + ' + t('tChatAudLbl') : imgNow ? t('tChatImgLbl') : t('tChatAudLbl'));
       const userMsg = { role: 'user', content: displayTxt, image: imgNow || '', audio: audNow || '', transcript: '' };
       th.messages.push(userMsg);
       if (!th.title) th.title = displayTxt.replace(/\s+/g, ' ').trim().slice(0, 34);
       th.updated = Date.now();
       saveThreads(); renderThreads(); render();
+      // Om ett GitHub-projekt är kopplat och användaren skriver "stoppa/pausa" eller "kör/bygg/fortsätt" -> utför riktig åtgärd på servern!
+      if (sp && !imgNow && !audNow && /^(stopp|stoppa|pausa|sluta|stop|pause)\b/i.test(v)) {
+        try {
+          const r = await api('POST', '/sprints/' + sp.id + '/status', { status: 'paused' });
+          if (r.sprint) sprints = sprints.map((x) => x.id === r.sprint.id ? r.sprint : x);
+          th.messages.push({ role: 'assistant', content: lang === 'sv' ? `⏸ Sprinten på **${sp.repo}** är nu pausad. Agenterna väntar tills du ber dem fortsätta!` : `⏸ Sprint on **${sp.repo}** is now paused.` });
+          saveThreads(); renderGhBar(); render();
+        } catch (e) { toast(e.message); }
+        busy = false; sb.disabled = false; ta.focus();
+        return;
+      }
+      if (sp && sp.status !== 'done' && !imgNow && !audNow && /^(k[öo]r|starta|bygg|forts[äa]tt|run|go|continue)\b/i.test(v) && v.length < 70) {
+        const waitEl = document.createElement('div');
+        waitEl.className = 'tchat-msg wait';
+        waitEl.innerHTML = '<small>' + esc(leaderName) + '</small><div class="tchat-txt">' + esc(t('dProjStepping')) + '</div>';
+        ms.appendChild(waitEl); ms.scrollTop = ms.scrollHeight;
+        try {
+          if (sp.status === 'paused') await api('POST', '/sprints/' + sp.id + '/status', { status: 'active' });
+          const r = await api('POST', '/sprints/' + sp.id + '/step');
+          if (r.sprint) sprints = sprints.map((x) => x.id === r.sprint.id ? r.sprint : x);
+          const msg = r.step && r.step.error
+            ? (lang === 'sv' ? `⚠️ Tillfälligt fel vid GitHub-steget: ${r.step.error}` : `⚠️ Temporary error: ${r.step.error}`)
+            : (lang === 'sv'
+              ? `✅ **Riktig GitHub-commit klar på ${sp.repo}!**\nUppgift: ${r.step?.task || ''}\nÄndrade filer: ${(r.step?.files || []).join(', ')}` + (r.step?.prUrl ? `\nPull Request: ${r.step.prUrl}` : '') + `\n\nTeamet fortsätter nu automatiskt varannan timme i bakgrunden tills du ber oss pausa.`
+              : `✅ **Real GitHub commit pushed to ${sp.repo}!**\nTask: ${r.step?.task || ''}\nFiles: ${(r.step?.files || []).join(', ')}` + (r.step?.prUrl ? `\nPull Request: ${r.step.prUrl}` : ''));
+          th.messages.push({ role: 'assistant', content: msg });
+          saveThreads(); renderGhBar(); render();
+        } catch (e) { waitEl.remove(); toast(e.message); }
+        busy = false; sb.disabled = false; ta.focus();
+        return;
+      }
       const waitEl = document.createElement('div');
       waitEl.className = 'tchat-msg wait';
       waitEl.innerHTML = '<small>' + esc(leaderName) + '</small><div class="tchat-txt">' + esc(t('tChatThinking')) + '</div>';

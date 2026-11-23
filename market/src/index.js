@@ -1599,11 +1599,47 @@ async function runSprintStep(env, sprint) {
     await addSprintLog(env, sprint.id, 'Tomas', 'Sprintperioden är klar! Alla genomförda ändringar finns i din Pull Request på GitHub.');
     return { ok: true, done: true };
   }
-  const task = await env.DB.prepare("SELECT * FROM sprint_tasks WHERE sprint_id=? AND status='todo' ORDER BY seq ASC LIMIT 1").bind(sprint.id).first();
+  let task = await env.DB.prepare("SELECT * FROM sprint_tasks WHERE sprint_id=? AND status='todo' ORDER BY seq ASC LIMIT 1").bind(sprint.id).first();
   if (!task) {
-    await env.DB.prepare("UPDATE sprints SET status='done', last_run=? WHERE id=?").bind(ts, sprint.id).run();
-    await addSprintLog(env, sprint.id, 'Tomas', 'Alla deluppgifter i sprinten är klara! Granska och merga gärna Pull Requesten på GitHub.');
-    return { ok: true, done: true };
+    // Alla nuvarande deluppgifter är klara, men sprintperioden pågår fortfarande -> Tomas planerar automatiskt nästa våg så teamet fortsätter jobba tills tiden går ut eller ägaren pausar!
+    const prevTasks = (await env.DB.prepare('SELECT seq,title,status,summary FROM sprint_tasks WHERE sprint_id=? ORDER BY seq DESC LIMIT 12').bind(sprint.id).all()).results;
+    const maxSeq = prevTasks.length ? Math.max(...prevTasks.map(x => x.seq)) : 0;
+    const tRows = (await env.DB.prepare('SELECT persona FROM company_team WHERE company_id=? AND fired IS NULL ORDER BY slot ASC').bind(sprint.company_id).all()).results;
+    const teamNames = tRows.map(r => { try { return JSON.parse(r.persona).name.split(' ')[0]; } catch { return ''; } }).filter(Boolean);
+    const agents = teamNames.length ? teamNames : ['Tomas', 'Ebba', 'Kia', 'Manus', 'Laila'];
+    let nextBatch = [];
+    try {
+      let treePaths = [];
+      try {
+        const tr = await ghApi(sprint.gh_token, `/repos/${sprint.repo}/git/trees/${encodeURIComponent(sprint.work_branch)}?recursive=1`);
+        treePaths = (tr?.tree || []).filter(x => x.type === 'blob' && !/node_modules|\.git\/|\.png$|\.jpg$|\.glb$|\.bin$/i.test(x.path)).map(x => x.path).slice(0, 80);
+      } catch { /* */ }
+      const ai = await callSprintAi(env, sprint.or_key, [
+        { role: 'system', content: 'You are Tomas, AI team leader. Return ONLY valid JSON: {"tasks":[{"title":"...","details":"...","assignee":"..."}]}. Create 5 NEW concrete improvement, bugfix, UI/UX or feature tasks that have NOT been done yet. Write in Swedish.' },
+        { role: 'user', content: `Repo: ${sprint.repo}\nGoal: ${sprint.goal}\nTeam: ${agents.join(', ')}\nFiles:\n${treePaths.join('\n') || '(empty)'}\n\nAlready done:\n${prevTasks.map(x => `- ${x.title}: ${x.summary || x.status}`).join('\n')}\n\nPlan 5 new next-iteration tasks as JSON.` },
+      ], 900);
+      const parsed = extractJson(ai.text);
+      const arr = Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.tasks) ? parsed.tasks : []);
+      nextBatch = arr.filter(x => x && x.title).slice(0, 5).map((x, idx) => ({
+        title: clip(x.title, 120),
+        details: clip(x.details || x.title, 500),
+        assignee: agents.includes(x.assignee) ? x.assignee : agents[idx % agents.length],
+      }));
+    } catch { /* fallback */ }
+    if (!nextBatch.length) {
+      nextBatch = [
+        { title: 'Kodgranskning & buggfix', details: 'Granska befintliga filer, åtgärda buggar och förbättra stabilitet.', assignee: agents[0] },
+        { title: 'UI & designförbättring', details: 'Lyft utseende, typografi, responsivitet och användarflöde.', assignee: agents[1 % agents.length] },
+        { title: 'Ny smart funktion', details: 'Lägg till en konkret ny förbättring som stöder målet: ' + sprint.goal, assignee: agents[2 % agents.length] },
+      ];
+    }
+    await env.DB.batch(nextBatch.map((tk, i) =>
+      env.DB.prepare('INSERT INTO sprint_tasks(sprint_id,seq,title,details,assignee) VALUES(?,?,?,?,?)')
+        .bind(sprint.id, maxSeq + i + 1, tk.title, tk.details, tk.assignee)
+    ));
+    await addSprintLog(env, sprint.id, agents[0], `Planerade automatiskt ${nextBatch.length} nya uppgifter för nästa omgång så teamet fortsätter jobba.`);
+    task = await env.DB.prepare("SELECT * FROM sprint_tasks WHERE sprint_id=? AND status='todo' ORDER BY seq ASC LIMIT 1").bind(sprint.id).first();
+    if (!task) return { ok: true, refilled: true };
   }
 
   await env.DB.prepare('UPDATE sprints SET last_run=?, last_error=? WHERE id=?').bind(ts, '', sprint.id).run();

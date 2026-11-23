@@ -3009,43 +3009,189 @@ button.item {
 }
 
 /* autonoma GitHub-projekt (sprintar) */
-.sp-form{max-width:820px;display:flex;flex-direction:column;gap:12px}
-.sp-form h2{margin:0 0 4px}
-.sp-form label{display:flex;flex-direction:column;gap:4px}
-.sp-form label>span{font:600 12px var(--sans);text-transform:uppercase;letter-spacing:.08em;color:var(--gold)}
-.sp-grid{display:grid;grid-template-columns:1fr 220px;gap:12px}
-@media(max-width:640px){.sp-grid{grid-template-columns:1fr}}
-.sp-card{max-width:920px;margin-bottom:18px}
-.sp-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
-.sp-head h3{margin:0;font:600 20px var(--serif)}
-.sp-st-active{border-color:#3fe08f!important;color:#3fe08f!important}
-.sp-st-paused{border-color:#e0c23a!important;color:#e0c23a!important}
-.sp-st-done{border-color:var(--gold)!important;color:var(--gold)!important}
-.sp-prog{display:flex;align-items:center;gap:10px;margin:10px 0}
-.sp-bar{flex:1;height:8px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
-.sp-bar span{display:block;height:100%;background:linear-gradient(90deg,var(--gold),#3fe08f);transition:width .35s}
-.sp-btns{margin-top:12px;gap:8px;flex-wrap:wrap}
-.sp-det{margin-top:14px;border-top:1px solid var(--line);padding-top:10px}
-.sp-det summary{cursor:pointer;font:600 13px var(--sans);color:var(--gold);user-select:none}
-.sp-tasks{display:flex;flex-direction:column;gap:8px;margin-top:10px}
-.sp-tk{display:flex;gap:10px;padding:9px 11px;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08)}
-.sp-tk.done{border-color:rgba(63,224,143,.3);background:rgba(63,224,143,.05)}
-.sp-ico{font-size:15px;line-height:1.4}
-.sp-files{margin-top:4px;display:flex;flex-wrap:wrap;gap:4px}
-.sp-files code{font-size:11px;padding:2px 6px;border-radius:4px;background:rgba(255,255,255,.07)}
-.sp-logs{display:flex;flex-direction:column;gap:6px;margin-top:10px;max-height:240px;overflow:auto}
-.sp-log{padding:7px 10px;border-radius:6px;background:rgba(255,255,255,.03);font-size:13px}
-.sp-log small{color:var(--mut);display:block;font-size:11px;margin-bottom:2px}
+.sp-form {
+    max-width: 820px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px
+}
 
-/* GitHub-koppling direkt i Tomas-chatten */
-.tchat-gh{display:flex;align-items:center;gap:6px;padding:6px 10px;border-bottom:1px solid color-mix(in srgb,var(--gold) 20%,transparent);background:rgba(14,22,40,.9);flex-wrap:wrap}
-.tchat-gh-ico{color:var(--gold);font-size:13px;font-weight:700}
-.tchat-gh select{flex:1;min-width:120px;padding:4px 7px;border-radius:6px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:#f3ecdc;font:500 12px var(--sans)}
+.sp-form h2 {
+    margin: 0 0 4px
+}
+
+.sp-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px
+}
+
+.sp-form label>span {
+    font: 600 12px var(--sans);
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--gold)
+}
+
+.sp-grid {
+    display: grid;
+    grid-template-columns: 1fr 220px;
+    gap: 12px
+}
+
+@media(max-width:640px) {
+    .sp-grid {
+        grid-template-columns: 1fr
+    }
+}
+
+.sp-card {
+    max-width: 920px;
+    margin-bottom: 18px
+}
+
+.sp-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap
+}
+
+.sp-head h3 {
+    margin: 0;
+    font: 600 20px var(--serif)
+}
+
+.sp-st-active {
+    border-color: #3fe08f !important;
+    color: #3fe08f !important
+}
+
+.sp-st-paused {
+    border-color: #e0c23a !important;
+    color: #e0c23a !important
+}
+
+.sp-st-done {
+    border-color: var(--gold) !important;
+    color: var(--gold) !important
+}
+
+.sp-prog {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 10px 0
+}
+
+.sp-bar {
+    flex: 1;
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .08);
+    overflow: hidden
+}
+
+.sp-bar span {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), #3fe08f);
+    transition: width .35s
+}
+
+.sp-btns {
+    margin-top: 12px;
+    gap: 8px;
+    flex-wrap: wrap
+}
+
+.sp-det {
+    margin-top: 14px;
+    border-top: 1px solid var(--line);
+    padding-top: 10px
+}
+
+.sp-det summary {
+    cursor: pointer;
+    font: 600 13px var(--sans);
+    color: var(--gold);
+    user-select: none
+}
+
+.sp-tasks {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px
+}
+
+.sp-tk {
+    display: flex;
+    gap: 10px;
+    padding: 9px 11px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, .03);
+    border: 1px solid rgba(255, 255, 255, .08)
+}
+
+.sp-tk.done {
+    border-color: rgba(63, 224, 143, .3);
+    background: rgba(63, 224, 143, .05)
+}
+
+.sp-ico {
+    font-size: 15px;
+    line-height: 1.4
+}
+
+.sp-files {
+    margin-top: 4px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px
+}
+
+.sp-files code {
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, .07)
+}
+
+.sp-logs {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 10px;
+    max-height: 240px;
+    overflow: auto
+}
+
+.sp-log {
+    padding: 7px 10px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, .03);
+    font-size: 13px
+}
+
+.sp-log small {
+    color: var(--mut);
+    display: block;
+    font-size: 11px;
+    margin-bottom: 2px
+}
+
+/* GitHub-koppling direkt i Tomas-chatten (visas bara i fullskärm) */
+.tchat-gh,.tchat-gh-form{display:none}
+.tchat.full .tchat-gh{display:flex;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid color-mix(in srgb,var(--gold) 22%,transparent);background:rgba(14,22,40,.92);flex-wrap:wrap}
+.tchat-gh-ico{color:var(--gold);font-size:14px;font-weight:700}
+.tchat-gh select{flex:1;min-width:160px;padding:6px 10px;border-radius:6px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:#f3ecdc;font:500 13px var(--sans)}
 .tchat-gh select option{background:#0c1222;color:#f3ecdc}
-.tchat-gh-btn{padding:4px 8px;border-radius:6px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:#f3ecdc;font:600 11px var(--sans);cursor:pointer;text-decoration:none;white-space:nowrap}
+.tchat-gh-btn{padding:6px 11px;border-radius:6px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:#f3ecdc;font:600 12px var(--sans);cursor:pointer;text-decoration:none;white-space:nowrap}
 .tchat-gh-btn:hover{border-color:var(--gold);color:var(--gold)}
 .tchat-gh-btn.gold{border-color:color-mix(in srgb,var(--gold) 60%,transparent);color:var(--gold);background:color-mix(in srgb,var(--gold) 15%,transparent)}
 .tchat-gh-btn.gold:hover{background:var(--gold);color:#0a0e18}
-.tchat-gh-form{display:flex;flex-direction:column;gap:7px;padding:10px;border-bottom:1px solid color-mix(in srgb,var(--gold) 35%,transparent);background:rgba(10,16,32,.97)}
-.tchat-gh-form input,.tchat-gh-form select{padding:6px 9px;border-radius:6px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:#f3ecdc;font:500 12.5px var(--sans)}
-.tchat-gh-row{display:flex;gap:6px;align-items:center}.tchat-gh-row input{flex:1}
+.tchat.full .tchat-gh-form:not([hidden]){display:flex;flex-direction:column;gap:9px;padding:12px 14px;border-bottom:1px solid color-mix(in srgb,var(--gold) 35%,transparent);background:rgba(10,16,32,.97)}
+.tchat-gh-form input,.tchat-gh-form select{min-width:0;padding:8px 10px;border-radius:6px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:#f3ecdc;font:500 13px var(--sans)}
+.tchat-gh-row{display:flex;gap:8px;align-items:center}.tchat-gh-row input{flex:1;min-width:0}.tchat-gh-row select{flex:0 0 auto;width:190px}

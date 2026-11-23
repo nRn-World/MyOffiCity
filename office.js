@@ -968,20 +968,29 @@ function stepGlbRig(o,t,talking){
     if(b.head)b.head.quaternion.copy(standQ.head).multiply(qY(Math.sin(t*.9)*.08)).multiply(qX(talking?Math.sin(t*3)*.06:Math.sin(t*1.3)*.04));
   }
 }
-function officeGlbKey(name){
-  const n=String(name||'').trim().toLowerCase();
+function officeGlbKey(aOrName){
+  const name=typeof aOrName==='string'?aOrName:(aOrName&&aOrName.name)||'';
+  const lk=aOrName&&typeof aOrName==='object'?aOrName.look:null;
+  const n=String(name||'').trim().toLowerCase().split(/\s+/)[0];
   if(n==='tomas')return 'tomas';
   if(n==='laila')return 'laila';
-  return null;
+  if(/^(ebba|kia|sara|lina|nora|maja|elsa|zara|ida|mira|anna|emma|sofia|alma|ella|freja|astrid|vera|klara|alice|olivia|amira|nadia|hana|elena|clara|maya|chloe|zoe|ava)$/.test(n))return 'laila';
+  if(lk&&(lk.hairStyle==='long'||lk.hairStyle==='bob'||lk.hairStyle==='bun'))return 'laila';
+  return 'tomas';
 }
 function applyOfficeHumans(){
   if(!root)return;
+  let idx=0;
   for(const id in agents){
-    const a=agents[id],key=officeGlbKey(a.name);
+    const a=agents[id],key=officeGlbKey(a);
     if(!key||!HUMAN_GLBS[key]||a.glbApplied)continue;
-    // Tomas sitter naturligt i sin kontorsstol (1.36 m sitthöjd); Laila står vid sin arbetsplats med stolen snyggt undanskjuten
+    // Manliga agenter (Tomas-modellen) sitter naturligt i stolen; kvinnliga agenter (Laila-modellen) står snyggt vid arbetsplatsen
     const h=key==='tomas'?1.36:1.68;
     const sp=spawnGlbHuman(key,h,.85,false);if(!sp)continue;
+    if(sp.mixer&&HUMAN_GLBS[key].anims&&HUMAN_GLBS[key].anims[0]){
+      const dur=HUMAN_GLBS[key].anims[0].duration||2;
+      sp.mixer.update(((idx*1.37)%dur));
+    }
     const parent=a.p.parent;if(!parent)continue;
     if(key==='tomas'){
       sp.group.position.set(0,0,.04);
@@ -992,10 +1001,11 @@ function applyOfficeHumans(){
     parent.add(sp.group);
     a.p.visible=false;parent.remove(a.p);
     a.p=sp.group;a.glbApplied=key;
+    idx++;
   }
 }
 function makeAgentMover(a){
-  const key=officeGlbKey(a&&a.name);
+  const key=officeGlbKey(a);
   if(key&&HUMAN_GLBS[key]){
     const sp=spawnGlbHuman(key,key==='tomas'?1.76:1.68,1,true);
     if(sp)return sp.group;

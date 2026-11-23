@@ -346,7 +346,7 @@
   }));
   const loadOffice = () => cityLoad || (cityLoad = new Promise((ok, no) => {
     const add = (src, next) => { const el = document.createElement('script'); el.src = src; el.onload = next; el.onerror = () => { cityLoad = null; no(new Error('3D')); }; document.head.appendChild(el); };
-    const run = (list, i = 0) => { if (i >= list.length) return add('office.js?v=72', ok); const [src, have] = list[i]; if (have()) return run(list, i + 1); add(src, () => run(list, i + 1)); };
+    const run = (list, i = 0) => { if (i >= list.length) return add('office.js?v=73', ok); const [src, have] = list[i]; if (have()) return run(list, i + 1); add(src, () => run(list, i + 1)); };
     const full = () => run([["cityassets.js?v=15", () => window.CityAssets]]);
     window.THREE ? full() : import("./three-shim.js").then(full, () => { cityLoad = null; no(new Error("3D")); });
   }));

@@ -1169,6 +1169,15 @@ async function freeAiQuota(req, env) {
   };
 }
 
+function b64ToBytes(input, maxBytes = 4 * 1024 * 1024) {
+  const raw = String(input || '').replace(/^data:[^;]+;base64,/, '').replace(/\s+/g, '');
+  if (!raw || raw.length > Math.ceil(maxBytes * 1.4)) return null;
+  const bin = atob(raw);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return { raw, bytes: out };
+}
+
 async function freeAiChat(req, env) {
   if (!env.AI) throw new HttpError(503, 'ai_unavailable', 'Cloudflare Workers AI is not configured');
   // Fail closed: anropa aldrig Workers AI utan D1-kvotkontroll
@@ -1177,6 +1186,8 @@ async function freeAiChat(req, env) {
   if (!body || !Array.isArray(body.messages) || !body.messages.length) {
     throw new HttpError(400, 'bad_request', 'messages array is required');
   }
+  const hasImage = typeof body.image === 'string' && body.image.length > 20;
+  const hasAudio = typeof body.audio === 'string' && body.audio.length > 20;
   const mode = (body.mode === 'chat' || body.model === 'llama' || String(body.model || '').includes('llama')) ? 'chat' : 'code';
   const spec = FREE_AI_MODELS[mode];
   const messages = body.messages.slice(-14).map(m => ({
@@ -1186,7 +1197,8 @@ async function freeAiChat(req, env) {
   const maxTokens = Math.min(spec.maxOut, Math.max(64, Number(body.max_tokens) || 700));
   const inChars = messages.reduce((s, m) => s + m.content.length, 0);
   const estTokens = Math.ceil(inChars / 3.5) + maxTokens;
-  const estNeurons = Math.min(spec.maxNeurons, Math.max(spec.minNeurons, Math.ceil((estTokens / 1000) * spec.neuronsPer1k)));
+  const extraNeurons = (hasImage ? 45 : 0) + (hasAudio ? 25 : 0);
+  const estNeurons = Math.min(spec.maxNeurons + 70, Math.max(spec.minNeurons, Math.ceil((estTokens / 1000) * spec.neuronsPer1k)) + extraNeurons);
 
   const day = new Date().toISOString().slice(0, 10);
   const ip = clientIp(req);
@@ -1223,16 +1235,65 @@ async function freeAiChat(req, env) {
     throw new HttpError(429, 'free_ai_neuron_cap_exceeded', 'Dagens Cloudflare-gratisnivå (neurons) är full – skyddet stoppar alltid före avgift. Lägg in en gratis OpenRouter-nyckel i Inställningar.');
   }
 
-  const candidates = [spec.id, ...(spec.fallbacks || [])];
+  let transcript = '';
+  if (hasAudio) {
+    const aud = b64ToBytes(body.audio, 4 * 1024 * 1024);
+    if (aud) {
+      let tr = null;
+      try { tr = await env.AI.run('@cf/openai/whisper-large-v3-turbo', { audio: aud.raw }); } catch { /* fallback */ }
+      if (!tr) { try { tr = await env.AI.run('@cf/openai/whisper', { audio: Array.from(aud.bytes) }); } catch { /* */ } }
+      transcript = String((tr && (tr.text || (tr.result && tr.result.text))) || '').trim().slice(0, 4000);
+      if (transcript) {
+        const lastU = [...messages].reverse().find(m => m.role === 'user');
+        if (lastU) lastU.content = lastU.content && lastU.content !== '[Ljudklipp]' && lastU.content !== '[Audio clip]'
+          ? lastU.content + '\n\n[Transkriberat ljudklipp]: ' + transcript
+          : '[Ljudklipp]: ' + transcript;
+      }
+    }
+  }
+
   const temp = typeof body.temperature === 'number' ? Math.min(1, Math.max(0, body.temperature)) : 0.3;
   let res = null, usedModel = spec.id, lastErr = '';
-  for (const mid of candidates) {
-    try {
-      res = await env.AI.run(mid, { messages, max_tokens: maxTokens, temperature: temp });
-      usedModel = mid;
-      break;
-    } catch (e) {
-      lastErr = String(e && e.message || e);
+
+  if (hasImage) {
+    const img = b64ToBytes(body.image, 3 * 1024 * 1024);
+    const imgUrl = body.image.startsWith('data:image/') ? body.image : ('data:image/jpeg;base64,' + (img ? img.raw : ''));
+    if (img) {
+      const lastIdx = messages.map(m => m.role).lastIndexOf('user');
+      const userText = (lastIdx >= 0 ? messages[lastIdx].content : '') || 'Analysera och beskriv bilden.';
+      const visionMsgs = messages.map((m, idx) => idx === lastIdx
+        ? { role: 'user', content: [{ type: 'text', text: userText }, { type: 'image_url', image_url: { url: imgUrl } }] }
+        : m);
+      try {
+        res = await env.AI.run('@cf/meta/llama-3.2-11b-vision-instruct', { messages: visionMsgs, max_tokens: maxTokens, temperature: temp });
+        usedModel = '@cf/meta/llama-3.2-11b-vision-instruct';
+      } catch (e) {
+        lastErr = String(e && e.message || e);
+      }
+      if (!res) {
+        try {
+          const sys = (messages.find(m => m.role === 'system')?.content || '').slice(0, 600);
+          res = await env.AI.run('@cf/llava-hf/llava-1.5-7b-hf', {
+            image: Array.from(img.bytes),
+            prompt: (sys ? sys + '\n\n' : '') + userText,
+            max_tokens: Math.min(maxTokens, 512),
+          });
+          usedModel = '@cf/llava-hf/llava-1.5-7b-hf';
+        } catch (e) {
+          lastErr = String(e && e.message || e);
+        }
+      }
+    }
+  } else {
+    const candidates = [spec.id, ...(spec.fallbacks || [])];
+    for (const mid of candidates) {
+      try {
+        res = await env.AI.run(mid, { messages, max_tokens: maxTokens, temperature: temp });
+        usedModel = mid;
+        break;
+      } catch (e) {
+        lastErr = String(e && e.message || e);
+      }
     }
   }
   if (!res) {
@@ -1244,12 +1305,13 @@ async function freeAiChat(req, env) {
     throw new HttpError(502, 'ai_run_failed', 'Cloudflare AI-fel: ' + lastErr.slice(0, 220));
   }
   const content = String(
-    (res && (res.response || res.result || (res.choices && res.choices[0] && res.choices[0].message && res.choices[0].message.content))) || ''
+    (res && (res.response || res.result || res.description || (res.choices && res.choices[0] && res.choices[0].message && res.choices[0].message.content))) || ''
   );
   return {
     model: usedModel,
     mode,
     content,
+    transcript,
     free_tier: true,
     est_neurons: estNeurons,
   };

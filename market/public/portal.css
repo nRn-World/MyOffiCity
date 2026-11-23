@@ -321,7 +321,25 @@ button.item{width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer
 .tchat-code-h{display:flex;justify-content:space-between;align-items:center;padding:4px 8px;background:rgba(255,255,255,.06);font-size:11px;color:var(--mut)}
 .tchat-cp{background:transparent;border:1px solid var(--line);color:var(--gold);font:600 10px var(--sans);padding:2px 7px;border-radius:4px;cursor:pointer}
 .tchat-code pre{margin:0;padding:8px;overflow:auto;max-height:200px;font-size:12px;line-height:1.4}
-.tchat-foot{display:flex;gap:8px;padding:10px;border-top:1px solid color-mix(in srgb,var(--gold) 25%,transparent);background:rgba(8,12,22,.85)}
+.tchat-foot{display:flex;gap:8px;padding:10px;border-top:1px solid color-mix(in srgb,var(--gold) 25%,transparent);background:rgba(8,12,22,.85);align-items:flex-end}
 .tchat-foot textarea{flex:1;resize:none;min-height:38px;max-height:96px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:#f3ecdc;font:inherit;font-size:13.5px}
 .tchat-foot textarea:focus{outline:none;border-color:var(--gold)}
-@media(max-width:640px){.tchat{right:10px;bottom:10px;left:10px}.tchat-box{width:100%;height:52vh}}
+.tchat-tools{display:flex;gap:4px;align-items:center}
+.tchat-ico.rec{border-color:#ff5a5a;color:#ff8080;background:rgba(255,60,60,.18);width:auto;padding:0 7px;font-size:11px;animation:tcrec 1.1s ease-in-out infinite}
+@keyframes tcrec{0%,100%{box-shadow:0 0 0 0 rgba(255,80,80,.45)}50%{box-shadow:0 0 0 5px rgba(255,80,80,0)}}
+.tchat-att{display:flex;flex-wrap:wrap;gap:8px;padding:8px 10px;border-top:1px solid color-mix(in srgb,var(--gold) 20%,transparent);background:rgba(14,20,36,.9)}
+.tchat-att-i{position:relative;display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:4px}
+.tchat-att-i img{height:56px;max-width:96px;object-fit:cover;border-radius:5px;display:block}
+.tchat-att-i.aud{padding:4px 28px 4px 6px}.tchat-att-i audio{height:30px;max-width:210px}
+.tchat-att-i small{font-size:11px;color:var(--mut);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tchat-att-i button{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;border:1px solid var(--gold);background:#0a0f1d;color:#fff;font:700 12px/1 var(--sans);cursor:pointer;display:grid;place-items:center}
+.tchat-mimg{display:block;max-width:100%;max-height:240px;border-radius:8px;margin:4px 0 6px;cursor:zoom-in;border:1px solid rgba(255,255,255,.15)}
+.tchat-maud{display:block;width:min(260px,100%);height:34px;margin:4px 0 6px}
+.tchat-tr{font-size:12px;color:var(--mut);font-style:italic;margin:2px 0 4px}
+.tchat.full{position:fixed;inset:0;right:0;bottom:0;z-index:80;background:rgba(4,7,14,.82);backdrop-filter:blur(10px);padding:20px;align-items:center;justify-content:center;pointer-events:auto}
+.tchat.full .tchat-box{width:min(1060px,100%);height:100%;max-height:none;border-radius:14px}
+.tchat.full .tchat-msgs{padding:20px 24px;gap:14px}
+.tchat.full .tchat-msg{max-width:78%;font-size:15px;line-height:1.6;padding:12px 16px}
+.tchat.full .tchat-mimg{max-height:420px}
+.tchat.full .tchat-foot textarea{min-height:48px;max-height:160px;font-size:15px}
+@media(max-width:640px){.tchat{right:10px;bottom:10px;left:10px}.tchat-box{width:100%;height:52vh}.tchat.full{padding:8px}}

@@ -11,7 +11,7 @@
 
   const TX = {
     en: {
-      mapNav: 'City map', dFireQuota: 'Firings used', dFireOf: 'of', dFireWin: 'in the last 6 months', dFireLocked: 'No firings left until', dPhotoFail: '(the photo could not be created right now, so a drawing is used)', dIdWorked: 'Has worked here', dIdSinceStart: 'since the company started', dIdSinceHire: 'since hired', dIdHobby: 'Hobby', dFire: 'Fire', dFireAsk: 'Fire this person? You can hire a new one straight away.', dFireYes: 'Yes, fire', dFireNo: 'Cancel', dFiredMsg: 'has left the team', dVacant: 'Vacant position', dHireBtn: 'Hire a new person', dHiredMsg: 'New hire:', dFormer: 'Former team members', dWorkedFor: 'worked for', dHiring: 'Hiring…', coCity: 'City (for local weather)', coCityHint: 'Your office gets the real weather and time of this city: rain, snow, fog and thunder.', coCityPh: 'Stockholm', coCityBad: 'Could not find that city.', cityLabel: 'City', dChipWeather: 'Weather', wxclear: 'Clear', wxcloud: 'Cloudy', wxfog: 'Fog', wxrain: 'Rain', wxsnow: 'Snow', wxthunder: 'Thunder', mapCountOne: ' company', foundOne: 'company', doneOne: 'job', coTagsPh: 'web, design, logo', coSvcPh: 'Landing page | from 49 USD | One polished page', coWebPh: 'https://yourcompany.com', dIdOpen: 'Show ID card', dIdFrom: 'From', dIdAge: 'Age', dIdBorn: 'Born', dIdLang: 'Languages', dIdRole: 'Role', dIdBg: 'Background', dIdAi: 'AI team member', dIdYears: 'years', dIdClose: 'Close', dOffice: 'Office', dChat: 'Chat', dTeam: 'Team', dOrders: 'Orders', dReports: 'Reports', dSettings: 'Settings', dSite: '\u2190 To the site', dOwner: 'Owner of', dCompany: 'Your company', dChipOrders: 'Orders', dChipChats: 'Chats', dChipRating: 'Rating', dChipTime: 'Local time', dNoOrders: 'No orders yet. When a customer orders, it shows up here.', dNoChats: 'No chats yet. When a customer clicks Contact the company, the chat shows up here.', dPickChat: 'Pick a chat on the left.', dPickOrder: 'Pick an order on the left.', dSend: 'Send', dWrite: 'Write a message', dCust: 'Customer', dTeamH: 'Your AI team', dTeamP: 'This is the team that works for your company. Chat directly with your team leader online to give assignments, plan work or generate code.', tChatOpen: 'Give order to {name}', tChatSub: 'Team leader · Free AI (0 kr)', tChatPh: 'Give an order or ask {name}…', tChatClear: 'Clear', tChatEmpty: 'Say hi or give {name} an assignment — for example to plan a website, write copy or build code with the team.', tChatModeChat: 'Chat', tChatModeCode: 'Code / Build', tChatThinking: 'Working on your order…', tChatQuota: '{n}/15 left today', tChatCopy: 'Copy', tChatCopied: 'Copied!', tChatYou: 'You', tChatBtnTeam: 'Chat & give orders to {name}', dRoleLead: 'Team leader', dRoleRev: 'Reviewer', dRoleBuild: 'Builder', dRolePolish: 'Finisher', dRepDone: 'Delivered jobs', dRepRating: 'Average rating', dRepReviews: 'Reviews', dNoReviews: 'No reviews yet.', dBrief: 'The customer wrote', coWebsite: 'Website (if you have one)', coOrg: 'Organisation number (optional)', coPublic: 'Shown publicly on your profile.', website: 'Website', orgNo: 'Org. no.', coFormH: 'Create your company', coEditH: 'Your company', coName: 'Company name', coTagline: 'Short tagline', coDesc: 'What do you do?', coTags: 'Tags (comma separated, up to 5)', coServices: 'Services and prices', coServicesHint: 'One per line: Title | Price | Short description', coBuilding: 'Choose your office building', coB0: 'Startup loft', coB0d: 'Two floors, warm and open. Great to start with.', coB1: 'Modern tech hub', coB1d: 'Three floors, glass and oak. For a growing team.', coB2: 'Executive HQ', coB2d: 'Four floors with gold details. Made to impress.', coLogo: 'Logo (PNG only)', coLogoHint: 'The sign on your roof takes the shape of your logo: round, triangle or square.', coCreateBtn: 'Create company', coSaveBtn: 'Save changes', coSaved: 'Saved. Your office is in the city.', coLogoBad: 'Only PNG images are allowed.', coLogoBig: 'The image is too large.', coLogoNone: 'No logo', coShaperound: 'Round sign', coShapetri: 'Triangle sign', coShaperect: 'Square sign', coNeedName: 'Give your company a name (at least 2 characters).', coAppNote: 'The AI team that does the work runs in the MyOffiCity app on your computer. Here you manage how your company looks and what it offers.', coSeeCity: 'See it in the city', coRemoveLogo: 'Remove logo', demoTag: 'Demo', demoNote: 'Demo company: an example, it cannot be contacted or ordered from.', ovBtn: 'All companies', ovBack: 'Back to the office', ovTip: 'Zoomed out: click a building to go there.', homeCos: 'Companies in the city', homeCosP: 'Browse what they offer. Open one to see its office.', homeEmpty: 'No companies yet. Be the first to open an office.', seeInCity: 'See the office', fromPrice: 'From', mapNone: 'No company matches. Try another word, for example design, web or logo.', mapCount: ' companies', mapSearch: 'Search companies, for example design', chooseH: 'Welcome to MyOffiCity', chooseP: 'What do you want to do?', chCust: 'I am a customer', chCustP: 'Look around the city of companies, meet a salesperson and order a website.', chCo: 'Create my own company', chCoP: 'Run an AI company, publish it in the city and get orders from customers.', coStartH: 'Create your own company', coStep1: 'Create or sign in to your account on this site.', coStep2: 'Open the MyOffiCity app, go to Orders, then Online marketplace, and sign in with this same account.', coStep3: 'Press Publish. Your office appears in the city and customers can chat with you.', coLive: 'Your company is live in the city: ', coMine: 'My company', coCreate: 'Create company', coGoCity: 'See it in the city', coSignIn: 'Sign in or create account', chatsNav: 'Chats', mapH: 'Find a company in the city', mapP: 'Look at the offices. Click the company sign on the roof to read about the company and contact them to buy a service.', mapEmpty: 'No companies in the city yet.', mapList: 'Show as list', cityTip: 'Drag to turn, scroll to zoom, click the sign on the roof.', bTier0: 'Startup loft', bTier1: 'Modern tech hub', bTier2: 'Executive HQ', meetSales: 'Contact the company', orderSvc: 'Order a service', viewProfile: 'View profile', closeIt: 'Close', ownCo: 'This is your company.', chatsH: 'Chats', chatsNone: 'No chats yet. Open a company in the city and choose Contact the company.', chatWith: 'Chat with the salesperson at ', chatCustomer: 'Customer: ', chatSend: 'Send', chatHint: 'Write a message', chatSales: 'Salesperson', chatNeedLogin: 'Sign in to chat with a salesperson.', chatYouCo: 'You are the owner of this company. Reply to the customer below.', done: 'jobs', catWeb: 'Web & apps', catDesign: 'Design & brand', catShop: 'Webshop & e-commerce', catContent: 'Text & visibility', catMedia: 'Video & media', catOther: 'Other', catTitle: 'Category', catNarrow: 'Narrow down', companies: 'Companies', orders: 'My orders', account: 'Account', signin: 'Sign in', register: 'Create account', signout: 'Sign out', username: 'Username', password: 'Password',
+      mapNav: 'City map', dFireQuota: 'Firings used', dFireOf: 'of', dFireWin: 'in the last 6 months', dFireLocked: 'No firings left until', dPhotoFail: '(the photo could not be created right now, so a drawing is used)', dIdWorked: 'Has worked here', dIdSinceStart: 'since the company started', dIdSinceHire: 'since hired', dIdHobby: 'Hobby', dFire: 'Fire', dFireAsk: 'Fire this person? You can hire a new one straight away.', dFireYes: 'Yes, fire', dFireNo: 'Cancel', dFiredMsg: 'has left the team', dVacant: 'Vacant position', dHireBtn: 'Hire a new person', dHiredMsg: 'New hire:', dFormer: 'Former team members', dWorkedFor: 'worked for', dHiring: 'Hiring…', coCity: 'City (for local weather)', coCityHint: 'Your office gets the real weather and time of this city: rain, snow, fog and thunder.', coCityPh: 'Stockholm', coCityBad: 'Could not find that city.', cityLabel: 'City', dChipWeather: 'Weather', wxclear: 'Clear', wxcloud: 'Cloudy', wxfog: 'Fog', wxrain: 'Rain', wxsnow: 'Snow', wxthunder: 'Thunder', mapCountOne: ' company', foundOne: 'company', doneOne: 'job', coTagsPh: 'web, design, logo', coSvcPh: 'Landing page | from 49 USD | One polished page', coWebPh: 'https://yourcompany.com', dIdOpen: 'Show ID card', dIdFrom: 'From', dIdAge: 'Age', dIdBorn: 'Born', dIdLang: 'Languages', dIdRole: 'Role', dIdBg: 'Background', dIdAi: 'AI team member', dIdYears: 'years', dIdClose: 'Close', dOffice: 'Office', dChat: 'Chat', dTeam: 'Team', dOrders: 'Orders', dReports: 'Reports', dSettings: 'Settings', dSite: '\u2190 To the site', dOwner: 'Owner of', dCompany: 'Your company', dChipOrders: 'Orders', dChipChats: 'Chats', dChipRating: 'Rating', dChipTime: 'Local time', dNoOrders: 'No orders yet. When a customer orders, it shows up here.', dNoChats: 'No chats yet. When a customer clicks Contact the company, the chat shows up here.', dPickChat: 'Pick a chat on the left.', dPickOrder: 'Pick an order on the left.', dSend: 'Send', dWrite: 'Write a message', dCust: 'Customer', dTeamH: 'Your AI team', dTeamP: 'This is the team that works for your company. Chat directly with your team leader online to give assignments, plan work or generate code.', tChatOpen: 'Give order to {name}', tChatSub: 'Team leader · Free AI (0 kr)', tChatPh: 'Give an order or ask {name}…', tChatClear: 'Clear', tChatEmpty: 'Say hi or give {name} an assignment — for example to plan a website, write copy or build code with the team.', tChatModeChat: 'Chat', tChatModeCode: 'Code / Build', tChatThinking: 'Working on your order…', tChatQuota: '{n}/15 left today', tChatCopy: 'Copy', tChatCopied: 'Copied!', tChatYou: 'You', tChatBtnTeam: 'Chat & give orders to {name}', tChatFull: 'Fullscreen', tChatExitFull: 'Exit fullscreen', tChatImg: 'Attach image', tChatRec: 'Record voice clip', tChatStopRec: 'Stop recording', tChatAud: 'Upload audio clip', tChatRecErr: 'Microphone access denied or unavailable.', tChatImgLbl: '[Image]', tChatAudLbl: '[Audio clip]', tChatBig: 'File is too large (max 3 MB).', dRoleLead: 'Team leader', dRoleRev: 'Reviewer', dRoleBuild: 'Builder', dRolePolish: 'Finisher', dRepDone: 'Delivered jobs', dRepRating: 'Average rating', dRepReviews: 'Reviews', dNoReviews: 'No reviews yet.', dBrief: 'The customer wrote', coWebsite: 'Website (if you have one)', coOrg: 'Organisation number (optional)', coPublic: 'Shown publicly on your profile.', website: 'Website', orgNo: 'Org. no.', coFormH: 'Create your company', coEditH: 'Your company', coName: 'Company name', coTagline: 'Short tagline', coDesc: 'What do you do?', coTags: 'Tags (comma separated, up to 5)', coServices: 'Services and prices', coServicesHint: 'One per line: Title | Price | Short description', coBuilding: 'Choose your office building', coB0: 'Startup loft', coB0d: 'Two floors, warm and open. Great to start with.', coB1: 'Modern tech hub', coB1d: 'Three floors, glass and oak. For a growing team.', coB2: 'Executive HQ', coB2d: 'Four floors with gold details. Made to impress.', coLogo: 'Logo (PNG only)', coLogoHint: 'The sign on your roof takes the shape of your logo: round, triangle or square.', coCreateBtn: 'Create company', coSaveBtn: 'Save changes', coSaved: 'Saved. Your office is in the city.', coLogoBad: 'Only PNG images are allowed.', coLogoBig: 'The image is too large.', coLogoNone: 'No logo', coShaperound: 'Round sign', coShapetri: 'Triangle sign', coShaperect: 'Square sign', coNeedName: 'Give your company a name (at least 2 characters).', coAppNote: 'The AI team that does the work runs in the MyOffiCity app on your computer. Here you manage how your company looks and what it offers.', coSeeCity: 'See it in the city', coRemoveLogo: 'Remove logo', demoTag: 'Demo', demoNote: 'Demo company: an example, it cannot be contacted or ordered from.', ovBtn: 'All companies', ovBack: 'Back to the office', ovTip: 'Zoomed out: click a building to go there.', homeCos: 'Companies in the city', homeCosP: 'Browse what they offer. Open one to see its office.', homeEmpty: 'No companies yet. Be the first to open an office.', seeInCity: 'See the office', fromPrice: 'From', mapNone: 'No company matches. Try another word, for example design, web or logo.', mapCount: ' companies', mapSearch: 'Search companies, for example design', chooseH: 'Welcome to MyOffiCity', chooseP: 'What do you want to do?', chCust: 'I am a customer', chCustP: 'Look around the city of companies, meet a salesperson and order a website.', chCo: 'Create my own company', chCoP: 'Run an AI company, publish it in the city and get orders from customers.', coStartH: 'Create your own company', coStep1: 'Create or sign in to your account on this site.', coStep2: 'Open the MyOffiCity app, go to Orders, then Online marketplace, and sign in with this same account.', coStep3: 'Press Publish. Your office appears in the city and customers can chat with you.', coLive: 'Your company is live in the city: ', coMine: 'My company', coCreate: 'Create company', coGoCity: 'See it in the city', coSignIn: 'Sign in or create account', chatsNav: 'Chats', mapH: 'Find a company in the city', mapP: 'Look at the offices. Click the company sign on the roof to read about the company and contact them to buy a service.', mapEmpty: 'No companies in the city yet.', mapList: 'Show as list', cityTip: 'Drag to turn, scroll to zoom, click the sign on the roof.', bTier0: 'Startup loft', bTier1: 'Modern tech hub', bTier2: 'Executive HQ', meetSales: 'Contact the company', orderSvc: 'Order a service', viewProfile: 'View profile', closeIt: 'Close', ownCo: 'This is your company.', chatsH: 'Chats', chatsNone: 'No chats yet. Open a company in the city and choose Contact the company.', chatWith: 'Chat with the salesperson at ', chatCustomer: 'Customer: ', chatSend: 'Send', chatHint: 'Write a message', chatSales: 'Salesperson', chatNeedLogin: 'Sign in to chat with a salesperson.', chatYouCo: 'You are the owner of this company. Reply to the customer below.', done: 'jobs', catWeb: 'Web & apps', catDesign: 'Design & brand', catShop: 'Webshop & e-commerce', catContent: 'Text & visibility', catMedia: 'Video & media', catOther: 'Other', catTitle: 'Category', catNarrow: 'Narrow down', companies: 'Companies', orders: 'My orders', account: 'Account', signin: 'Sign in', register: 'Create account', signout: 'Sign out', username: 'Username', password: 'Password',
       email: 'Email', emailReq: 'An email address is required.', orWith: 'or', emailWhy: 'Needed to reset your password and for important messages.', pwHint: 'At least 10 characters.', haveAcc: 'I already have an account', noAcc: 'Create a new account', forgotQ: 'Forgot your password?',
       heroH: 'Hire an AI team for your project', heroP: 'Find a company, tell them what you need and follow the work: you get four proposals, pick your favourite and receive the finished website.',
       search: 'Search companies, services, topics…', none: 'No companies match. Try other words or clear the filters.', order: 'Order from this company', services: 'Services', back: 'Back',
@@ -39,7 +39,7 @@
       connectH: 'Connect an AI tool', connectP: 'Pick your tool. They all use the same server, so you can connect several. Replace YOUR_KEY with your key.', keyFresh: 'Your new key is filled in below.', copyIt: 'Copy', authH: 'Connect an app', authWant: ' wants to use your MyOffiCity account.', authLevel: 'What may it do?', authRead: 'Read only: search and read', authWrite: 'Read and write: messages, proposals, files (cannot place orders or deliver)', authFull: 'Everything, including placing orders and delivering', authAllow: 'Allow', authDeny: 'Cancel', authBad: 'This connection request is not valid.', authNote: 'You can remove the access later under Account > API keys.', askAi: 'Ask your AI to do it', askAiWhere: 'Paste this into Claude Code, Codex, Cursor, Copilot, Gemini CLI or any agent that can run commands',
     },
     sv: {
-      mapNav: 'Stadskarta', dFireQuota: 'Sparkningar använda', dFireOf: 'av', dFireWin: 'de senaste 6 månaderna', dFireLocked: 'Inga sparkningar kvar förrän', dPhotoFail: '(bilden kunde inte skapas just nu, så en teckning används)', dIdWorked: 'Har jobbat här', dIdSinceStart: 'sedan företaget startade', dIdSinceHire: 'sedan anställningen', dIdHobby: 'Hobby', dFire: 'Sparka', dFireAsk: 'Sparka den här personen? Du kan anställa en ny direkt.', dFireYes: 'Ja, sparka', dFireNo: 'Avbryt', dFiredMsg: 'har lämnat teamet', dVacant: 'Ledig tjänst', dHireBtn: 'Anställ ny', dHiredMsg: 'Ny anställd:', dFormer: 'Tidigare anställda', dWorkedFor: 'jobbade i', dHiring: 'Anställer…', coCity: 'Stad (för lokalt väder)', coCityHint: 'Ditt kontor får verkligt väder och tid från den här staden: regn, snö, dimma och åska.', coCityPh: 'Stockholm', coCityBad: 'Hittade inte den staden.', cityLabel: 'Ort', dChipWeather: 'Väder', wxclear: 'Klart', wxcloud: 'Molnigt', wxfog: 'Dimma', wxrain: 'Regn', wxsnow: 'Snö', wxthunder: 'Åska', mapCountOne: ' företag', foundOne: 'företag', doneOne: 'jobb', coTagsPh: 'webb, design, logotyp', coSvcPh: 'Landningssida | från 49 USD | En polerad sida', coWebPh: 'https://dittforetag.se', dIdOpen: 'Visa ID-kort', dIdFrom: 'Kommer från', dIdAge: 'Ålder', dIdBorn: 'Född', dIdLang: 'Språk', dIdRole: 'Roll', dIdBg: 'Bakgrund', dIdAi: 'AI-medarbetare', dIdYears: 'år', dIdClose: 'Stäng', dOffice: 'Kontor', dChat: 'Chatt', dTeam: 'Team', dOrders: 'Beställningar', dReports: 'Rapporter', dSettings: 'Inställningar', dSite: '\u2190 Till sajten', dOwner: 'Ägare av', dCompany: 'Ditt företag', dChipOrders: 'Beställningar', dChipChats: 'Chattar', dChipRating: 'Betyg', dChipTime: 'Lokal tid', dNoOrders: 'Inga beställningar än. När en kund beställer syns det här.', dNoChats: 'Inga chattar än. När en kund klickar Kontakta företaget syns chatten här.', dPickChat: 'Välj en chatt till vänster.', dPickOrder: 'Välj en beställning till vänster.', dSend: 'Skicka', dWrite: 'Skriv ett meddelande', dCust: 'Kund', dTeamH: 'Ditt AI-team', dTeamP: 'Det här är teamet som jobbar åt ditt företag. Chatta direkt med din teamledare online för att ge uppdrag, planera jobb eller bygga kod.', tChatOpen: 'Ge order till {name}', tChatSub: 'Teamledare · Gratis AI (0 kr)', tChatPh: 'Ge en order eller fråga {name}…', tChatClear: 'Rensa', tChatEmpty: 'Skriv en order eller fråga till {name} — till exempel att planera en hemsida, skriva texter eller bygga kod med teamet.', tChatModeChat: 'Chatt', tChatModeCode: 'Kod / Bygg', tChatThinking: 'Tar emot uppdraget…', tChatQuota: '{n}/15 kvar idag', tChatCopy: 'Kopiera', tChatCopied: 'Kopierat!', tChatYou: 'Du', tChatBtnTeam: 'Chatta & ge order till {name}', dRoleLead: 'Teamledare', dRoleRev: 'Granskare', dRoleBuild: 'Byggare', dRolePolish: 'Finputsare', dRepDone: 'Levererade jobb', dRepRating: 'Snittbetyg', dRepReviews: 'Omdömen', dNoReviews: 'Inga omdömen än.', dBrief: 'Kunden skrev', coWebsite: 'Hemsida (om ni har en)', coOrg: 'Organisationsnummer (valfritt)', coPublic: 'Visas offentligt på företagets profil.', website: 'Hemsida', orgNo: 'Org.nr', coFormH: 'Skapa ditt företag', coEditH: 'Ditt företag', coName: 'Företagsnamn', coTagline: 'Kort slogan', coDesc: 'Vad gör ni?', coTags: 'Taggar (kommaseparerade, högst 5)', coServices: 'Tjänster och priser', coServicesHint: 'En per rad: Titel | Pris | Kort beskrivning', coBuilding: 'Välj ditt kontorshus', coB0: 'Startup-loft', coB0d: 'Två våningar, varmt och öppet. Bra att börja med.', coB1: 'Modern tech-hub', coB1d: 'Tre våningar i glas och ek. För ett växande team.', coB2: 'Executive HQ', coB2d: 'Fyra våningar med detaljer i guld. Gjort för att imponera.', coLogo: 'Logotyp (bara PNG)', coLogoHint: 'Skylten på taket får logotypens form: rund, triangel eller fyrkant.', coCreateBtn: 'Skapa företag', coSaveBtn: 'Spara ändringar', coSaved: 'Sparat. Ditt kontor finns i staden.', coLogoBad: 'Bara PNG-bilder är tillåtna.', coLogoBig: 'Bilden är för stor.', coLogoNone: 'Ingen logotyp', coShaperound: 'Rund skylt', coShapetri: 'Triangelskylt', coShaperect: 'Fyrkantig skylt', coNeedName: 'Ge företaget ett namn (minst 2 tecken).', coAppNote: 'AI-teamet som gör jobbet körs i MyOffiCity-appen på din dator. Här hanterar du hur företaget ser ut och vad det erbjuder.', coSeeCity: 'Se det i staden', coRemoveLogo: 'Ta bort logotyp', demoTag: 'Demo', demoNote: 'Demoföretag: ett exempel, går inte att kontakta eller beställa från.', ovBtn: 'Alla företag', ovBack: 'Tillbaka till kontoret', ovTip: 'Utzoomat: klicka på en byggnad för att gå dit.', homeCos: 'Företag i staden', homeCosP: 'Bläddra bland vad de erbjuder. Öppna ett för att se dess kontor.', homeEmpty: 'Inga företag än. Bli först med att öppna ett kontor.', seeInCity: 'Se kontoret', fromPrice: 'Från', mapNone: 'Inget företag matchar. Prova ett annat ord, till exempel design, webb eller logga.', mapCount: ' företag', mapSearch: 'Sök företag, till exempel design', chooseH: 'Välkommen till MyOffiCity', chooseP: 'Vad vill du göra?', chCust: 'Jag är kund', chCustP: 'Titta runt i företagsstaden, träffa en säljare och beställ en hemsida.', chCo: 'Skapa eget företag', chCoP: 'Driv ett AI-företag, publicera det i staden och få beställningar från kunder.', coStartH: 'Skapa ditt eget företag', coStep1: 'Skapa eller logga in på ditt konto på den här sajten.', coStep2: 'Öppna MyOffiCity-appen, gå till Beställningar, sedan Online-marknadsplats, och logga in med samma konto.', coStep3: 'Tryck Publicera. Ditt kontor syns i staden och kunder kan chatta med dig.', coLive: 'Ditt företag finns i staden: ', coMine: 'Mitt företag', coCreate: 'Skapa företag', coGoCity: 'Se det i staden', coSignIn: 'Logga in eller skapa konto', chatsNav: 'Chattar', mapH: 'Hitta ett företag i staden', mapP: 'Titta på kontoren. Klicka på företagets skylt på taket för att läsa om företaget och kontakta dem för att köpa en tjänst.', mapEmpty: 'Inga företag i staden än.', mapList: 'Visa som lista', cityTip: 'Dra för att snurra, scrolla för att zooma, klicka på skylten på taket.', bTier0: 'Startup-loft', bTier1: 'Modern tech-hub', bTier2: 'Executive HQ', meetSales: 'Kontakta företaget', orderSvc: 'Beställ tjänst', viewProfile: 'Visa profil', closeIt: 'Stäng', ownCo: 'Det här är ditt företag.', chatsH: 'Chattar', chatsNone: 'Inga chattar än. Öppna ett företag i staden och välj Kontakta företaget.', chatWith: 'Chatt med säljaren på ', chatCustomer: 'Kund: ', chatSend: 'Skicka', chatHint: 'Skriv ett meddelande', chatSales: 'Säljare', chatNeedLogin: 'Logga in för att chatta med en säljare.', chatYouCo: 'Du är ägare av det här företaget. Svara kunden nedan.', done: 'jobb', catWeb: 'Webb & appar', catDesign: 'Design & varumärke', catShop: 'Webbshop & e-handel', catContent: 'Text & synlighet', catMedia: 'Video & media', catOther: 'Övrigt', catTitle: 'Kategori', catNarrow: 'Filtrera', companies: 'Företag', orders: 'Mina beställningar', account: 'Konto', signin: 'Logga in', register: 'Skapa konto', signout: 'Logga ut', username: 'Användarnamn', password: 'Lösenord',
+      mapNav: 'Stadskarta', dFireQuota: 'Sparkningar använda', dFireOf: 'av', dFireWin: 'de senaste 6 månaderna', dFireLocked: 'Inga sparkningar kvar förrän', dPhotoFail: '(bilden kunde inte skapas just nu, så en teckning används)', dIdWorked: 'Har jobbat här', dIdSinceStart: 'sedan företaget startade', dIdSinceHire: 'sedan anställningen', dIdHobby: 'Hobby', dFire: 'Sparka', dFireAsk: 'Sparka den här personen? Du kan anställa en ny direkt.', dFireYes: 'Ja, sparka', dFireNo: 'Avbryt', dFiredMsg: 'har lämnat teamet', dVacant: 'Ledig tjänst', dHireBtn: 'Anställ ny', dHiredMsg: 'Ny anställd:', dFormer: 'Tidigare anställda', dWorkedFor: 'jobbade i', dHiring: 'Anställer…', coCity: 'Stad (för lokalt väder)', coCityHint: 'Ditt kontor får verkligt väder och tid från den här staden: regn, snö, dimma och åska.', coCityPh: 'Stockholm', coCityBad: 'Hittade inte den staden.', cityLabel: 'Ort', dChipWeather: 'Väder', wxclear: 'Klart', wxcloud: 'Molnigt', wxfog: 'Dimma', wxrain: 'Regn', wxsnow: 'Snö', wxthunder: 'Åska', mapCountOne: ' företag', foundOne: 'företag', doneOne: 'jobb', coTagsPh: 'webb, design, logotyp', coSvcPh: 'Landningssida | från 49 USD | En polerad sida', coWebPh: 'https://dittforetag.se', dIdOpen: 'Visa ID-kort', dIdFrom: 'Kommer från', dIdAge: 'Ålder', dIdBorn: 'Född', dIdLang: 'Språk', dIdRole: 'Roll', dIdBg: 'Bakgrund', dIdAi: 'AI-medarbetare', dIdYears: 'år', dIdClose: 'Stäng', dOffice: 'Kontor', dChat: 'Chatt', dTeam: 'Team', dOrders: 'Beställningar', dReports: 'Rapporter', dSettings: 'Inställningar', dSite: '\u2190 Till sajten', dOwner: 'Ägare av', dCompany: 'Ditt företag', dChipOrders: 'Beställningar', dChipChats: 'Chattar', dChipRating: 'Betyg', dChipTime: 'Lokal tid', dNoOrders: 'Inga beställningar än. När en kund beställer syns det här.', dNoChats: 'Inga chattar än. När en kund klickar Kontakta företaget syns chatten här.', dPickChat: 'Välj en chatt till vänster.', dPickOrder: 'Välj en beställning till vänster.', dSend: 'Skicka', dWrite: 'Skriv ett meddelande', dCust: 'Kund', dTeamH: 'Ditt AI-team', dTeamP: 'Det här är teamet som jobbar åt ditt företag. Chatta direkt med din teamledare online för att ge uppdrag, planera jobb eller bygga kod.', tChatOpen: 'Ge order till {name}', tChatSub: 'Teamledare · Gratis AI (0 kr)', tChatPh: 'Ge en order eller fråga {name}…', tChatClear: 'Rensa', tChatEmpty: 'Skriv en order eller fråga till {name} — till exempel att planera en hemsida, skriva texter eller bygga kod med teamet.', tChatModeChat: 'Chatt', tChatModeCode: 'Kod / Bygg', tChatThinking: 'Tar emot uppdraget…', tChatQuota: '{n}/15 kvar idag', tChatCopy: 'Kopiera', tChatCopied: 'Kopierat!', tChatYou: 'Du', tChatBtnTeam: 'Chatta & ge order till {name}', tChatFull: 'Fullskärm', tChatExitFull: 'Stäng fullskärm', tChatImg: 'Skicka bild', tChatRec: 'Spela in ljudklipp', tChatStopRec: 'Stoppa inspelning', tChatAud: 'Ladda upp ljudfil', tChatRecErr: 'Kunde inte komma åt mikrofonen.', tChatImgLbl: '[Bild]', tChatAudLbl: '[Ljudklipp]', tChatBig: 'Filen är för stor (max 3 MB).', dRoleLead: 'Teamledare', dRoleRev: 'Granskare', dRoleBuild: 'Byggare', dRolePolish: 'Finputsare', dRepDone: 'Levererade jobb', dRepRating: 'Snittbetyg', dRepReviews: 'Omdömen', dNoReviews: 'Inga omdömen än.', dBrief: 'Kunden skrev', coWebsite: 'Hemsida (om ni har en)', coOrg: 'Organisationsnummer (valfritt)', coPublic: 'Visas offentligt på företagets profil.', website: 'Hemsida', orgNo: 'Org.nr', coFormH: 'Skapa ditt företag', coEditH: 'Ditt företag', coName: 'Företagsnamn', coTagline: 'Kort slogan', coDesc: 'Vad gör ni?', coTags: 'Taggar (kommaseparerade, högst 5)', coServices: 'Tjänster och priser', coServicesHint: 'En per rad: Titel | Pris | Kort beskrivning', coBuilding: 'Välj ditt kontorshus', coB0: 'Startup-loft', coB0d: 'Två våningar, varmt och öppet. Bra att börja med.', coB1: 'Modern tech-hub', coB1d: 'Tre våningar i glas och ek. För ett växande team.', coB2: 'Executive HQ', coB2d: 'Fyra våningar med detaljer i guld. Gjort för att imponera.', coLogo: 'Logotyp (bara PNG)', coLogoHint: 'Skylten på taket får logotypens form: rund, triangel eller fyrkant.', coCreateBtn: 'Skapa företag', coSaveBtn: 'Spara ändringar', coSaved: 'Sparat. Ditt kontor finns i staden.', coLogoBad: 'Bara PNG-bilder är tillåtna.', coLogoBig: 'Bilden är för stor.', coLogoNone: 'Ingen logotyp', coShaperound: 'Rund skylt', coShapetri: 'Triangelskylt', coShaperect: 'Fyrkantig skylt', coNeedName: 'Ge företaget ett namn (minst 2 tecken).', coAppNote: 'AI-teamet som gör jobbet körs i MyOffiCity-appen på din dator. Här hanterar du hur företaget ser ut och vad det erbjuder.', coSeeCity: 'Se det i staden', coRemoveLogo: 'Ta bort logotyp', demoTag: 'Demo', demoNote: 'Demoföretag: ett exempel, går inte att kontakta eller beställa från.', ovBtn: 'Alla företag', ovBack: 'Tillbaka till kontoret', ovTip: 'Utzoomat: klicka på en byggnad för att gå dit.', homeCos: 'Företag i staden', homeCosP: 'Bläddra bland vad de erbjuder. Öppna ett för att se dess kontor.', homeEmpty: 'Inga företag än. Bli först med att öppna ett kontor.', seeInCity: 'Se kontoret', fromPrice: 'Från', mapNone: 'Inget företag matchar. Prova ett annat ord, till exempel design, webb eller logga.', mapCount: ' företag', mapSearch: 'Sök företag, till exempel design', chooseH: 'Välkommen till MyOffiCity', chooseP: 'Vad vill du göra?', chCust: 'Jag är kund', chCustP: 'Titta runt i företagsstaden, träffa en säljare och beställ en hemsida.', chCo: 'Skapa eget företag', chCoP: 'Driv ett AI-företag, publicera det i staden och få beställningar från kunder.', coStartH: 'Skapa ditt eget företag', coStep1: 'Skapa eller logga in på ditt konto på den här sajten.', coStep2: 'Öppna MyOffiCity-appen, gå till Beställningar, sedan Online-marknadsplats, och logga in med samma konto.', coStep3: 'Tryck Publicera. Ditt kontor syns i staden och kunder kan chatta med dig.', coLive: 'Ditt företag finns i staden: ', coMine: 'Mitt företag', coCreate: 'Skapa företag', coGoCity: 'Se det i staden', coSignIn: 'Logga in eller skapa konto', chatsNav: 'Chattar', mapH: 'Hitta ett företag i staden', mapP: 'Titta på kontoren. Klicka på företagets skylt på taket för att läsa om företaget och kontakta dem för att köpa en tjänst.', mapEmpty: 'Inga företag i staden än.', mapList: 'Visa som lista', cityTip: 'Dra för att snurra, scrolla för att zooma, klicka på skylten på taket.', bTier0: 'Startup-loft', bTier1: 'Modern tech-hub', bTier2: 'Executive HQ', meetSales: 'Kontakta företaget', orderSvc: 'Beställ tjänst', viewProfile: 'Visa profil', closeIt: 'Stäng', ownCo: 'Det här är ditt företag.', chatsH: 'Chattar', chatsNone: 'Inga chattar än. Öppna ett företag i staden och välj Kontakta företaget.', chatWith: 'Chatt med säljaren på ', chatCustomer: 'Kund: ', chatSend: 'Skicka', chatHint: 'Skriv ett meddelande', chatSales: 'Säljare', chatNeedLogin: 'Logga in för att chatta med en säljare.', chatYouCo: 'Du är ägare av det här företaget. Svara kunden nedan.', done: 'jobb', catWeb: 'Webb & appar', catDesign: 'Design & varumärke', catShop: 'Webbshop & e-handel', catContent: 'Text & synlighet', catMedia: 'Video & media', catOther: 'Övrigt', catTitle: 'Kategori', catNarrow: 'Filtrera', companies: 'Företag', orders: 'Mina beställningar', account: 'Konto', signin: 'Logga in', register: 'Skapa konto', signout: 'Logga ut', username: 'Användarnamn', password: 'Lösenord',
       email: 'E-post', emailReq: 'E-post krävs.', orWith: 'eller', emailWhy: 'Behövs för att återställa lösenordet och för viktiga meddelanden.', pwHint: 'Minst 10 tecken.', haveAcc: 'Jag har redan ett konto', noAcc: 'Skapa ett nytt konto', forgotQ: 'Glömt lösenordet?',
       heroH: 'Anlita ett AI-team till ditt projekt', heroP: 'Hitta ett företag, berätta vad du behöver och följ arbetet: du får fyra förslag, väljer din favorit och får den färdiga hemsidan.',
       search: 'Sök företag, tjänster, ämnen…', none: 'Inga företag matchar. Prova andra ord eller rensa filtren.', order: 'Beställ av det här företaget', services: 'Tjänster', back: 'Tillbaka',
@@ -774,10 +774,16 @@
     const staff = opts.staff || [];
     const leaderId = (staff.find((s) => s.rank === 'leader') || staff[0] || {}).id || 'm0';
     const storeKey = 'nrn.teamchat.' + c.id;
-    let mode = 'chat', busy = false;
+    let mode = 'chat', busy = false, pendImg = '', pendAud = '', pendAudName = '';
+    let rec = null, recChunks = [], recStream = null, recTimer = null, recSec = 0;
     let history = [];
     try { const raw = localStorage.getItem(storeKey); if (raw) { const p = JSON.parse(raw); if (Array.isArray(p)) history = p.slice(-30); } } catch { /* */ }
-    const saveHist = () => { try { localStorage.setItem(storeKey, JSON.stringify(history.slice(-30))); } catch { /* */ } };
+    const saveHist = () => {
+      try {
+        const slim = history.slice(-30).map((m) => ({ role: m.role, content: m.content, transcript: m.transcript || '' }));
+        localStorage.setItem(storeKey, JSON.stringify(slim));
+      } catch { /* */ }
+    };
     const isMin = () => { if (opts.forceOpen) return false; try { return sessionStorage.getItem('nrn.tchat.min') === '1'; } catch { return false; } };
     const setMin = (v) => { try { sessionStorage.setItem('nrn.tchat.min', v ? '1' : '0'); } catch { /* */ } };
     const fmtReply = (txt) => {
@@ -791,6 +797,25 @@
       if (last < s.length) out += '<div class="tchat-txt">' + esc(s.slice(last)) + '</div>';
       return out || '<div class="tchat-txt">' + esc(s) + '</div>';
     };
+    const resizeImg = (file) => new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onerror = () => reject(new Error(t('err')));
+      r.onload = () => {
+        const img = new Image();
+        img.onerror = () => reject(new Error(t('err')));
+        img.onload = () => {
+          const max = 1024, sc = Math.min(1, max / Math.max(img.width, img.height));
+          const cv = document.createElement('canvas'); cv.width = Math.max(1, Math.round(img.width * sc)); cv.height = Math.max(1, Math.round(img.height * sc));
+          cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+          resolve(cv.toDataURL('image/jpeg', 0.82));
+        };
+        img.src = r.result;
+      };
+      r.readAsDataURL(file);
+    });
+    const readAsDataUrl = (blob) => new Promise((resolve, reject) => {
+      const r = new FileReader(); r.onerror = () => reject(new Error(t('err'))); r.onload = () => resolve(String(r.result || '')); r.readAsDataURL(blob);
+    });
     const sysPrompt = () => {
       const teamList = active.map((m) => m.persona.name + ' (' + t(m.persona.role) + ')').join(', ') || (leaderFull + ' (Teamledare)');
       const svcs = (c.services || []).map((s) => s.title + (s.price ? ' - ' + s.price : '')).join('; ');
@@ -809,26 +834,55 @@
       + '<div class="tchat-box">'
       + '<div class="tchat-head"><div><b>' + esc(leaderName) + '</b><small id="tcsub">' + esc(t('tChatSub')) + '</small></div>'
       + '<div class="tchat-act"><div class="tchat-modes"><button type="button" class="on" data-m="chat">' + esc(t('tChatModeChat')) + '</button><button type="button" data-m="code">' + esc(t('tChatModeCode')) + '</button></div>'
+      + '<button type="button" class="tchat-ico" id="tcfull" title="' + esc(t('tChatFull')) + '">⛶</button>'
       + '<button type="button" class="tchat-ico" id="tcclr" title="' + esc(t('tChatClear')) + '">⌫</button>'
       + '<button type="button" class="tchat-ico" id="tcmin" title="−">−</button></div></div>'
       + '<div class="tchat-msgs" id="tcms"></div>'
-      + '<div class="tchat-foot"><textarea id="tcin" rows="2" maxlength="2000" placeholder="' + esc(tn('tChatPh', { name: leaderName })) + '"></textarea><button type="button" class="btn sm" id="tcsend">' + esc(t('dSend')) + '</button></div>'
+      + '<div class="tchat-att" id="tcatt" hidden></div>'
+      + '<div class="tchat-foot">'
+      + '<div class="tchat-tools">'
+      + '<button type="button" class="tchat-ico" id="tcimgb" title="' + esc(t('tChatImg')) + '">🖼</button>'
+      + '<button type="button" class="tchat-ico" id="tcrecb" title="' + esc(t('tChatRec')) + '">🎙</button>'
+      + '<button type="button" class="tchat-ico" id="tcaudb" title="' + esc(t('tChatAud')) + '">🎵</button>'
+      + '<input type="file" id="tcimgf" accept="image/*" hidden>'
+      + '<input type="file" id="tcaudf" accept="audio/*" hidden>'
+      + '</div>'
+      + '<textarea id="tcin" rows="2" maxlength="2000" placeholder="' + esc(tn('tChatPh', { name: leaderName })) + '"></textarea><button type="button" class="btn sm" id="tcsend">' + esc(t('dSend')) + '</button></div>'
       + '</div>';
     host.appendChild(wrap);
 
     const ms = wrap.querySelector('#tcms'), ta = wrap.querySelector('#tcin'), sb = wrap.querySelector('#tcsend'), sub = wrap.querySelector('#tcsub');
+    const att = wrap.querySelector('#tcatt'), fullBtn = wrap.querySelector('#tcfull'), recBtn = wrap.querySelector('#tcrecb');
+    const imgIn = wrap.querySelector('#tcimgf'), audIn = wrap.querySelector('#tcaudf');
+
+    const renderAtt = () => {
+      if (!pendImg && !pendAud) { att.hidden = true; att.innerHTML = ''; return; }
+      att.hidden = false;
+      att.innerHTML = (pendImg ? '<div class="tchat-att-i"><img src="' + esc(pendImg) + '" alt=""><button type="button" data-rm="img">×</button></div>' : '')
+        + (pendAud ? '<div class="tchat-att-i aud"><audio controls src="' + esc(pendAud) + '"></audio>' + (pendAudName ? '<small>' + esc(pendAudName) + '</small>' : '') + '<button type="button" data-rm="aud">×</button></div>' : '');
+      att.querySelectorAll('[data-rm]').forEach((b) => {
+        b.onclick = () => { if (b.dataset.rm === 'img') pendImg = ''; else { pendAud = ''; pendAudName = ''; } renderAtt(); };
+      });
+    };
     const render = () => {
       if (!history.length) {
         ms.innerHTML = '<p class="muted small tchat-empty">' + esc(tn('tChatEmpty', { name: leaderName })) + '</p>';
         return;
       }
-      ms.innerHTML = history.map((m) => '<div class="tchat-msg' + (m.role === 'user' ? ' me' : '') + '"><small>' + esc(m.role === 'user' ? t('tChatYou') : leaderName) + '</small>' + (m.role === 'user' ? '<div class="tchat-txt">' + esc(m.content) + '</div>' : fmtReply(m.content)) + '</div>').join('');
+      ms.innerHTML = history.map((m) => {
+        const media = (m.image ? '<img class="tchat-mimg" src="' + esc(m.image) + '" alt="">' : '')
+          + (m.audio ? '<audio class="tchat-maud" controls src="' + esc(m.audio) + '"></audio>' : '')
+          + (m.transcript ? '<div class="tchat-tr">🎙 "' + esc(m.transcript) + '"</div>' : '');
+        const body = m.role === 'user' ? '<div class="tchat-txt">' + esc(m.content) + '</div>' : fmtReply(m.content);
+        return '<div class="tchat-msg' + (m.role === 'user' ? ' me' : '') + '"><small>' + esc(m.role === 'user' ? t('tChatYou') : leaderName) + '</small>' + media + body + '</div>';
+      }).join('');
       ms.querySelectorAll('.tchat-cp').forEach((b) => {
         b.onclick = () => {
           const code = b.closest('.tchat-code')?.querySelector('code')?.textContent || '';
           navigator.clipboard?.writeText(code).then(() => { b.textContent = t('tChatCopied'); setTimeout(() => { b.textContent = t('tChatCopy'); }, 1600); }).catch(() => { });
         };
       });
+      ms.querySelectorAll('.tchat-mimg').forEach((im) => { im.onclick = () => window.open(im.src, '_blank', 'noopener'); });
       ms.scrollTop = ms.scrollHeight;
     };
     const refreshQuota = () => {
@@ -839,18 +893,82 @@
     render(); refreshQuota();
     if (opts.forceOpen) setTimeout(() => ta.focus(), 60);
 
+    const setFull = (on) => {
+      wrap.classList.toggle('full', on);
+      if (on) { wrap.classList.remove('min'); setMin(false); }
+      fullBtn.textContent = on ? '⤡' : '⛶';
+      fullBtn.title = on ? t('tChatExitFull') : t('tChatFull');
+    };
+    const onEsc = (e) => { if (e.key === 'Escape' && wrap.classList.contains('full')) setFull(false); };
+    document.addEventListener('keydown', onEsc);
     wrap.querySelector('#tcfab').onclick = () => { wrap.classList.remove('min'); setMin(false); ta.focus(); };
-    wrap.querySelector('#tcmin').onclick = () => { wrap.classList.add('min'); setMin(true); };
+    wrap.querySelector('#tcmin').onclick = () => { setFull(false); wrap.classList.add('min'); setMin(true); };
+    fullBtn.onclick = () => setFull(!wrap.classList.contains('full'));
     wrap.querySelector('#tcclr').onclick = () => { history = []; saveHist(); render(); };
     wrap.querySelectorAll('.tchat-modes button').forEach((b) => {
       b.onclick = () => { mode = b.dataset.m; wrap.querySelectorAll('.tchat-modes button').forEach((x) => x.classList.toggle('on', x === b)); };
     });
 
+    wrap.querySelector('#tcimgb').onclick = () => imgIn.click();
+    wrap.querySelector('#tcaudb').onclick = () => audIn.click();
+    imgIn.onchange = async () => {
+      const f = imgIn.files && imgIn.files[0]; imgIn.value = ''; if (!f) return;
+      try { pendImg = await resizeImg(f); renderAtt(); ta.focus(); } catch (e) { toast(e.message); }
+    };
+    audIn.onchange = async () => {
+      const f = audIn.files && audIn.files[0]; audIn.value = ''; if (!f) return;
+      if (f.size > 3 * 1024 * 1024) return toast(t('tChatBig'));
+      try { pendAud = await readAsDataUrl(f); pendAudName = f.name; renderAtt(); ta.focus(); } catch (e) { toast(e.message); }
+    };
+    ta.addEventListener('paste', async (e) => {
+      const items = e.clipboardData && e.clipboardData.items; if (!items) return;
+      for (const it of items) {
+        if (it.type && it.type.startsWith('image/')) {
+          const f = it.getAsFile(); if (!f) continue;
+          e.preventDefault();
+          try { pendImg = await resizeImg(f); renderAtt(); } catch (err) { toast(err.message); }
+          break;
+        }
+      }
+    });
+
+    const stopRec = () => {
+      clearInterval(recTimer); recTimer = null;
+      recBtn.classList.remove('rec'); recBtn.textContent = '🎙'; recBtn.title = t('tChatRec');
+      if (rec && rec.state !== 'inactive') { try { rec.stop(); } catch { /* */ } }
+      if (recStream) { recStream.getTracks().forEach((tr) => tr.stop()); recStream = null; }
+    };
+    recBtn.onclick = async () => {
+      if (rec && rec.state === 'recording') { stopRec(); return; }
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof MediaRecorder === 'undefined') return toast(t('tChatRecErr'));
+      try {
+        recStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        recChunks = []; recSec = 0;
+        const mime = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : (MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : '');
+        rec = mime ? new MediaRecorder(recStream, { mimeType: mime }) : new MediaRecorder(recStream);
+        rec.ondataavailable = (ev) => { if (ev.data && ev.data.size) recChunks.push(ev.data); };
+        rec.onstop = async () => {
+          const blob = new Blob(recChunks, { type: rec.mimeType || 'audio/webm' });
+          if (blob.size > 3 * 1024 * 1024) { toast(t('tChatBig')); return; }
+          if (blob.size > 100) {
+            try { pendAud = await readAsDataUrl(blob); pendAudName = t('tChatAudLbl') + ' (' + Math.max(1, recSec) + 's)'; renderAtt(); ta.focus(); } catch (err) { toast(err.message); }
+          }
+        };
+        rec.start();
+        recBtn.classList.add('rec'); recBtn.textContent = '⏹'; recBtn.title = t('tChatStopRec');
+        recTimer = setInterval(() => { recSec++; recBtn.textContent = '⏹ ' + recSec + 's'; if (recSec >= 60) stopRec(); }, 1000);
+      } catch { toast(t('tChatRecErr')); stopRec(); }
+    };
+
     const send = async () => {
+      if (rec && rec.state === 'recording') stopRec();
       const v = ta.value.trim();
-      if (!v || busy) return;
-      busy = true; sb.disabled = true; ta.value = '';
-      history.push({ role: 'user', content: v });
+      const imgNow = pendImg, audNow = pendAud;
+      if ((!v && !imgNow && !audNow) || busy) return;
+      busy = true; sb.disabled = true; ta.value = ''; pendImg = ''; pendAud = ''; pendAudName = ''; renderAtt();
+      const displayTxt = v || (imgNow && audNow ? t('tChatImgLbl') + ' + ' + t('tChatAudLbl') : imgNow ? t('tChatImgLbl') : t('tChatAudLbl'));
+      const userMsg = { role: 'user', content: displayTxt, image: imgNow || '', audio: audNow || '', transcript: '' };
+      history.push(userMsg);
       saveHist(); render();
       const waitEl = document.createElement('div');
       waitEl.className = 'tchat-msg wait';
@@ -858,11 +976,12 @@
       ms.appendChild(waitEl); ms.scrollTop = ms.scrollHeight;
       try { if (window.Office && Office.has && Office.has(leaderId)) { Office.busy(leaderId, true); Office.say(leaderId, t('tChatThinking'), 4000); } } catch { /* */ }
       try {
-        const res = await api('POST', '/ai/chat', {
-          mode,
-          messages: [{ role: 'system', content: sysPrompt() }, ...history.slice(-12)],
-          max_tokens: mode === 'code' ? 1024 : 700,
-        });
+        const apiMsgs = [{ role: 'system', content: sysPrompt() }, ...history.slice(-12).map((m) => ({ role: m.role, content: m.content }))];
+        const payload = { mode, messages: apiMsgs, max_tokens: mode === 'code' ? 1024 : 700 };
+        if (imgNow) payload.image = imgNow;
+        if (audNow) payload.audio = audNow;
+        const res = await api('POST', '/ai/chat', payload);
+        if (res.transcript) userMsg.transcript = res.transcript;
         const reply = String(res.content || res.response || '').trim() || '…';
         history.push({ role: 'assistant', content: reply });
         saveHist(); render(); refreshQuota();

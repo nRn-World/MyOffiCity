@@ -54,6 +54,7 @@ def load_env():
 load_env()
 PORT = int(os.environ.get("PORT", "8765"))
 OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434").rstrip("/")
+FREE_AI_URL = os.environ.get("FREE_AI_URL", "https://nrnworld.one/MyOffiCity/api/ai/chat").strip()
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "").strip()
 
 PROVIDERS = {
@@ -261,8 +262,42 @@ def ollama_models():
 
 
 # Gratismodeller på OpenRouter är ofta överbelastade eller försvinner – prova nästa i stället för att ge upp.
-FREE_FALLBACK = ["google/gemma-4-26b-a4b-it:free", "cohere/north-mini-code:free",
-                 "google/gemma-4-31b-it:free", "openrouter/free"]
+FREE_FALLBACK = [
+    "qwen/qwen-2.5-coder-32b-instruct:free",
+    "meta-llama/llama-3.3-70b-instruct:free",
+    "deepseek/deepseek-r1:free",
+    "google/gemma-4-26b-a4b-it:free",
+    "google/gemma-4-31b-it:free",
+    "openrouter/free",
+]
+
+
+def cloudflare_models():
+    """Inbyggda gratis AI-modeller via MyOffiCity Cloudflare Workers AI (kräver ingen API-nyckel)."""
+    if not FREE_AI_URL:
+        return []
+    return [
+        norm_model("cloudflare", "code", "Free AI · Qwen 2.5 Coder 32B (Cloudflare, 0 kr)", 0.0, 0.0, 16384, free=True, unknown=False),
+        norm_model("cloudflare", "chat", "Free AI · Llama 3.1 8B (Cloudflare, 0 kr)", 0.0, 0.0, 16384, free=True, unknown=False),
+    ]
+
+
+def check_cloudflare():
+    if not FREE_AI_URL:
+        return {"configured": False, "ok": False, "detail": "FREE_AI_URL saknas"}
+    quota_url = FREE_AI_URL.rsplit("/chat", 1)[0] + "/quota" if FREE_AI_URL.endswith("/chat") else ""
+    if not quota_url:
+        return {"configured": True, "ok": True, "detail": "Cloudflare Workers AI redo (0 kr)"}
+    try:
+        q = http_json(quota_url, timeout=5)
+        if q.get("ok"):
+            rem_ip = q.get("remaining_ip", "?")
+            rem_n = q.get("remaining_neurons", "?")
+            return {"configured": True, "ok": True, "detail": f"Redo utan nyckel · {rem_ip}/15 kvar idag · {rem_n} neurons kvar"}
+        return {"configured": True, "ok": False, "detail": "Cloudflare AI inte aktiverat på portalen"}
+    except Exception:
+        # Även om /quota inte är deployad ännu eller tillfälligt inte svarar låter vi användaren försöka
+        return {"configured": True, "ok": True, "detail": "Cloudflare Workers AI (kräver deploy av market/)"}
 
 
 def http_json(url, method="GET", headers=None, body=None, timeout=TIMEOUT):
@@ -437,6 +472,7 @@ def get_catalog(force=False):
                 errors[provider] = err.message
             except Exception as err:  # noqa: BLE001 - surface any provider problem
                 errors[provider] = str(err)
+        models.extend(cloudflare_models())
         models.extend(ollama_models())
         seen, unique = set(), []
         for m in sorted(models, key=lambda x: (x["tier"], x["unknown"], x["pin"], x["label"].lower())):
@@ -582,6 +618,7 @@ def get_status(force=False):
             "providers": {p: check_provider(p) for p in PROVIDERS},
             "github": check_github(),
             "ollama": check_ollama(),
+            "cloudflare": check_cloudflare(),
         }
         _status.update(t=time.time(), data=data)
         return data
@@ -612,7 +649,7 @@ def gh_request(payload):
 
 def chat(payload):
     provider = str(payload.get("provider", ""))
-    if provider not in ("openrouter", "openai", "anthropic", "ollama", "custom"):
+    if provider not in ("openrouter", "openai", "anthropic", "ollama", "custom", "cloudflare"):
         raise Upstream(0, {"error": {"message": "Okänd leverantör"}})
     model = str(payload.get("model", ""))[:200]
     if not model:
@@ -632,6 +669,17 @@ def chat(payload):
     except (TypeError, ValueError):
         max_tokens = 4096
     max_tokens = max(64, min(8192, max_tokens))
+
+    if provider == "cloudflare":
+        if not FREE_AI_URL:
+            raise Upstream(0, {"error": {"message": "FREE_AI_URL saknas"}})
+        mode = "chat" if model == "chat" else "code"
+        cf_msgs = ([{"role": "system", "content": system}] if system else []) + messages
+        res = http_json(FREE_AI_URL, method="POST",
+                        body={"mode": mode, "model": model, "messages": cf_msgs, "max_tokens": min(max_tokens, 1024)},
+                        timeout=60)
+        text = str(res.get("content") or res.get("response") or "")
+        return {"text": text, "inTok": 0, "outTok": 0, "cost": 0.0, "usedModel": res.get("model") or model}
 
     if provider == "anthropic":
         cfg = PROVIDERS["anthropic"]

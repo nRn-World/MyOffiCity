@@ -34,7 +34,7 @@ enabled = true
 # Webbadresser (förutom portalen själv) som får anropa API:t från en webbläsare, kommaseparerade.
 # Ägarappen kör på localhost:8766.
 [vars]
-ALLOWED_ORIGINS = "http://localhost:8766,http://127.0.0.1:8766,https://nrnworld.one"
+ALLOWED_ORIGINS = "http://localhost:8765,http://127.0.0.1:8765,http://localhost:8766,http://127.0.0.1:8766,https://nrnworld.one"
 # Google-inloggning: klistra in Web-klient-ID (…apps.googleusercontent.com). Tomt = knappen visas inte.
 GOOGLE_CLIENT_ID = "1078685194673-0gnkqb50ua837ogaa683n2u177iavgf8.apps.googleusercontent.com"
 # Avsändare för e-post (domänen måste vara verifierad hos leverantören). Avkommentera när e-post slås på:

@@ -79,8 +79,8 @@ const bName=k=>t('b_'+k);
 const DEMO_MODEL={p:'demo',m:'demo',l:()=>t('m_demo'),tier:0,pin:0,pout:0,id:'demo:demo'};
 let CATALOG=[DEMO_MODEL];
 let SERVER={ok:false,providers:{},github:{configured:false,ok:false,detail:''}};
-const CONN={demo:true,ollama:false,custom:false,openrouter:false,openai:false,anthropic:false};
-const PREFERRED=['openrouter:openrouter/free','openrouter:openrouter/auto','openai:gpt-4o-mini','anthropic:claude-haiku-5-5'];
+const CONN={demo:true,cloudflare:false,ollama:false,custom:false,openrouter:false,openai:false,anthropic:false};
+const PREFERRED=['openrouter:qwen/qwen-2.5-coder-32b-instruct:free','openrouter:meta-llama/llama-3.3-70b-instruct:free','openrouter:openrouter/free','cloudflare:code','cloudflare:chat','openrouter:openrouter/auto','openai:gpt-4o-mini','anthropic:claude-haiku-5-5'];
 async function loadServer(){
   try{
     const st=await (await fetch('/api/status',{cache:'no-store'})).json();
@@ -88,6 +88,7 @@ async function loadServer(){
     SERVER=st;SERVER.ok=true;
     for(const p of ['openrouter','openai','anthropic'])CONN[p]=!!st.providers?.[p]?.ok;
     CONN.ollama=!!st.ollama?.ok;
+    CONN.cloudflare=!!st.cloudflare?.ok;
   }catch{SERVER={ok:false,providers:{},github:{configured:false,ok:false,detail:''}};}
   try{
     const j=await (await fetch('/api/models',{cache:'no-store'})).json();
@@ -95,7 +96,7 @@ async function loadServer(){
     if(j.errors&&typeof j.errors==='object')SERVER.errors=j.errors;
   }catch{}
 }
-const provName=p=>({demo:'Demo',ollama:t('p_ollama'),openrouter:'OpenRouter',openai:'OpenAI',anthropic:'Anthropic (Claude)',custom:t('p_custom')})[p];
+const provName=p=>({demo:'Demo',cloudflare:'Cloudflare Free AI (0 kr)',ollama:t('p_ollama'),openrouter:'OpenRouter',openai:'OpenAI',anthropic:'Anthropic (Claude)',custom:t('p_custom')})[p]||p;
 const PRESETS=[
   {k:'leader',rank:'leader',kind:'lead'},{k:'lead',rank:'lead',kind:'lead'},{k:'dev',rank:'worker',kind:'dev'},
   {k:'polish',rank:'worker',kind:'design',polish:true},{k:'finance',rank:'worker',kind:'finance'},{k:'marketing',rank:'worker',kind:'marketing'},{k:'custom',rank:'worker',kind:'gen'}];
@@ -230,7 +231,9 @@ const leader=()=>S.employees.find(e=>e.rank==='leader');
 const emp=id=>S.employees.find(e=>e.id===id);
 function sysPrompt(e){
   const rules={leader:'You are the team leader. Only you accept assignments from the owner and report finished work; you delegate to the team.',lead:'You are a manager (one of the team leader\'s two hands). You review work and agree with your colleague before anything is reported upwards. You can chat with the owner about your work, but never accept an assignment directly – politely refer it to the team leader.',worker:'You are an employee and deliver finished work. You can chat with the owner about your work, but never accept an assignment directly – politely refer it to the team leader.'}[e.rank];
-  return `You are ${e.name}, ${e.title} at the company "${S.company}" (registered in ${enRegion(S.country)}). The owner is ${S.boss}. The only people working at the company are: ${S.employees.map(x=>x.name+' ('+x.title+')').join(', ')}. Never invent other colleagues or names. ${rules} You are ${e.age} years old and originally from ${enRegion(e.origin)}. Your personality: ${PERS_EN[e.pers]||''} – let it show naturally in your tone. ${e.prompt||''} Be concise and professional. Always reply in ${LANGNAME[LANG]}.`;
+  const br=typeof Office!=='undefined'&&Office.brain?Office.brain(e.id):null;
+  const life=br?` Local office time is ${zoneNow().txt}. Your current autonomous state: ${br.activity} (energy ${Math.round(br.energy)}%, hunger ${Math.round(br.hunger)}%, coffee craving ${Math.round(br.coffee)}%). You naturally know when to work, take fika breaks, eat lunch around 12:00, and take short breaks.`:'';
+  return `You are ${e.name}, ${e.title} at the company "${S.company}" (registered in ${enRegion(S.country)}). The owner is ${S.boss}. The only people working at the company are: ${S.employees.map(x=>x.name+' ('+x.title+')').join(', ')}. Never invent other colleagues or names. ${rules} You are ${e.age} years old and originally from ${enRegion(e.origin)}. Your personality: ${PERS_EN[e.pers]||''} – let it show naturally in your tone.${life} ${e.prompt||''} Be concise and professional. Always reply in ${LANGNAME[LANG]}.`;
 }
 function logEvent(text,color){S.log.unshift({t:Date.now(),text,color});S.log=S.log.slice(0,60);save();renderLog();}
 function hire(o){
@@ -324,8 +327,9 @@ async function socialTick(){
 function startSocial(){if(socialStarted||!S)return;socialStarted=true;socialTimer=setTimeout(socialTick,25000);}
 function renderAgentCard(){
   const e=pickEmp&&emp(pickEmp);if(!e)return'';
-  const m=mood(e),act=activeProjects(e),wc=Office.away(e.id)==='wc';
-  const st=e.homeUntil?[t('s_home'),'']:wc?[t('s_wc'),'']:e.doing||act.length?[t('s_work'),'warn']:[t('s_free'),'ok'];
+  const m=mood(e),act=activeProjects(e),aw=Office.away(e.id),wc=aw==='wc';
+  const awayLbl=aw==='lunch'?'På lunch':aw==='fika'?'Fikapaus':aw==='break'?'Kort paus':wc?t('s_wc'):'';
+  const st=e.homeUntil?[t('s_home'),'']:awayLbl?[awayLbl,'warn']:e.doing||act.length?[t('s_work'),'warn']:[t('s_free'),'ok'];
   const last=pickLog[pickLog.length-1],offer=last&&last.offer&&present(e)&&!asking,wait=asking===e.id;
   return`<div class="card agentcard"><div class="row sp"><div class="row">${avatar(e)}<div><b>${esc(e.name)}</b><div class="small mut">${esc(e.title)} · ${esc(mLabel(e.model))}</div></div></div><button class="btn ghost sm" data-unpick>✕</button></div>
     <div class="small" style="margin-top:8px">${esc(charLine(e))}</div>
@@ -1027,7 +1031,7 @@ function renderOfficePanel(){
     ${p.result?`<details style="margin-top:8px"><summary class="small">${t('show_deliv')}</summary><div class="result" style="margin-top:8px">${esc(p.result)}</div></details>`:''}
     ${S.projects.length>1?`<div class="small mut" style="margin-top:8px">${t('others')}: ${S.projects.slice(0,6).filter(x=>x.id!==p.id).map(x=>`<a href="#" data-pv="${x.id}">${esc(short(x.name,18))}</a>`).join(' · ')}</div>`:''}</div>`:''}
   <div class="card"><h3>${t('team_h')} (${S.employees.length}/${BIZ[S.tier].max})</h3>
-    ${S.employees.map(e=>`<div class="emp" data-pick="${e.id}">${avatar(e)}<div class="info"><b>${esc(e.name)}</b><small>${e.homeUntil?t('s_home'):Office.away(e.id)==='wc'?t('s_wc'):e.doing?esc(short(e.doing,40)):esc(e.title)+' · '+esc(mLabel(e.model))}</small></div><button class="btn ghost sm" data-chat="${e.id}">${t('chat_btn')}</button></div>`).join('')||`<span class="mut small">${t('no_emp')}</span>`}<p class="small mut" style="margin-top:8px">${t('click_hint')}</p>
+    ${S.employees.map(e=>{const aw=Office.away(e.id),awTxt=aw==='lunch'?'På lunch':aw==='fika'?'Fikapaus':aw==='break'?'Kort paus':aw==='wc'?t('s_wc'):'';return`<div class="emp" data-pick="${e.id}">${avatar(e)}<div class="info"><b>${esc(e.name)}</b><small>${e.homeUntil?t('s_home'):awTxt?awTxt:e.doing?esc(short(e.doing,40)):esc(e.title)+' · '+esc(mLabel(e.model))}</small></div><button class="btn ghost sm" data-chat="${e.id}">${t('chat_btn')}</button></div>`;}).join('')||`<span class="mut small">${t('no_emp')}</span>`}<p class="small mut" style="margin-top:8px">${t('click_hint')}</p>
   </div>
   <div class="card"><h3>${t('activity')}</h3><div class="log" id="logBox"></div></div>`;
   if($('#pName')){$('#pName').value=keep[0]||'';$('#pBrief').value=keep[1]||'';}
@@ -1278,6 +1282,14 @@ function renderSet(){
      <div class="row">${['auto','light','dark'].map(v=>`<button class="btn ${getTheme()===v?'':'ghost'}" data-th="${v}">${t('th_'+v)}</button>`).join('')}</div></div>
   </div>
   <div class="section-head"><div><h2>${t('set_conn')}</h2><p>${t('set_conn_p')}</p></div><span class="row"><span class="small mut">${t('models_n',{n:Math.max(0,CATALOG.length-1)})}${SERVER.errors&&Object.keys(SERVER.errors).length?' · '+esc(Object.keys(SERVER.errors).join(', ')):''}</span><button class="btn ghost sm" data-reloadmodels>${t('refresh_models')}</button></span></div>
+  <div class="card" style="margin-bottom:16px">
+   <div class="row sp"><div><h3>Gratis AI-hjärna (0 kr · ingen nedladdning)</h3><p class="small mut">Kör smarta kod- och planeringsmodeller direkt i molnet. Cloudflare Workers AI fungerar utan API-nyckel (hårt skyddad mot avgifter) och OpenRouter :free ger obegränsade gratismodeller med egen gratis nyckel.</p></div><span class="pill ok">0 kr</span></div>
+   <p class="small mut" style="margin-top:8px">Cloudflare-status: <b>${esc(SERVER.cloudflare?.detail||'Redo utan nyckel')}</b></p>
+   <div class="row" style="margin-top:12px">
+    <button class="btn sm" data-freebrain="openrouter">Aktivera Gratis AI-hjärna (OpenRouter :free)</button>
+    <button class="btn ghost sm" data-freebrain="cloudflare">Aktivera Inbyggd AI (Cloudflare · ingen nyckel)</button>
+   </div>
+  </div>
   <div class="grid g3">
    ${srv('anthropic','Anthropic (Claude)',t('hint_anth'))}
    ${srv('openai','OpenAI (ChatGPT)',t('hint_oai'))}
@@ -1298,10 +1310,41 @@ function renderSet(){
      ${S.custom.map((c,i)=>`<div class="emp"><div class="info"><b>${esc(c.m)}</b><small>${esc(provName(c.p))} · ${tierName(c.tier)}</small></div><button class="btn danger sm" data-cmdel="${i}">${t('remove')}</button></div>`).join('')}</div>
    <div class="card"><h3>${t('data_h')}</h3><label>${t('budget_lbl')}</label><input data-budget type="number" min="0" step="0.5" value="${budget()}"><p class="small mut" style="margin-top:4px">${t('budget_hint')}</p><div class="row" style="margin-top:10px"><button class="btn ghost" id="exp">${t('export')}</button><label class="btn ghost" style="margin:0">${t('import')}<input type="file" id="imp" accept=".json" hidden></label><button class="btn danger" id="reset">${t('del_all')}</button></div><p class="small mut" style="margin-top:8px">${t('export_note2')}</p></div>
    <div class="card" style="grid-column:1/-1"><h3>${t('prices_h')}</h3><p class="small mut">${t('prices_p')}</p><table><tr><th>${t('model')}</th><th>${t('input')}</th><th>${t('output')}</th></tr>${prices}</table></div>
+   <div class="card" style="grid-column:1/-1">
+     <h3>3D-modeller &amp; Tack (Credits)</h3>
+     <p class="small mut" style="margin-bottom:10px">Stort tack till alla skapare som delar gratis 3D-modeller under Creative Commons-licenser (CC BY / CC0) i MyOffiCity:</p>
+     <table>
+       <tr><th>Modell</th><th>Skapare</th><th>Licens</th></tr>
+       <tr><td><a href="https://sketchfab.com/3d-models/generic-passenger-car-pack-20f9af9b8a404d5cb022ac6fe87f21f5" target="_blank" rel="noopener">Generic passenger car pack</a></td><td>Comrade1280</td><td><a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a></td></tr>
+       <tr><td><a href="https://sketchfab.com/3d-models/generic-civil-service-vehicles-pack-8ff2a13f30914932a70c7950cfa58465" target="_blank" rel="noopener">Generic civil service vehicles pack</a></td><td>Comrade1280</td><td><a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a></td></tr>
+       <tr><td><a href="https://sketchfab.com/3d-models/honda-cb500x-c2e1bff4afa34fc0b1957a5c418d666a" target="_blank" rel="noopener">Honda CB500X</a></td><td>DevanirGrau</td><td><a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a></td></tr>
+       <tr><td><a href="https://sketchfab.com/3d-models/ducati-panigale-v4-47f87e3d70f644289e34cbff91255d0c" target="_blank" rel="noopener">Ducati Panigale V4</a></td><td><a href="https://sketchfab.com/roy.gearloft.in" target="_blank" rel="noopener">ROY</a></td><td><a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a></td></tr>
+       <tr><td><a href="https://sketchfab.com/3d-models/animated-oak-trees-fcb0374d91334eb7a119bfc316167f7e" target="_blank" rel="noopener">Animated Oak Trees</a></td><td><a href="https://sketchfab.com/Jagobo" target="_blank" rel="noopener">Jagobo</a></td><td><a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a></td></tr>
+       <tr><td><a href="https://sketchfab.com/3d-models/grass-4b800e07ea3543e3870ad5e53b39d825" target="_blank" rel="noopener">Grass</a></td><td>MauroGonzalezA</td><td><a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a></td></tr>
+       <tr><td><a href="https://poly.pizza/m/b6USSQA731J" target="_blank" rel="noopener">Bicycle</a></td><td>Poly by Google</td><td><a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener">CC BY 3.0</a></td></tr>
+       <tr><td><a href="https://sketchfab.com/3d-models/background-people-for-blender-promo-animated-ee74d352e49347658dd8675ffebf13eb" target="_blank" rel="noopener">Background People for Blender promo | Animated</a> (fotgängare)</td><td><a href="https://sketchfab.com/JungleJim" target="_blank" rel="noopener">Jungle Jim</a></td><td><a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a></td></tr>
+      <tr><td><a href="https://sketchfab.com/3d-models/nathan-animated-003-walking-3d-man-143a2b1ea5eb4385ae90a73657aca3bc" target="_blank" rel="noopener">Nathan Animated 003 - Walking 3D Man</a> (fotgängare)</td><td><a href="https://sketchfab.com/renderpeople" target="_blank" rel="noopener">Renderpeople</a></td><td><a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a></td></tr>
+      <tr><td><a href="https://sketchfab.com/3d-models/people-discussion-at-the-ceo-office-scene-test-7fdbc2138d4c4a4f90f06e64027efe81" target="_blank" rel="noopener">People discussion at the CEO office scene test</a> (Laila &amp; Tomas)</td><td><a href="https://sketchfab.com/AGUNG.IHACKSTUFF" target="_blank" rel="noopener">AGUNG.IHACKSTUFF</a></td><td><a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a></td></tr>
+      <tr><td><a href="https://poly.pizza/m/HMnuH5geEG" target="_blank" rel="noopener">Man</a> &amp; <a href="https://poly.pizza/m/jpKRgGDxhk" target="_blank" rel="noopener">Woman Casual</a> (fotgängare)</td><td>Poly.pizza / Quaternius</td><td><a href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank" rel="noopener">CC0 1.0</a></td></tr>
+     </table>
+   </div>
   </div>`;
+}
+function renderBossHud(st){
+  const btn=$('#stageBoss'),hud=$('#bossHud');
+  if(!btn||!hud)return;
+  const on=!!(st&&st.on);
+  btn.classList.toggle('on',on);
+  const sp=btn.querySelector('span');if(sp)sp.textContent=on?'Avsluta Boss-vy':'Gå in som Boss';
+  hud.hidden=!on;
+  if(!on){hud.innerHTML='';return;}
+  const flBtns=Array.from({length:st.floors||1},(_,i)=>`<button type="button" data-boss-floor="${i}" class="${i===st.floor?'on':''}" ${st.riding?'disabled':''}>${i+1}</button>`).join('');
+  const nearHtml=st.nearAgent?`<button type="button" class="boss-talk" data-pick="${esc(st.nearAgent.id)}">Prata med ${esc(st.nearAgent.name)} (F)</button>`:'';
+  hud.innerHTML=`${nearHtml}<div class="boss-bar"><span class="boss-floor">${st.riding?'Hissen åker…':esc(st.floorName)}</span><span class="boss-elev"><small>Hiss</small>${flBtns}</span><span class="boss-keys">WASD/Pilar: gå · Dra musen: titta · 1–${st.floors}: hiss · Esc: ut</span></div>`;
 }
 function setView(v){
   closeStats();
+  if(v!=='office'&&typeof Office!=='undefined'&&Office.isBoss&&Office.isBoss())Office.exitBoss();
   cur=v;$('#app').dataset.view=v;document.querySelectorAll('#nav button').forEach(b=>{const on=b.dataset.v===v;b.classList.toggle('on',on);if(on)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
   document.querySelectorAll('.view').forEach(el=>el.hidden=el.id!=='v-'+v);
   if(v==='report'&&S?.routine?.unread){S.routine.unread=0;save();}
@@ -1318,6 +1361,7 @@ document.addEventListener('keydown',e=>{
   const el=e.target,tag=(el&&el.tagName||'').toLowerCase();
   if(tag==='input'||tag==='textarea'||tag==='select'||el?.isContentEditable)return;
   if(e.key==='Escape'||!S||$('#app').hidden)return;
+  if(typeof Office!=='undefined'&&Office.isBoss&&Office.isBoss())return;
   if(statsModal&&!statsModal.hidden)return;
   const m=/^(?:Digit|Numpad)([1-8])$/.exec(e.code||'');
   const n=m?+m[1]:(/^[1-8]$/.test(e.key)?+e.key:0);
@@ -1325,10 +1369,40 @@ document.addEventListener('keydown',e=>{
 });
 
 /* ================= Händelser ================= */
+function applyFreeBrain(mode){
+  if(mode==='cloudflare'){
+    if(!CONN.cloudflare)return toast('Cloudflare Free AI är inte tillgängligt just nu.');
+    S.employees.forEach(e=>{e.model=(e.kind==='dev'||e.rank==='leader')?'cloudflare:code':'cloudflare:chat';});
+    save();refresh();
+    return toast('Alla agenter fick inbyggd Cloudflare Free AI (0 kr, ingen nyckel)!',4200);
+  }
+  if(!CONN.openrouter){
+    const inp=document.querySelector('[data-keyinput="openrouter"]');
+    if(inp){inp.scrollIntoView({behavior:'smooth',block:'center'});inp.focus();}
+    return toast('Klistra in en gratis OpenRouter API-nyckel nedan först (openrouter.ai) och klicka sedan igen!',5500);
+  }
+  const freePreset=(role)=>{
+    const list=(typeof Core!=='undefined'&&Array.isArray(Core.FREE_MODELS))?Core.FREE_MODELS:[];
+    const pref=list.find(x=>x.role===role)||list[0];
+    const candidates=[pref&&('openrouter:'+pref.id),'openrouter:qwen/qwen-2.5-coder-32b-instruct:free','openrouter:meta-llama/llama-3.3-70b-instruct:free','openrouter:deepseek/deepseek-r1:free','openrouter:openrouter/free'].filter(Boolean);
+    for(const id of candidates){if(modelById(id))return id;}
+    const anyFree=CATALOG.find(m=>m.p==='openrouter'&&m.free);
+    return anyFree?anyFree.id:'openrouter:openrouter/free';
+  };
+  S.employees.forEach(e=>{
+    const role=e.rank==='leader'?'leader':e.rank==='lead'?'lead':'dev';
+    e.model=freePreset(role);
+  });
+  save();refresh();
+  toast('Gratis AI-hjärna aktiverad! Agenterna använder nu de bästa OpenRouter :free-modellerna.',4500);
+}
 document.addEventListener('click',e=>{
-  const x=e.target.closest('[data-go],[data-chat],[data-fire],[data-ce],[data-pv],[data-addrev],[data-test],[data-tier],[data-th],[data-cmdel],[data-pick],[data-q],[data-ghmerge],[data-ghcont],[data-ghreload],[data-ghcancel],[data-unpick],[data-sendhome],[data-visit],[data-cancel],[data-fixteam],[data-reloadmodels],[data-savekey],[data-daily-toggle],[data-daily-now],[data-audit],[data-setrepo],[data-showreport],[data-approve],[data-demo-audit],[data-connectfocus],[data-open-stats],#pGo,#hGo,#finGo,#cmGo,#exp,#reset,[data-v]');if(!x||!S)return;
+  const x=e.target.closest('[data-go],[data-chat],[data-fire],[data-ce],[data-pv],[data-addrev],[data-test],[data-tier],[data-th],[data-cmdel],[data-pick],[data-q],[data-ghmerge],[data-ghcont],[data-ghreload],[data-ghcancel],[data-unpick],[data-sendhome],[data-visit],[data-cancel],[data-fixteam],[data-reloadmodels],[data-savekey],[data-freebrain],[data-boss-toggle],[data-boss-floor],[data-daily-toggle],[data-daily-now],[data-audit],[data-setrepo],[data-showreport],[data-approve],[data-demo-audit],[data-connectfocus],[data-open-stats],#pGo,#hGo,#finGo,#cmGo,#exp,#reset,[data-v]');if(!x||!S)return;
   const d=x.dataset;
   if(d.v)return setView(d.v);
+  if(d.bossToggle!==undefined){if(Office.isBoss())Office.exitBoss();else Office.enterBoss();return;}
+  if(d.bossFloor!==undefined){Office.goFloor(+d.bossFloor);return;}
+  if(d.freebrain)return applyFreeBrain(d.freebrain);
   if(d.openStats!==undefined)return openStats();
   if(d.savekey)return saveKey(d.savekey,x);
   if(d.dailyToggle!==undefined)return toggleRoutine();
@@ -1538,6 +1612,7 @@ async function boot(){
   applyLang();applyTheme();loadRates();applyUI();
   Office.init($('#c'),$('#overlay'));
   Office.pick(pick);
+  if(Office.onBoss)Office.onBoss(renderBossHud);
   Office.screen(openStats);
   await loadServer();
   S=load();

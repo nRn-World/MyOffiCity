@@ -49,7 +49,7 @@ window.CityAssets = (() => {
       mats.forEach((m) => {
         if (!m) return;
         m.side = THREE.FrontSide;
-        if (m.map) m.colorSpace = THREE.SRGBColorSpace;
+        if (m.map) m.map.colorSpace = THREE.SRGBColorSpace;
         if (m.emissiveMap) m.emissiveMap.colorSpace = THREE.SRGBColorSpace;
         if (/^(windows|black|grey|headlights|taillights|material\.007)$/i.test(m.name)) return;
         if (/wheel/i.test(o.name)) return;

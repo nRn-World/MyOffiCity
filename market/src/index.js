@@ -1128,46 +1128,112 @@ async function api(req, env, ctx) {
   throw new HttpError(404, 'not_found', 'Not found');
 }
 
-const FREE_AI_MODEL = '@cf/qwen/qwen2.5-coder-32b-instruct';
-const FREE_AI_GLOBAL_DAILY_CAP = 350;
-const FREE_AI_IP_DAILY_CAP = 20;
+const FREE_AI_MODELS = {
+  code: { id: '@cf/qwen/qwen2.5-coder-32b-instruct', neuronsPer1k: 70, minNeurons: 40, maxNeurons: 160, maxOut: 1024 },
+  chat: { id: '@cf/meta/llama-3.1-8b-instruct', neuronsPer1k: 18, minNeurons: 12, maxNeurons: 48, maxOut: 768 },
+};
+// Hårt skydd mot Cloudflare Workers AI gratisgräns (10 000 neurons/dag).
+// 7 500 lämnar 2 500 neurons marginal för porträttbilder och avrundning -> garanterat 0 kr.
+const FREE_AI_GLOBAL_NEURONS_CAP = 7500;
+const FREE_AI_GLOBAL_DAILY_CAP = 180;
+const FREE_AI_IP_DAILY_CAP = 15;
+
+function clientIp(req) {
+  return (req.headers.get('CF-Connecting-IP') || req.headers.get('X-Forwarded-For') || 'anon').split(',')[0].trim().slice(0, 64);
+}
+
+async function ensureAiQuotaTable(env) {
+  await env.DB.prepare('CREATE TABLE IF NOT EXISTS ai_quota (day TEXT NOT NULL, scope TEXT NOT NULL, count INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (day, scope))').run();
+}
+
+async function freeAiQuota(req, env) {
+  if (!env.AI || !env.DB) return { ok: false, configured: false, remaining_neurons: 0, remaining_global: 0, remaining_ip: 0 };
+  const day = new Date().toISOString().slice(0, 10);
+  const ip = clientIp(req);
+  await ensureAiQuotaTable(env);
+  const [nRow, gRow, ipRow] = await Promise.all([
+    env.DB.prepare('SELECT count FROM ai_quota WHERE day = ? AND scope = ?').bind(day, 'global_neurons').first(),
+    env.DB.prepare('SELECT count FROM ai_quota WHERE day = ? AND scope = ?').bind(day, 'global').first(),
+    env.DB.prepare('SELECT count FROM ai_quota WHERE day = ? AND scope = ?').bind(day, 'ip:' + ip).first(),
+  ]);
+  const usedN = nRow?.count || 0, usedG = gRow?.count || 0, usedIp = ipRow?.count || 0;
+  return {
+    ok: true,
+    configured: true,
+    day,
+    cap_neurons: FREE_AI_GLOBAL_NEURONS_CAP,
+    remaining_neurons: Math.max(0, FREE_AI_GLOBAL_NEURONS_CAP - usedN),
+    remaining_global: Math.max(0, FREE_AI_GLOBAL_DAILY_CAP - usedG),
+    remaining_ip: Math.max(0, FREE_AI_IP_DAILY_CAP - usedIp),
+    models: Object.entries(FREE_AI_MODELS).map(([k, v]) => ({ key: k, id: v.id })),
+  };
+}
 
 async function freeAiChat(req, env) {
   if (!env.AI) throw new HttpError(503, 'ai_unavailable', 'Cloudflare Workers AI is not configured');
+  // Fail closed: anropa aldrig Workers AI utan D1-kvotkontroll
+  if (!env.DB) throw new HttpError(503, 'quota_store_unavailable', 'Quota store unavailable; refusing unguarded AI call');
   const body = await req.json().catch(() => null);
   if (!body || !Array.isArray(body.messages) || !body.messages.length) {
     throw new HttpError(400, 'bad_request', 'messages array is required');
   }
-  const day = new Date().toISOString().slice(0, 10);
-  const ip = (req.headers.get('CF-Connecting-IP') || req.headers.get('X-Forwarded-For') || 'anon').split(',')[0].trim().slice(0, 64);
-  if (env.DB) {
-    await env.DB.prepare('CREATE TABLE IF NOT EXISTS ai_quota (day TEXT NOT NULL, scope TEXT NOT NULL, count INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (day, scope))').run();
-    const gRow = await env.DB.prepare('SELECT count FROM ai_quota WHERE day = ? AND scope = ?').bind(day, 'global').first();
-    if ((gRow?.count || 0) >= FREE_AI_GLOBAL_DAILY_CAP) {
-      throw new HttpError(429, 'free_ai_quota_exceeded', 'Daily free AI limit reached. Add a free OpenRouter API key in Settings to continue.');
-    }
-    const ipRow = await env.DB.prepare('SELECT count FROM ai_quota WHERE day = ? AND scope = ?').bind(day, 'ip:' + ip).first();
-    if ((ipRow?.count || 0) >= FREE_AI_IP_DAILY_CAP) {
-      throw new HttpError(429, 'free_ai_ip_quota_exceeded', 'Your daily free AI limit (20/day) is reached. Add a free OpenRouter API key in Settings.');
-    }
-    await env.DB.batch([
-      env.DB.prepare('INSERT INTO ai_quota (day, scope, count) VALUES (?, ?, 1) ON CONFLICT(day, scope) DO UPDATE SET count = count + 1').bind(day, 'global'),
-      env.DB.prepare('INSERT INTO ai_quota (day, scope, count) VALUES (?, ?, 1) ON CONFLICT(day, scope) DO UPDATE SET count = count + 1').bind(day, 'ip:' + ip),
-    ]);
-  }
-  const messages = body.messages.slice(-16).map(m => ({
+  const mode = (body.mode === 'chat' || body.model === 'llama' || String(body.model || '').includes('llama')) ? 'chat' : 'code';
+  const spec = FREE_AI_MODELS[mode];
+  const messages = body.messages.slice(-14).map(m => ({
     role: m && ['system', 'user', 'assistant'].includes(m.role) ? m.role : 'user',
-    content: String(m && m.content || '').slice(0, 12000),
+    content: String(m && m.content || '').slice(0, 8000),
   }));
-  const res = await env.AI.run(FREE_AI_MODEL, {
+  const maxTokens = Math.min(spec.maxOut, Math.max(64, Number(body.max_tokens) || 700));
+  const inChars = messages.reduce((s, m) => s + m.content.length, 0);
+  const estTokens = Math.ceil(inChars / 3.5) + maxTokens;
+  const estNeurons = Math.min(spec.maxNeurons, Math.max(spec.minNeurons, Math.ceil((estTokens / 1000) * spec.neuronsPer1k)));
+
+  const day = new Date().toISOString().slice(0, 10);
+  const ip = clientIp(req);
+  const ipScope = 'ip:' + ip;
+  await ensureAiQuotaTable(env);
+
+  // Skapa rader om de saknas, reservera sedan atomärt INNAN env.AI.run() anropas
+  await env.DB.batch([
+    env.DB.prepare('INSERT OR IGNORE INTO ai_quota (day, scope, count) VALUES (?, ?, 0)').bind(day, 'global_neurons'),
+    env.DB.prepare('INSERT OR IGNORE INTO ai_quota (day, scope, count) VALUES (?, ?, 0)').bind(day, 'global'),
+    env.DB.prepare('INSERT OR IGNORE INTO ai_quota (day, scope, count) VALUES (?, ?, 0)').bind(day, ipScope),
+  ]);
+
+  const ipRes = await env.DB.prepare('UPDATE ai_quota SET count = count + 1 WHERE day = ? AND scope = ? AND count + 1 <= ?')
+    .bind(day, ipScope, FREE_AI_IP_DAILY_CAP).run();
+  if (!ipRes?.meta?.changes) {
+    throw new HttpError(429, 'free_ai_ip_quota_exceeded', `Din dagliga gratisgräns (${FREE_AI_IP_DAILY_CAP}/dag) på Cloudflare är nådd. Aktivera OpenRouter :free i Inställningar för obegränsad gratis AI.`);
+  }
+
+  const gRes = await env.DB.prepare('UPDATE ai_quota SET count = count + 1 WHERE day = ? AND scope = ? AND count + 1 <= ?')
+    .bind(day, 'global', FREE_AI_GLOBAL_DAILY_CAP).run();
+  if (!gRes?.meta?.changes) {
+    await env.DB.prepare('UPDATE ai_quota SET count = MAX(0, count - 1) WHERE day = ? AND scope = ?').bind(day, ipScope).run();
+    throw new HttpError(429, 'free_ai_quota_exceeded', 'Dagens globala gratisgräns på Cloudflare är nådd (skydd mot avgifter). Använd OpenRouter :free i Inställningar.');
+  }
+
+  const nRes = await env.DB.prepare('UPDATE ai_quota SET count = count + ? WHERE day = ? AND scope = ? AND count + ? <= ?')
+    .bind(estNeurons, day, 'global_neurons', estNeurons, FREE_AI_GLOBAL_NEURONS_CAP).run();
+  if (!nRes?.meta?.changes) {
+    await env.DB.batch([
+      env.DB.prepare('UPDATE ai_quota SET count = MAX(0, count - 1) WHERE day = ? AND scope = ?').bind(day, ipScope),
+      env.DB.prepare('UPDATE ai_quota SET count = MAX(0, count - 1) WHERE day = ? AND scope = ?').bind(day, 'global'),
+    ]);
+    throw new HttpError(429, 'free_ai_neuron_cap_exceeded', 'Dagens Cloudflare-gratisnivå (neurons) är full – skyddet stoppar alltid före avgift. Lägg in en gratis OpenRouter-nyckel i Inställningar.');
+  }
+
+  const res = await env.AI.run(spec.id, {
     messages,
-    max_tokens: Math.min(1024, Math.max(64, Number(body.max_tokens) || 800)),
+    max_tokens: maxTokens,
     temperature: typeof body.temperature === 'number' ? Math.min(1, Math.max(0, body.temperature)) : 0.3,
   });
   return {
-    model: FREE_AI_MODEL,
+    model: spec.id,
+    mode,
     content: (res && (res.response || res.result || '')) || '',
     free_tier: true,
+    est_neurons: estNeurons,
   };
 }
 
@@ -1191,6 +1257,7 @@ export default {
     try {
       const oa = await oauthFetch(req, env, url); if (oa) return oa;
       if (url.pathname === '/api/mcp') return await mcp(req, env, ctx);
+      if (req.method === 'GET' && url.pathname === '/api/ai/quota') return send(await freeAiQuota(req, env), 200, req, env);
       if (req.method === 'POST' && url.pathname === '/api/ai/chat') return send(await freeAiChat(req, env), 200, req, env);
       return send(await api(req, env, ctx), 200, req, env);
     } catch (err) {

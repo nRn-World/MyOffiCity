@@ -1037,7 +1037,14 @@
     };
     const refreshQuota = () => {
       api('GET', '/ai/quota').then((q) => {
-        if (q && q.ok && sub) sub.textContent = t('tChatSub') + ' · ' + q.remaining_ip + '/80';
+        if (!q || !q.ok || !sub) return;
+        if (q.relay_providers && q.relay_providers.length) {
+          sub.textContent = (lang === 'sv'
+            ? `Teamledare · Online AI (0 kr · ${q.relay_count} motorer i stafett)`
+            : `Team leader · Online AI (0 kr · ${q.relay_count} engines in relay)`);
+        } else {
+          sub.textContent = t('tChatSub') + ' · ' + q.remaining_ip + '/80';
+        }
       }).catch(() => { });
     };
     renderThreads(); render(); refreshQuota(); loadSprintsForChat();

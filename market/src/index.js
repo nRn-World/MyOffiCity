@@ -1145,6 +1145,70 @@ const FREE_AI_GLOBAL_NEURONS_CAP = 7500;
 const FREE_AI_GLOBAL_DAILY_CAP = 180;
 const FREE_AI_IP_DAILY_CAP = 80;
 
+/* ---------- Multi-provider gratis AI-stafett (byts automatiskt i bakgrunden utan att användaren märker något) ---------- */
+function activeRelaySpecs(env, mode, extraOrKey = '') {
+  const list = [];
+  if (env.GEMINI_API_KEY) {
+    const models = mode === 'gemma'
+      ? ['gemma-3-27b-it', 'gemini-2.5-flash', 'gemini-2.0-flash']
+      : ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemma-3-27b-it'];
+    list.push({ name: 'gemini', url: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', key: env.GEMINI_API_KEY, models });
+  }
+  if (env.GROQ_API_KEY) {
+    const models = mode === 'code'
+      ? ['qwen-qwq-32b', 'llama-3.3-70b-versatile', 'llama-3.1-8b-instant']
+      : ['llama-3.3-70b-versatile', 'qwen-qwq-32b', 'llama-3.1-8b-instant'];
+    list.push({ name: 'groq', url: 'https://api.groq.com/openai/v1/chat/completions', key: env.GROQ_API_KEY, models });
+  }
+  if (env.CEREBRAS_API_KEY) {
+    list.push({ name: 'cerebras', url: 'https://api.cerebras.ai/v1/chat/completions', key: env.CEREBRAS_API_KEY, models: ['qwen-3-32b', 'llama-3.3-70b'] });
+  }
+  if (env.SAMBANOVA_API_KEY) {
+    list.push({ name: 'sambanova', url: 'https://api.sambanova.ai/v1/chat/completions', key: env.SAMBANOVA_API_KEY, models: ['Meta-Llama-3.3-70B-Instruct', 'Qwen2.5-Coder-32B-Instruct'] });
+  }
+  if (env.MISTRAL_API_KEY) {
+    list.push({ name: 'mistral', url: 'https://api.mistral.ai/v1/chat/completions', key: env.MISTRAL_API_KEY, models: ['mistral-small-latest', 'codestral-latest'] });
+  }
+  const orKey = (extraOrKey && extraOrKey.trim().length > 10 ? extraOrKey.trim() : '') || (env.OPENROUTER_API_KEY || '').trim();
+  if (orKey) {
+    list.push({
+      name: 'openrouter',
+      url: 'https://openrouter.ai/api/v1/chat/completions',
+      key: orKey,
+      models: OR_FREE_MODELS,
+      headers: { 'HTTP-Referer': 'https://nrnworld.one/MyOffiCity/', 'X-Title': 'MyOffiCity' },
+    });
+  }
+  return list;
+}
+
+async function runExternalRelay(env, mode, messages, maxTokens = 1200, temperature = 0.3, extraOrKey = '') {
+  const providers = activeRelaySpecs(env, mode, extraOrKey);
+  let lastErr = '';
+  for (const p of providers) {
+    for (const model of p.models) {
+      try {
+        const res = await fetch(p.url, {
+          method: 'POST',
+          headers: {
+            Authorization: 'Bearer ' + p.key,
+            'Content-Type': 'application/json',
+            ...(p.headers || {}),
+          },
+          body: JSON.stringify({ model, messages, max_tokens: maxTokens, temperature }),
+        });
+        if (!res.ok) { lastErr = `${p.name}/${model} HTTP ${res.status}`; continue; }
+        const j = await res.json().catch(() => null);
+        const text = String(j?.choices?.[0]?.message?.content || '').trim();
+        if (text) return { text, model: `${p.name}:${model}`, provider: p.name };
+      } catch (e) {
+        lastErr = `${p.name}/${model}: ${String(e && e.message || e)}`;
+      }
+    }
+  }
+  return { text: '', model: '', provider: '', lastErr };
+}
+
 function clientIp(req) {
   return (req.headers.get('CF-Connecting-IP') || req.headers.get('X-Forwarded-For') || 'anon').split(',')[0].trim().slice(0, 64);
 }
@@ -1164,6 +1228,7 @@ async function freeAiQuota(req, env) {
     env.DB.prepare('SELECT count FROM ai_quota WHERE day = ? AND scope = ?').bind(day, 'ip:' + ip).first(),
   ]);
   const usedN = nRow?.count || 0, usedG = gRow?.count || 0, usedIp = ipRow?.count || 0;
+  const relays = activeRelaySpecs(env, 'code').map(p => p.name);
   return {
     ok: true,
     configured: true,
@@ -1172,6 +1237,8 @@ async function freeAiQuota(req, env) {
     remaining_neurons: Math.max(0, FREE_AI_GLOBAL_NEURONS_CAP - usedN),
     remaining_global: Math.max(0, FREE_AI_GLOBAL_DAILY_CAP - usedG),
     remaining_ip: Math.max(0, FREE_AI_IP_DAILY_CAP - usedIp),
+    relay_providers: relays,
+    relay_count: relays.length + 1,
     models: Object.entries(FREE_AI_MODELS).map(([k, v]) => ({ key: k, id: v.id })),
   };
 }
@@ -1202,7 +1269,25 @@ async function freeAiChat(req, env) {
     role: m && ['system', 'user', 'assistant'].includes(m.role) ? m.role : 'user',
     content: String(m && m.content || '').slice(0, 8000),
   }));
-  const maxTokens = Math.min(spec.maxOut, Math.max(64, Number(body.max_tokens) || 700));
+  const maxTokens = Math.min(spec.maxOut, Math.max(64, Number(body.max_tokens) || 900));
+  const temp = typeof body.temperature === 'number' ? Math.min(1, Math.max(0, body.temperature)) : 0.3;
+
+  // För ren textchatt: prova först den externa gratis-stafetten (Gemini -> Groq -> Cerebras -> SambaNova -> Mistral -> OpenRouter)
+  // så att användaren aldrig slår i Cloudflares kvot när stafett-nycklar finns konfigurerade!
+  if (!hasImage && !hasAudio) {
+    const ext = await runExternalRelay(env, mode, messages, maxTokens, temp);
+    if (ext.text) {
+      return {
+        model: ext.model,
+        provider: ext.provider,
+        mode,
+        content: ext.text,
+        transcript: '',
+        free_tier: true,
+        est_neurons: 0,
+      };
+    }
+  }
   const inChars = messages.reduce((s, m) => s + m.content.length, 0);
   const estTokens = Math.ceil(inChars / 3.5) + maxTokens;
   const extraNeurons = (hasImage ? 45 : 0) + (hasAudio ? 25 : 0);
@@ -1260,7 +1345,6 @@ async function freeAiChat(req, env) {
     }
   }
 
-  const temp = typeof body.temperature === 'number' ? Math.min(1, Math.max(0, body.temperature)) : 0.3;
   let res = null, usedModel = spec.id, lastErr = '';
 
   if (hasImage) {
@@ -1412,29 +1496,10 @@ function extractJson(txt) {
 }
 
 async function callSprintAi(env, orKey, messages, maxTokens = 1600) {
-  let lastErr = '';
-  if (orKey && orKey.trim().length > 10) {
-    for (const model of OR_FREE_MODELS) {
-      try {
-        const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            Authorization: 'Bearer ' + orKey.trim(),
-            'Content-Type': 'application/json',
-            'HTTP-Referer': 'https://nrnworld.one/MyOffiCity/',
-            'X-Title': 'MyOffiCity Agents',
-          },
-          body: JSON.stringify({ model, messages, max_tokens: maxTokens, temperature: 0.25 }),
-        });
-        if (!res.ok) { lastErr = 'OpenRouter ' + res.status; continue; }
-        const j = await res.json();
-        const text = String(j?.choices?.[0]?.message?.content || '').trim();
-        if (text) return { text, model };
-      } catch (e) {
-        lastErr = String(e && e.message || e);
-      }
-    }
-  }
+  // Prova först hela externa gratis-stafetten (Gemini, Groq, Cerebras, SambaNova, Mistral, OpenRouter :free)
+  const ext = await runExternalRelay(env, 'code', messages, maxTokens, 0.25, orKey);
+  if (ext.text) return { text: ext.text, model: ext.model };
+  let lastErr = ext.lastErr || '';
   if (!env.AI || !env.DB) throw new HttpError(503, 'ai_unavailable', lastErr || 'AI not configured');
   const day = new Date().toISOString().slice(0, 10);
   await ensureAiQuotaTable(env);

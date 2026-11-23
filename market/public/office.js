@@ -1127,15 +1127,15 @@ const Office = (() => {
   const PED_SPOTS = [
     ['young', 4.1, -14, 1, 1.25, 130], ['old', 4.4, -2, 1, .95, 130], ['nathan', 4.8, 10, -1, 1.35, 130],
     ['young', 4.6, 34, -1, 1.3, 130], ['nathan', 3.9, -44, 1, 1.3, 130], ['old', 4.9, 62, -1, .95, 130],
-    ['man', 4.3, -78, 1, 1.25, 130], ['woman', 3.8, 92, -1, 1.35, 130],
-    ['young', -8.1, -26, 1, 1.3, 130], ['nathan', -8.6, 14, -1, 1.35, 130], ['old', -8.2, 52, 1, .95, 130], ['man', -8.5, -66, -1, 1.25, 130]
+    ['nathan', 4.3, -78, 1, 1.25, 130], ['young', 3.8, 92, -1, 1.35, 130],
+    ['young', -8.1, -26, 1, 1.3, 130], ['nathan', -8.6, 14, -1, 1.35, 130], ['old', -8.2, 52, 1, .95, 130], ['nathan', -8.5, -66, -1, 1.25, 130]
   ];   // går hela trottoaren och fortsätter i andra änden
   function loadPeds() {
     loadHumanModels();
     if (pedTried || !window.CityAssets || !T3.SkeletonUtils) return; pedTried = true;
     window.CityAssets.loadAll(['man', 'woman']).then(() => { if (root) { placePeds(); applyOfficeHumans(); } }).catch(() => { });
   }
-  const PED_SHIRT = ['#c0392b', '#2e86c1', '#27ae60', '#f1c40f', '#8e44ad', '#ecf0f1', '#e67e22', '#16a085', '#d81b60', '#7f8c8d'], PED_SKIN = ['#e0b08a', '#c68642', '#8d5524', '#f1c27d', '#ffdbac', '#6f4a2d', '#b9835a'], PED_PANTS = ['#2c3e50', '#34495e', '#1b1b1b', '#5d4037', '#455a64', '#283593', '#6b6b6b'], PED_HAIR = ['#2b1b12', '#4a2c17', '#c9a05a', '#111111', '#8c8c8c', '#a0522d', '#6d4c2a'];
+  const PED_SHIRT = ['#3b6ea5', '#2e7d6b', '#5c6bc0', '#d4a373', '#e2e8f0', '#64748b', '#7c5cbf', '#4a7c59', '#9c6644', '#475569'], PED_SKIN = ['#e0b08a', '#c68642', '#9c6644', '#f1c27d', '#ffdbac', '#8d5524', '#d4a373'], PED_PANTS = ['#2c3e50', '#34495e', '#1e2430', '#4a3b32', '#455a64', '#283593', '#525b66'], PED_HAIR = ['#2b1b12', '#4a2c17', '#c9a05a', '#18181b', '#8c8c8c', '#8b4513', '#6d4c2a'];
   function recolorPed(group, i) {   // egen palett per person: ingen kopia ser likadan ut
     const pick = (a, k) => a[(i * 3 + k * 5 + Math.floor(i / a.length)) % a.length], cols = [pick(PED_SHIRT, 0), pick(PED_SKIN, 1), pick(PED_PANTS, 2), null, null, pick(PED_HAIR, 3)];
     group.traverse(o => {

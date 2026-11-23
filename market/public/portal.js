@@ -1302,7 +1302,37 @@
       Office.setHour(hourNow()); Office.resize(); applyWeather(c, () => document.body.contains($('#dof'))).then(showW);
       const tc = mountTeamChat($('#dof'), c, roster, { staff, forceOpen: !!opts.openChat });
       Office.pick(() => tc.open());
-      poll = setInterval(() => { applyWeather(c, () => document.body.contains($('#dof'))).then(showW); }, 60000);
+      const officeLife = () => {
+        if (document.hidden || !document.body.contains($('#dof')) || !window.Office) return;
+        const groundIds = staff.map((s) => s.id).filter((id) => {
+          const p = Office.pos && Office.pos(id);
+          return p && p[4] && p[4][1] === 0 && !Office.away(id);
+        });
+        const allIds = staff.map((s) => s.id).filter((id) => Office.has(id) && !Office.away(id));
+        const r = Math.random();
+        if (groundIds.length && r < 0.48) {
+          const id = groundIds[Math.floor(Math.random() * groundIds.length)];
+          const kinds = ['fika', 'coffee', 'lunch'];
+          Office.kitchen(id, kinds[Math.floor(Math.random() * kinds.length)]);
+        } else if (groundIds.length && r < 0.82) {
+          const id = groundIds[Math.floor(Math.random() * groundIds.length)];
+          Office.toilet(id);
+        } else if (allIds.length > 1) {
+          const target = allIds.find((id) => id !== staff[0].id) || allIds[1];
+          const chatLines = lang === 'sv'
+            ? [['leader', 'Hur går det med koden?'], ['target', 'Bra! Sista finputsen kvar nu.']]
+            : [['leader', 'How is the build going?'], ['target', 'Great! Just finishing up now.']];
+          Office.socialVisit(target, () => chatLines);
+        }
+      };
+      setTimeout(officeLife, 4500);
+      let lifeTick = 0;
+      poll = setInterval(() => {
+        if (!document.body.contains($('#dof'))) return;
+        lifeTick++;
+        if (lifeTick % 3 === 0) applyWeather(c, () => document.body.contains($('#dof'))).then(showW);
+        officeLife();
+      }, 20000);
     } else if (tab === 'network') {
       let j; try { j = netLocalize(await api('GET', '/network?company=' + encodeURIComponent(c.id))); } catch (e) { dp.innerHTML = '<div class="err">' + esc(e.message) + '</div>'; return; }
       const own = j.posts.filter((p) => p.companyId === c.id);

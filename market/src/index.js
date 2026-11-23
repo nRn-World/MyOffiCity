@@ -1444,7 +1444,7 @@ async function callSprintAi(env, orKey, messages, maxTokens = 1600) {
   }
   for (const mid of ['@cf/qwen/qwen2.5-coder-32b-instruct', '@cf/meta/llama-3.1-8b-instruct-fast']) {
     try {
-      const r = await env.AI.run(mid, { messages, max_tokens: Math.min(1024, maxTokens), temperature: 0.25 });
+      const r = await env.AI.run(mid, { messages, max_tokens: Math.min(2048, maxTokens), temperature: 0.25 });
       const text = String((r && (r.response || r.result || r?.choices?.[0]?.message?.content)) || '').trim();
       if (text) return { text, model: mid };
     } catch (e) {
@@ -1669,29 +1669,56 @@ async function runSprintStep(env, sprint) {
       } catch { /* */ }
     }
 
-    // 3. Låt agenten producera konkreta filändringar som JSON
+    // 3. Låt agenten producera konkreta filändringar med robust ===FILE: ...=== format (ingen JSON-escaping som kan spricka!)
     const ai = await callSprintAi(env, sprint.or_key, [
       {
         role: 'system',
         content: `You are ${task.assignee}, a senior AI developer working autonomously on GitHub repo ${sprint.repo}.
-Return ONLY valid JSON with this exact shape:
-{"summary":"Short Swedish summary of what you built","commit_message":"Concise commit message","files":[{"path":"relative/file/path.ext","content":"COMPLETE file content"}]}
+Output your work using THIS EXACT plain-text format (do NOT wrap the whole response in JSON):
+
+SUMMARY: Kort sammanfattning på svenska av vad du byggde
+COMMIT: Kort commit-meddelande
+===FILE: relative/path/to/file.ext===
+(complete raw file content here)
+===END===
+
 Rules:
-- Create or update 1 to 3 real, clean, working files.
-- Never use placeholder comments like "// rest of code". Always output complete file contents.
-- Never output paths starting with / or containing ..`,
+- Output 1 or 2 real, clean, working files using ===FILE: path=== and ===END===.
+- Never use paths starting with / or containing ..
+- Never use placeholder comments like "// rest of code".
+- Keep files focused and concise (under 150 lines) so they fit completely.`,
       },
       {
         role: 'user',
         content: `Sprint goal: ${sprint.goal}\nTask #${task.seq}: ${task.title}\nDetails: ${task.details}\n\nRepo files:\n${treePaths.join('\n') || '(empty)'}\n\nRelevant existing files:\n${fileCtx.join('\n\n') || '(none)'}`,
       },
-    ], 1800);
+    ], 1900);
 
-    const parsed = extractJson(ai.text);
-    const files = (parsed && Array.isArray(parsed.files) ? parsed.files : []).filter(f =>
-      f && typeof f.path === 'string' && typeof f.content === 'string'
-      && f.path.trim() && !f.path.startsWith('/') && !f.path.includes('..') && f.content.length < 120000
-    ).slice(0, 4);
+    const parseAgentFiles = (raw) => {
+      const txt = String(raw || '');
+      const sumM = txt.match(/^\s*SUMMARY:\s*(.+)$/im);
+      const comM = txt.match(/^\s*COMMIT:\s*(.+)$/im);
+      const outFiles = [];
+      const re = /===FILE:\s*([^\r\n=]+?)\s*===\r?\n([\s\S]*?)(?:===END===|(?====FILE:)|$)/g;
+      let m;
+      while ((m = re.exec(txt)) !== null) {
+        let p = m[1].trim().replace(/^["'`]+|["'`]+$/g, '');
+        let c = m[2].replace(/^\s*```[a-zA-Z0-9_-]*\r?\n/, '').replace(/\r?\n```\s*$/, '').trimEnd() + '\n';
+        if (p && !p.startsWith('/') && !p.includes('..') && c.trim().length > 5 && c.length < 120000) {
+          outFiles.push({ path: p, content: c });
+        }
+      }
+      if (outFiles.length) return { summary: sumM ? sumM[1].trim() : '', commit_message: comM ? comM[1].trim() : '', files: outFiles.slice(0, 4) };
+      const parsed = extractJson(txt);
+      const jFiles = (parsed && Array.isArray(parsed.files) ? parsed.files : []).filter(f =>
+        f && typeof f.path === 'string' && typeof f.content === 'string'
+        && f.path.trim() && !f.path.startsWith('/') && !f.path.includes('..') && f.content.length < 120000
+      ).slice(0, 4);
+      return { summary: parsed?.summary || '', commit_message: parsed?.commit_message || '', files: jFiles };
+    };
+
+    const parsed = parseAgentFiles(ai.text);
+    const files = parsed.files;
 
     if (!files.length) {
       const tries = (task.tries || 0) + 1;
@@ -1703,7 +1730,7 @@ Rules:
         await env.DB.prepare('UPDATE sprint_tasks SET tries=?, updated=? WHERE id=?').bind(tries, ts, task.id).run();
         await addSprintLog(env, sprint.id, task.assignee, `Försökte lösa "${task.title}" men AI-svaret saknade filer – provar igen automatiskt nästa pass.`);
       }
-      return { ok: true, retried: true };
+      return { ok: true, retried: true, task: task.title };
     }
 
     // 4. Committa filerna direkt till arbetsbranchen via GitHub Contents API
@@ -1747,7 +1774,8 @@ Rules:
     await env.DB.prepare("UPDATE sprint_tasks SET status='done', commit_sha=?, files_changed=?, summary=?, updated=? WHERE id=?")
       .bind(lastSha, changed.join(','), summary, ts, task.id).run();
     await addSprintLog(env, sprint.id, task.assignee, `Klar med "${task.title}" (${ai.model}): ${summary} [${changed.join(', ')}]`);
-    return { ok: true, task: task.title, files: changed, prUrl };
+    const commitUrl = lastSha ? `https://github.com/${sprint.repo}/commit/${lastSha}` : '';
+    return { ok: true, task: task.title, files: changed, prUrl, commitUrl, summary };
   } catch (e) {
     const msg = clip(String(e && e.message || e), 240);
     await env.DB.prepare('UPDATE sprints SET last_error=? WHERE id=?').bind(msg, sprint.id).run();

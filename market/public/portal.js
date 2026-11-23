@@ -963,12 +963,15 @@
         if (r.sprint) sprints = sprints.map((x) => x.id === r.sprint.id ? r.sprint : x);
         const th = curThread();
         if (r.step && r.step.error) { toast(r.step.error); }
-        else {
+        else if (r.step && r.step.retried) {
+          th.messages.push({ role: 'assistant', content: lang === 'sv' ? `⚠️ Försökte köra "${r.step.task || ''}" men fick inga filer från AI – klicka "▶ Kör steg" igen för ett nytt försök.` : `⚠️ Tried "${r.step.task || ''}" but AI returned no files – click "Run step" to retry.` });
+          saveThreads(); render();
+        } else {
           const msg = r.step && r.step.done
             ? (lang === 'sv' ? `Sprinten på ${sp.repo} är klar!` : `Sprint on ${sp.repo} is complete!`)
             : (lang === 'sv'
-              ? `✅ Klart steg på ${sp.repo}: "${r.step?.task || ''}"\nÄndrade filer: ${(r.step?.files || []).join(', ')}` + (r.step?.prUrl ? `\nPull Request: ${r.step.prUrl}` : '')
-              : `✅ Completed step on ${sp.repo}: "${r.step?.task || ''}"\nChanged files: ${(r.step?.files || []).join(', ')}` + (r.step?.prUrl ? `\nPull Request: ${r.step.prUrl}` : ''));
+              ? `✅ Klart steg på ${sp.repo}: "${r.step?.task || ''}"\n${r.step?.summary ? r.step.summary + '\n' : ''}Ändrade filer: ${(r.step?.files || []).join(', ')}` + (r.step?.commitUrl ? `\nCommit: ${r.step.commitUrl}` : '') + (r.step?.prUrl ? `\nPull Request: ${r.step.prUrl}` : '')
+              : `✅ Completed step on ${sp.repo}: "${r.step?.task || ''}"\n${r.step?.summary ? r.step.summary + '\n' : ''}Changed files: ${(r.step?.files || []).join(', ')}` + (r.step?.commitUrl ? `\nCommit: ${r.step.commitUrl}` : '') + (r.step?.prUrl ? `\nPull Request: ${r.step.prUrl}` : ''));
           th.messages.push({ role: 'assistant', content: msg });
           saveThreads(); render();
         }

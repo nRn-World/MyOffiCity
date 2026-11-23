@@ -1129,8 +1129,8 @@ async function api(req, env, ctx) {
 }
 
 const FREE_AI_MODELS = {
-  code: { id: '@cf/qwen/qwen2.5-coder-32b-instruct', neuronsPer1k: 70, minNeurons: 40, maxNeurons: 160, maxOut: 1024 },
-  chat: { id: '@cf/meta/llama-3.1-8b-instruct', neuronsPer1k: 18, minNeurons: 12, maxNeurons: 48, maxOut: 768 },
+  code: { id: '@cf/qwen/qwen2.5-coder-32b-instruct', fallbacks: ['@cf/meta/llama-3.1-8b-instruct-fast', '@cf/meta/llama-3.1-8b-instruct'], neuronsPer1k: 70, minNeurons: 40, maxNeurons: 160, maxOut: 1024 },
+  chat: { id: '@cf/meta/llama-3.1-8b-instruct-fast', fallbacks: ['@cf/meta/llama-3.1-8b-instruct', '@cf/meta/llama-3-8b-instruct'], neuronsPer1k: 18, minNeurons: 12, maxNeurons: 48, maxOut: 768 },
 };
 // Hårt skydd mot Cloudflare Workers AI gratisgräns (10 000 neurons/dag).
 // 7 500 lämnar 2 500 neurons marginal för porträttbilder och avrundning -> garanterat 0 kr.
@@ -1223,15 +1223,33 @@ async function freeAiChat(req, env) {
     throw new HttpError(429, 'free_ai_neuron_cap_exceeded', 'Dagens Cloudflare-gratisnivå (neurons) är full – skyddet stoppar alltid före avgift. Lägg in en gratis OpenRouter-nyckel i Inställningar.');
   }
 
-  const res = await env.AI.run(spec.id, {
-    messages,
-    max_tokens: maxTokens,
-    temperature: typeof body.temperature === 'number' ? Math.min(1, Math.max(0, body.temperature)) : 0.3,
-  });
+  const candidates = [spec.id, ...(spec.fallbacks || [])];
+  const temp = typeof body.temperature === 'number' ? Math.min(1, Math.max(0, body.temperature)) : 0.3;
+  let res = null, usedModel = spec.id, lastErr = '';
+  for (const mid of candidates) {
+    try {
+      res = await env.AI.run(mid, { messages, max_tokens: maxTokens, temperature: temp });
+      usedModel = mid;
+      break;
+    } catch (e) {
+      lastErr = String(e && e.message || e);
+    }
+  }
+  if (!res) {
+    await env.DB.batch([
+      env.DB.prepare('UPDATE ai_quota SET count = MAX(0, count - 1) WHERE day = ? AND scope = ?').bind(day, ipScope),
+      env.DB.prepare('UPDATE ai_quota SET count = MAX(0, count - 1) WHERE day = ? AND scope = ?').bind(day, 'global'),
+      env.DB.prepare('UPDATE ai_quota SET count = MAX(0, count - ?) WHERE day = ? AND scope = ?').bind(estNeurons, day, 'global_neurons'),
+    ]).catch(() => {});
+    throw new HttpError(502, 'ai_run_failed', 'Cloudflare AI-fel: ' + lastErr.slice(0, 220));
+  }
+  const content = String(
+    (res && (res.response || res.result || (res.choices && res.choices[0] && res.choices[0].message && res.choices[0].message.content))) || ''
+  );
   return {
-    model: spec.id,
+    model: usedModel,
     mode,
-    content: (res && (res.response || res.result || '')) || '',
+    content,
     free_tier: true,
     est_neurons: estNeurons,
   };

@@ -3183,24 +3183,112 @@ button.item {
 }
 
 /* GitHub-koppling direkt i Tomas-chatten (visas bara i fullskärm) */
-.tchat-gh,.tchat-gh-form{display:none}
-.tchat.full .tchat-gh{display:flex;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid color-mix(in srgb,var(--gold) 22%,transparent);background:rgba(14,22,40,.92);flex-wrap:wrap}
-.tchat-gh-ico{color:var(--gold);font-size:14px;font-weight:700}
-.tchat-gh select{flex:1;min-width:160px;padding:6px 10px;border-radius:6px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:#f3ecdc;font:500 13px var(--sans)}
-.tchat-gh select option{background:#0c1222;color:#f3ecdc}
-.tchat-gh-btn{padding:6px 11px;border-radius:6px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:#f3ecdc;font:600 12px var(--sans);cursor:pointer;text-decoration:none;white-space:nowrap}
-.tchat-gh-btn:hover{border-color:var(--gold);color:var(--gold)}
-.tchat-gh-btn.gold{border-color:color-mix(in srgb,var(--gold) 60%,transparent);color:var(--gold);background:color-mix(in srgb,var(--gold) 15%,transparent)}
-.tchat-gh-btn.gold:hover{background:var(--gold);color:#0a0e18}
-.tchat.full .tchat-gh-form:not([hidden]){display:flex;flex-direction:column;gap:9px;padding:12px 14px;border-bottom:1px solid color-mix(in srgb,var(--gold) 35%,transparent);background:rgba(10,16,32,.97)}
-.tchat-gh-form input,.tchat-gh-form select{min-width:0;padding:8px 10px;border-radius:6px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:#f3ecdc;font:500 13px var(--sans)}
-.tchat-gh-row{display:flex;gap:8px;align-items:center}.tchat-gh-row input{flex:1;min-width:0}.tchat-gh-row select{flex:0 0 auto;width:190px}
+.tchat-gh,
+.tchat-gh-form {
+    display: none
+}
+
+.tchat.full .tchat-gh {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-bottom: 1px solid color-mix(in srgb, var(--gold) 22%, transparent);
+    background: rgba(14, 22, 40, .92);
+    flex-wrap: wrap
+}
+
+.tchat-gh-ico {
+    color: var(--gold);
+    font-size: 14px;
+    font-weight: 700
+}
+
+.tchat-gh select {
+    flex: 1;
+    min-width: 160px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, .06);
+    color: #f3ecdc;
+    font: 500 13px var(--sans)
+}
+
+.tchat-gh select option {
+    background: #0c1222;
+    color: #f3ecdc
+}
+
+.tchat-gh-btn {
+    padding: 6px 11px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, .05);
+    color: #f3ecdc;
+    font: 600 12px var(--sans);
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap
+}
+
+.tchat-gh-btn:hover {
+    border-color: var(--gold);
+    color: var(--gold)
+}
+
+.tchat-gh-btn.gold {
+    border-color: color-mix(in srgb, var(--gold) 60%, transparent);
+    color: var(--gold);
+    background: color-mix(in srgb, var(--gold) 15%, transparent)
+}
+
+.tchat-gh-btn.gold:hover {
+    background: var(--gold);
+    color: #0a0e18
+}
+
+.tchat.full .tchat-gh-form:not([hidden]) {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    padding: 12px 14px;
+    border-bottom: 1px solid color-mix(in srgb, var(--gold) 35%, transparent);
+    background: rgba(10, 16, 32, .97)
+}
+
+.tchat-gh-form input,
+.tchat-gh-form select {
+    min-width: 0;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, .06);
+    color: #f3ecdc;
+    font: 500 13px var(--sans)
+}
+
+.tchat-gh-row {
+    display: flex;
+    gap: 8px;
+    align-items: center
+}
+
+.tchat-gh-row input {
+    flex: 1;
+    min-width: 0
+}
+
+.tchat-gh-row select {
+    flex: 0 0 auto;
+    width: 190px
+}
 
 /* infällbar sidomeny + fullskärm 3D */
 .dash{transition:grid-template-columns .22s ease}
 .dash.sb-min{grid-template-columns:0 1fr}
 .dash.sb-min .dsb{padding:0;border-right:0;overflow:hidden;opacity:0;pointer-events:none}
-.dash.fs3d{grid-template-columns:0 1fr}
+.dash.fs3d{grid-template-columns:1fr}
 .dash.fs3d .dsb,.dash.fs3d .dtop{display:none!important}
 .dsb-tog{background:rgba(255,255,255,.05);border:1px solid color-mix(in srgb,var(--gold) 45%,transparent);color:var(--gold);border-radius:8px;width:36px;height:36px;display:grid;place-items:center;cursor:pointer;font:700 15px var(--sans);transition:background .15s,color .15s;flex-shrink:0}
 .dsb-tog:hover{background:var(--gold);color:#0a0e18}

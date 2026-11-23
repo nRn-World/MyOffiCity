@@ -968,39 +968,79 @@ function stepGlbRig(o,t,talking){
     if(b.head)b.head.quaternion.copy(standQ.head).multiply(qY(Math.sin(t*.9)*.08)).multiply(qX(talking?Math.sin(t*3)*.06:Math.sin(t*1.3)*.04));
   }
 }
-function officeGlbKey(aOrName){
+function isFemaleName(aOrName){
   const name=typeof aOrName==='string'?aOrName:(aOrName&&aOrName.name)||'';
   const lk=aOrName&&typeof aOrName==='object'?aOrName.look:null;
   const n=String(name||'').trim().toLowerCase().split(/\s+/)[0];
-  if(n==='tomas')return 'tomas';
-  if(n==='laila')return 'laila';
-  if(/^(ebba|kia|sara|lina|nora|maja|elsa|zara|ida|mira|anna|emma|sofia|alma|ella|freja|astrid|vera|klara|alice|olivia|amira|nadia|hana|elena|clara|maya|chloe|zoe|ava)$/.test(n))return 'laila';
-  if(lk&&(lk.hairStyle==='long'||lk.hairStyle==='bob'||lk.hairStyle==='bun'))return 'laila';
-  return 'tomas';
+  if(/^(laila|ebba|kia|sara|lina|nora|maja|elsa|zara|ida|mira|anna|emma|sofia|alma|ella|freja|astrid|vera|klara|alice|olivia|amira|nadia|hana|elena|clara|maya|chloe|zoe|ava)$/.test(n))return true;
+  if(lk&&(lk.hairStyle==='long'||lk.hairStyle==='bob'||lk.hairStyle==='bun'))return true;
+  return false;
+}
+function officeGlbKey(){
+  return null;
+}
+const hexCss=v=>typeof v==='number'?('#'+v.toString(16).padStart(6,'0')):(typeof v==='string'&&v.startsWith('#')?v:null);
+function recolorAgent(group,a,i){
+  const lk=a&&a.look||{},pick=(arr,k)=>arr[(i*3+k*5+Math.floor(i/arr.length))%arr.length];
+  const cols=[
+    hexCss(lk.shirt)||pick(PED_SHIRT,0),
+    hexCss(lk.skin)||pick(PED_SKIN,1),
+    hexCss(lk.pants)||pick(PED_PANTS,2),
+    null,null,
+    hexCss(lk.hair)||pick(PED_HAIR,3),
+  ];
+  group.traverse(o=>{
+    if(!(o.isMesh&&o.material&&o.material.map&&o.material.map.image))return;
+    const img=o.material.map.image,c=document.createElement('canvas');c.width=img.width;c.height=img.height;
+    const x=c.getContext('2d');x.drawImage(img,0,0);
+    const bw=Math.max(1,Math.round(img.width/8));
+    cols.forEach((col,b)=>{if(col){x.fillStyle=col;x.fillRect(b*bw,0,bw,img.height);}});
+    const t=new T3.CanvasTexture(c);t.flipY=o.material.map.flipY;t.colorSpace=o.material.map.colorSpace;t.magFilter=T3.NearestFilter;t.minFilter=T3.NearestFilter;t.generateMipmaps=false;
+    o.material=o.material.clone();o.material.map=t;o.material.needsUpdate=true;
+  });
 }
 function applyOfficeHumans(){
   if(!root)return;
+  const A=window.CityAssets;
   let idx=0;
   for(const id in agents){
-    const a=agents[id],key=officeGlbKey(a);
-    if(!key||!HUMAN_GLBS[key]||a.glbApplied)continue;
-    // Manliga agenter (Tomas-modellen) sitter naturligt i stolen; kvinnliga agenter (Laila-modellen) står snyggt vid arbetsplatsen
-    const h=key==='tomas'?1.36:1.68;
-    const sp=spawnGlbHuman(key,h,.85,false);if(!sp)continue;
-    if(sp.mixer&&HUMAN_GLBS[key].anims&&HUMAN_GLBS[key].anims[0]){
-      const dur=HUMAN_GLBS[key].anims[0].duration||2;
-      sp.mixer.update(((idx*1.37)%dur));
+    const a=agents[id];
+    if(a.glbApplied){idx++;continue;}
+    const parent=a.p&&a.p.parent;if(!parent){idx++;continue;}
+    const key=officeGlbKey(a);
+    if(key&&HUMAN_GLBS[key]){
+      const h=key==='tomas'?1.36:1.68;
+      const sp=spawnGlbHuman(key,h,.85,false);
+      if(sp){
+        if(key==='tomas')sp.group.position.set(0,0,.04);
+        else{sp.group.position.set(0,0,.05);if(a.chair){a.chair.position.set(.68,0,.22);a.chair.rotation.y=-.45;}}
+        parent.add(sp.group);
+        a.p.visible=false;parent.remove(a.p);
+        a.p=sp.group;a.glbApplied=key;
+      }
+      idx++;continue;
     }
-    const parent=a.p.parent;if(!parent)continue;
-    if(key==='tomas'){
-      sp.group.position.set(0,0,.04);
-    }else{
-      sp.group.position.set(0,0,.05);
-      if(a.chair){a.chair.position.set(.68,0,.22);a.chair.rotation.y=-.45;}
+    const kind=isFemaleName(a)?'woman':'man';
+    if(A&&A.has(kind)){
+      let p=null;
+      try{p=A.person({kind,h:(kind==='woman'?1.64:1.74)+(idx%4)*.03});}catch{p=null;}
+      if(p&&p.group){
+        recolorAgent(p.group,a,idx);
+        if(p.actions&&p.actions.sit){
+          p.play('sit',.25+(idx%3)*.06);
+          p.group.position.set(0,.02,.04);
+        }else if(p.actions&&p.actions.idle){
+          p.play('idle',.7+(idx%3)*.12);
+          p.group.position.set(0,0,.06);
+          if(a.chair){a.chair.position.set(.68,0,.22);a.chair.rotation.y=-.45;}
+        }
+        if(p.mixer)p.mixer.update((idx*1.13)%2.5);
+        p.group.userData={glb:true,key:kind,mixer:p.mixer};
+        parent.add(p.group);
+        a.p.visible=false;parent.remove(a.p);
+        a.p=p.group;a.glbApplied=kind;
+      }
     }
-    parent.add(sp.group);
-    a.p.visible=false;parent.remove(a.p);
-    a.p=sp.group;a.glbApplied=key;
     idx++;
   }
 }
@@ -1009,6 +1049,18 @@ function makeAgentMover(a){
   if(key&&HUMAN_GLBS[key]){
     const sp=spawnGlbHuman(key,key==='tomas'?1.76:1.68,1,true);
     if(sp)return sp.group;
+  }
+  const A=window.CityAssets,kind=isFemaleName(a)?'woman':'man';
+  if(A&&A.has(kind)){
+    try{
+      const p=A.person({kind,h:kind==='woman'?1.66:1.76});
+      if(p&&p.group){
+        recolorAgent(p.group,a,Math.abs(String(a&&a.id||'0').charCodeAt(0)));
+        if(p.actions&&p.actions.walk)p.play('walk',1.05);
+        p.group.userData={glb:true,key:kind,mixer:p.mixer,standing:true,walking:true};
+        return p.group;
+      }
+    }catch{/* */}
   }
   return person({...a.look,standing:true});
 }
@@ -1033,7 +1085,7 @@ const PED_SPOTS=[
 function loadPeds(){
   loadHumanModels();
   if(pedTried||!window.CityAssets||!T3.SkeletonUtils)return;pedTried=true;
-  window.CityAssets.loadAll(['man','woman']).then(()=>{if(root)placePeds();}).catch(()=>{});
+  window.CityAssets.loadAll(['man','woman']).then(()=>{if(root){placePeds();applyOfficeHumans();}}).catch(()=>{});
 }
 const PED_SHIRT=['#c0392b','#2e86c1','#27ae60','#f1c40f','#8e44ad','#ecf0f1','#e67e22','#16a085','#d81b60','#7f8c8d'],PED_SKIN=['#e0b08a','#c68642','#8d5524','#f1c27d','#ffdbac','#6f4a2d','#b9835a'],PED_PANTS=['#2c3e50','#34495e','#1b1b1b','#5d4037','#455a64','#283593','#6b6b6b'],PED_HAIR=['#2b1b12','#4a2c17','#c9a05a','#111111','#8c8c8c','#a0522d','#6d4c2a'];
 function recolorPed(group,i){   // egen palett per person: ingen kopia ser likadan ut

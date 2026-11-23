@@ -52,6 +52,19 @@ jobs:
           echo "All checks passed! Auto-merging PR #${PR_NUM} from ${GITHUB_HEAD_REF}..."
           gh pr merge "$PR_NUM" --merge --admin || gh pr merge "$PR_NUM" --merge
 
+      - name: Auto-deploy to Cloudflare Workers (on main)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        working-directory: market
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: 27a74e9d7a70fc37add3269ef595ef46
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "CLOUDFLARE_API_TOKEN saknas i GitHub Secrets – hoppar över auto-deploy."
+            exit 0
+          fi
+          npx --yes wrangler deploy
+
       - name: Write Agent Activity Summary
         if: always()
         run: |

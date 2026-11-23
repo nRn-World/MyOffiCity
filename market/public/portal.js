@@ -766,6 +766,17 @@
     bt.onclick = send; ta.onkeydown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } };
     clearInterval(poll); poll = setInterval(async () => { if (document.hidden || !document.body.contains(box)) return; try { add((await o.more(last)).messages); } catch { /* */ } }, 4000);
   }
+  const SPRINT_INTERVALS = [
+    [5, 'Var 5:e minut', 'Every 5 min'],
+    [60, 'Varje timme', 'Every hour'],
+    [120, 'Varannan timme', 'Every 2 hours'],
+    [300, 'Var 5:e timme', 'Every 5 hours'],
+    [600, 'Var 10:e timme', 'Every 10 hours'],
+    [1440, 'Var 24:e timme', 'Every 24 hours'],
+    [2880, 'Varannan dag', 'Every 2 days'],
+    [7200, 'Var 5:e dag', 'Every 5 days'],
+  ];
+  const intervalOpts = (selVal) => SPRINT_INTERVALS.map(([v, sv, en]) => '<option value="' + v + '"' + (Number(selVal) === v ? ' selected' : '') + '>' + esc(lang === 'sv' ? sv : en) + '</option>').join('');
   function mountTeamChat(host, c, roster, opts = {}) {   // 100 % online AI-chatt direkt till teamledaren (Tomas) – ingen nedladdning
     const active = (roster && roster.team ? roster.team : []).filter((m) => m.fired == null);
     const lead = active.find((m) => m.slot === 0) || active.find((m) => m.persona && m.persona.role === 'dRoleLead') || active[0];
@@ -880,6 +891,7 @@
       + '<div class="tchat-gh">'
       + '<span class="tchat-gh-ico">⎇</span>'
       + '<select id="tcghsel" aria-label="GitHub"></select>'
+      + '<select id="tcghint" title="Uppdateringsschema" hidden style="flex:0 0 auto;max-width:155px"></select>'
       + '<button type="button" class="tchat-gh-btn" id="tcghstep" hidden>' + esc(t('tChatGhStep')) + '</button>'
       + '<a class="tchat-gh-btn" id="tcghpr" target="_blank" rel="noopener" hidden>PR ↗</a>'
       + '<button type="button" class="tchat-gh-btn gold" id="tcghadd">' + esc(t('tChatGhLink')) + '</button>'
@@ -908,7 +920,7 @@
     const att = wrap.querySelector('#tcatt'), fullBtn = wrap.querySelector('#tcfull'), recBtn = wrap.querySelector('#tcrecb');
     const imgIn = wrap.querySelector('#tcimgf'), audIn = wrap.querySelector('#tcaudf');
     const sel = wrap.querySelector('#tcsel'), slist = wrap.querySelector('#tcslist');
-    const ghSel = wrap.querySelector('#tcghsel'), ghStep = wrap.querySelector('#tcghstep'), ghPr = wrap.querySelector('#tcghpr'), ghForm = wrap.querySelector('#tcghf');
+    const ghSel = wrap.querySelector('#tcghsel'), ghInt = wrap.querySelector('#tcghint'), ghStep = wrap.querySelector('#tcghstep'), ghPr = wrap.querySelector('#tcghpr'), ghForm = wrap.querySelector('#tcghf');
 
     const renderGhBar = () => {
       const th = curThread();
@@ -916,7 +928,18 @@
         + sprints.map((s) => '<option value="' + esc(s.id) + '"' + (s.id === th.sprintId ? ' selected' : '') + '>' + esc(s.repo) + ' (' + s.progress.done + '/' + s.progress.total + ')</option>').join('');
       const sp = curSprint();
       ghStep.hidden = !sp || sp.status === 'done';
+      ghInt.hidden = !sp || sp.status === 'done';
+      if (sp && sp.status !== 'done') ghInt.innerHTML = intervalOpts(sp.intervalMin || 5);
       if (sp && sp.prUrl) { ghPr.hidden = false; ghPr.href = sp.prUrl; } else { ghPr.hidden = true; }
+    };
+    ghInt.onchange = async () => {
+      const sp = curSprint(); if (!sp) return;
+      const val = Number(ghInt.value);
+      try {
+        const r = await api('POST', '/sprints/' + sp.id + '/interval', { intervalMin: val });
+        if (r.sprint) sprints = sprints.map((x) => x.id === r.sprint.id ? r.sprint : x);
+        toast('📅 ' + (ghInt.options[ghInt.selectedIndex]?.text || 'OK'));
+      } catch (err) { toast(err.message); }
     };
     const loadSprintsForChat = () => {
       api('GET', '/sprints').then((j) => {
@@ -1304,6 +1327,7 @@
             + '<div class="sp-prog"><div class="sp-bar"><span style="width:' + pct + '%"></span></div><small>' + s.progress.done + ' / ' + s.progress.total + ' (' + pct + '%)</small></div>'
             + (s.lastError ? '<p class="err small" style="margin:8px 0 0">' + esc(s.lastError) + '</p>' : '')
             + '<div class="row sp-btns">'
+            + (s.status !== 'done' ? '<label class="sp-int-lbl">📅 <select class="sp-int" data-int="' + esc(s.id) + '">' + intervalOpts(s.intervalMin || 5) + '</select></label>' : '')
             + (s.status !== 'done' ? '<button type="button" class="btn sm" data-step="' + esc(s.id) + '">▶ ' + esc(t('dProjStep')) + '</button>' : '')
             + (s.status !== 'done' ? '<button type="button" class="btn ghost sm" data-tog="' + esc(s.id) + '" data-ns="' + (s.status === 'active' ? 'paused' : 'active') + '">' + esc(s.status === 'active' ? '⏸ ' + t('dProjPause') : '▶ ' + t('dProjResume')) + '</button>' : '')
             + (s.prUrl ? '<a class="btn ghost sm" href="' + esc(s.prUrl) + '" target="_blank" rel="noopener">' + esc(t('dProjPr')) + '</a>' : '')
@@ -1321,6 +1345,15 @@
             + '</div>';
         }).join('');
 
+        box.querySelectorAll('[data-int]').forEach((selEl) => {
+          selEl.onchange = async () => {
+            try {
+              await api('POST', '/sprints/' + selEl.dataset.int + '/interval', { intervalMin: Number(selEl.value) });
+              toast('📅 ' + (selEl.options[selEl.selectedIndex]?.text || 'OK'));
+              await drawSprints();
+            } catch (e) { toast(e.message); }
+          };
+        });
         box.querySelectorAll('[data-step]').forEach((b) => {
           b.onclick = async () => {
             b.disabled = true; const old = b.textContent; b.textContent = t('dProjStepping');

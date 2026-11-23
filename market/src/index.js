@@ -1110,6 +1110,7 @@ route('POST', /^\/api\/sprints$/, (req, env, m, user) => createSprint(req, env, 
 route('GET', /^\/api\/sprints\/([a-z0-9]+)$/, (req, env, m, user) => getSprint(env, m[1], user), true, true);
 route('POST', /^\/api\/sprints\/([a-z0-9]+)\/step$/, (req, env, m, user) => stepSprintNow(env, m[1], user), true, true);
 route('POST', /^\/api\/sprints\/([a-z0-9]+)\/status$/, (req, env, m, user) => toggleSprint(req, env, m[1], user), true, true);
+route('POST', /^\/api\/sprints\/([a-z0-9]+)\/interval$/, (req, env, m, user) => setSprintInterval(req, env, m[1], user), true, true);
 route('DELETE', /^\/api\/sprints\/([a-z0-9]+)$/, (req, env, m, user) => deleteSprint(env, m[1], user), true, true);
 route('GET', /^\/api\/company\/orders$/, (req, env, m, user) => companyOrders(env, user), true);
 route('POST', /^\/api\/orders$/, (req, env, m, user) => createOrder(req, env, user), true);
@@ -1428,7 +1429,7 @@ async function ensureSprintTables(env) {
       gh_token TEXT NOT NULL, or_key TEXT NOT NULL DEFAULT '',
       pr_url TEXT NOT NULL DEFAULT '', pr_number INTEGER NOT NULL DEFAULT 0,
       created INTEGER NOT NULL, ends_at INTEGER NOT NULL, last_run INTEGER NOT NULL DEFAULT 0,
-      last_error TEXT NOT NULL DEFAULT ''
+      last_error TEXT NOT NULL DEFAULT '', interval_min INTEGER NOT NULL DEFAULT 5
     )`),
     env.DB.prepare(`CREATE TABLE IF NOT EXISTS sprint_tasks (
       id INTEGER PRIMARY KEY AUTOINCREMENT, sprint_id TEXT NOT NULL, seq INTEGER NOT NULL,
@@ -1442,6 +1443,7 @@ async function ensureSprintTables(env) {
       created INTEGER NOT NULL, agent TEXT NOT NULL, message TEXT NOT NULL
     )`),
   ]);
+  await env.DB.prepare('ALTER TABLE sprints ADD COLUMN interval_min INTEGER NOT NULL DEFAULT 5').run().catch(() => {});
 }
 
 function b64EncodeUtf8(str) {
@@ -1536,6 +1538,7 @@ function sprintSummaryOut(s, tasks = [], logs = []) {
     hasToken: !!s.gh_token, hasOrKey: !!s.or_key,
     prUrl: s.pr_url, prNumber: s.pr_number,
     created: s.created, endsAt: s.ends_at, lastRun: s.last_run, lastError: s.last_error,
+    intervalMin: Number(s.interval_min) || 5,
     progress: { done: doneCount, total: tasks.length },
     tasks: tasks.map(t => ({
       id: t.id, seq: t.seq, title: t.title, details: t.details, assignee: t.assignee,
@@ -1586,6 +1589,9 @@ async function createSprint(req, env, user) {
   const goal = clip(b.goal, 2000).trim();
   if (goal.length < 8) throw bad('Beskriv vad agenterna ska bygga/utveckla', 'bad_goal');
   const days = Math.min(30, Math.max(1, Number(b.days) || 14));
+  const allowedIntervals = [5, 60, 120, 300, 600, 1440, 2880, 7200];
+  const reqInt = Number(b.intervalMin) || 5;
+  const intervalMin = allowedIntervals.includes(reqInt) ? reqInt : 5;
   const orKey = String(b.orKey || '').trim().slice(0, 200);
 
   // 1. Verifiera repo & skapa arbetsbranch på GitHub
@@ -1645,8 +1651,8 @@ async function createSprint(req, env, user) {
   }
 
   const ts = now(), endsAt = ts + days * 86400 * 1000;
-  await env.DB.prepare(`INSERT INTO sprints(id,company_id,owner_id,repo,base_branch,work_branch,goal,days,status,gh_token,or_key,created,ends_at)
-    VALUES(?,?,?,?,?,?,?,?,'active',?,?,?,?)`).bind(id, co.id, user.id, rawRepo, baseBranch, workBranch, goal, days, ghToken, orKey, ts, endsAt).run();
+  await env.DB.prepare(`INSERT INTO sprints(id,company_id,owner_id,repo,base_branch,work_branch,goal,days,status,gh_token,or_key,created,ends_at,interval_min)
+    VALUES(?,?,?,?,?,?,?,?,'active',?,?,?,?,?)`).bind(id, co.id, user.id, rawRepo, baseBranch, workBranch, goal, days, ghToken, orKey, ts, endsAt, intervalMin).run();
 
   const stmts = planned.map((tk, i) =>
     env.DB.prepare('INSERT INTO sprint_tasks(sprint_id,seq,title,details,assignee) VALUES(?,?,?,?,?)')
@@ -1896,11 +1902,31 @@ async function deleteSprint(env, id, user) {
   return { ok: true };
 }
 
+async function setSprintInterval(req, env, id, user) {
+  await ensureSprintTables(env);
+  const s = await env.DB.prepare('SELECT id FROM sprints WHERE id=? AND owner_id=?').bind(id, user.id).first();
+  if (!s) throw new HttpError(404, 'not_found', 'Sprint not found');
+  const b = await readBody(req);
+  const allowed = [5, 60, 120, 300, 600, 1440, 2880, 7200];
+  const val = Number(b.intervalMin);
+  if (!allowed.includes(val)) throw bad('Ogiltigt intervall', 'bad_interval');
+  await env.DB.prepare('UPDATE sprints SET interval_min=? WHERE id=?').bind(val, id).run();
+  const lbl = val < 60 ? `${val} min` : val < 1440 ? `${val / 60} h` : `${val / 1440} d`;
+  await addSprintLog(env, id, 'Tomas', `Uppdateringsschema ändrat till var ${lbl}.`);
+  return await getSprint(env, id, user);
+}
+
 async function runScheduledSprints(env) {
   await ensureSprintTables(env);
-  const active = (await env.DB.prepare("SELECT * FROM sprints WHERE status='active' ORDER BY last_run ASC LIMIT 3").all()).results;
+  const ts = now();
+  const active = (await env.DB.prepare("SELECT * FROM sprints WHERE status='active' ORDER BY last_run ASC LIMIT 10").all()).results;
+  let ran = 0;
   for (const s of active) {
-    try { await runSprintStep(env, s); } catch (e) { console.log('cron sprint err', s.id, String(e)); }
+    if (ran >= 3) break;
+    const intervalMs = Math.max(5, Number(s.interval_min) || 5) * 60 * 1000;
+    // 25 s marginal för cron-jitter
+    if (s.last_run && (ts - s.last_run) < (intervalMs - 25000)) continue;
+    try { await runSprintStep(env, s); ran++; } catch (e) { console.log('cron sprint err', s.id, String(e)); }
   }
 }
 

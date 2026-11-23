@@ -31,6 +31,10 @@ binding = "AI"
 [observability]
 enabled = true
 
+# Autonoma GitHub-sprintar: väcker agenterna varannan timme helt gratis i bakgrunden
+[triggers]
+crons = ["0 */2 * * *"]
+
 # Webbadresser (förutom portalen själv) som får anropa API:t från en webbläsare, kommaseparerade.
 # Ägarappen kör på localhost:8766.
 [vars]

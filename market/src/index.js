@@ -1105,6 +1105,12 @@ route('GET', new RegExp('^/api/companies/([a-z0-9]+)/team$'), (req, env, m) => p
 route('PUT', new RegExp('^/api/company/logo$'), (req, env, m, user) => saveLogo(req, env, user), true);
 route('DELETE', new RegExp('^/api/company/logo$'), (req, env, m, user) => deleteLogo(env, user), true);
 route('PUT', /^\/api\/company$/, (req, env, m, user) => saveCompany(req, env, user), true);
+route('GET', /^\/api\/sprints$/, (req, env, m, user) => listSprints(env, user), true, true);
+route('POST', /^\/api\/sprints$/, (req, env, m, user) => createSprint(req, env, user), true, true);
+route('GET', /^\/api\/sprints\/([a-z0-9]+)$/, (req, env, m, user) => getSprint(env, m[1], user), true, true);
+route('POST', /^\/api\/sprints\/([a-z0-9]+)\/step$/, (req, env, m, user) => stepSprintNow(env, m[1], user), true, true);
+route('POST', /^\/api\/sprints\/([a-z0-9]+)\/status$/, (req, env, m, user) => toggleSprint(req, env, m[1], user), true, true);
+route('DELETE', /^\/api\/sprints\/([a-z0-9]+)$/, (req, env, m, user) => deleteSprint(env, m[1], user), true, true);
 route('GET', /^\/api\/company\/orders$/, (req, env, m, user) => companyOrders(env, user), true);
 route('POST', /^\/api\/orders$/, (req, env, m, user) => createOrder(req, env, user), true);
 route('GET', /^\/api\/orders$/, (req, env, m, user) => myOrders(env, user), true);
@@ -1317,7 +1323,447 @@ async function freeAiChat(req, env) {
   };
 }
 
+/* ---------- Autonoma online GitHub-sprintar (100 % i molnet, 0 kr, Cron varannan timme) ---------- */
+const OR_FREE_MODELS = [
+  'qwen/qwen-2.5-coder-32b-instruct:free',
+  'meta-llama/llama-3.3-70b-instruct:free',
+  'deepseek/deepseek-r1:free',
+  'google/gemma-3-27b-it:free',
+  'openrouter/free',
+];
+
+async function ensureSprintTables(env) {
+  await env.DB.batch([
+    env.DB.prepare(`CREATE TABLE IF NOT EXISTS sprints (
+      id TEXT PRIMARY KEY, company_id TEXT NOT NULL, owner_id TEXT NOT NULL,
+      repo TEXT NOT NULL, base_branch TEXT NOT NULL DEFAULT 'main', work_branch TEXT NOT NULL,
+      goal TEXT NOT NULL, days INTEGER NOT NULL DEFAULT 14, status TEXT NOT NULL DEFAULT 'active',
+      gh_token TEXT NOT NULL, or_key TEXT NOT NULL DEFAULT '',
+      pr_url TEXT NOT NULL DEFAULT '', pr_number INTEGER NOT NULL DEFAULT 0,
+      created INTEGER NOT NULL, ends_at INTEGER NOT NULL, last_run INTEGER NOT NULL DEFAULT 0,
+      last_error TEXT NOT NULL DEFAULT ''
+    )`),
+    env.DB.prepare(`CREATE TABLE IF NOT EXISTS sprint_tasks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, sprint_id TEXT NOT NULL, seq INTEGER NOT NULL,
+      title TEXT NOT NULL, details TEXT NOT NULL, assignee TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'todo', tries INTEGER NOT NULL DEFAULT 0,
+      commit_sha TEXT NOT NULL DEFAULT '', files_changed TEXT NOT NULL DEFAULT '',
+      summary TEXT NOT NULL DEFAULT '', updated INTEGER NOT NULL DEFAULT 0
+    )`),
+    env.DB.prepare(`CREATE TABLE IF NOT EXISTS sprint_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, sprint_id TEXT NOT NULL,
+      created INTEGER NOT NULL, agent TEXT NOT NULL, message TEXT NOT NULL
+    )`),
+  ]);
+}
+
+function b64EncodeUtf8(str) {
+  const bytes = new TextEncoder().encode(String(str || ''));
+  let bin = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return btoa(bin);
+}
+function b64DecodeUtf8(b64) {
+  const bin = atob(String(b64 || '').replace(/\s+/g, ''));
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+
+async function ghApi(token, path, method = 'GET', body) {
+  const res = await fetch('https://api.github.com' + path, {
+    method,
+    headers: {
+      Authorization: 'Bearer ' + token,
+      Accept: 'application/vnd.github+json',
+      'User-Agent': 'MyOffiCity-Agent/1.0',
+      'X-GitHub-Api-Version': '2022-11-28',
+      ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+    },
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+  const text = await res.text();
+  let data = null;
+  try { data = text ? JSON.parse(text) : null; } catch { data = { message: text.slice(0, 200) }; }
+  if (!res.ok) {
+    const msg = (data && data.message) ? data.message : ('GitHub HTTP ' + res.status);
+    throw new HttpError(res.status === 401 || res.status === 403 ? 400 : 502, 'github_error', 'GitHub: ' + msg);
+  }
+  return data;
+}
+
+function extractJson(txt) {
+  const s = String(txt || '').trim();
+  const fenced = s.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  const cand = fenced ? fenced[1].trim() : s;
+  try { return JSON.parse(cand); } catch { /* */ }
+  const firstObj = cand.indexOf('{'), lastObj = cand.lastIndexOf('}');
+  if (firstObj >= 0 && lastObj > firstObj) {
+    try { return JSON.parse(cand.slice(firstObj, lastObj + 1)); } catch { /* */ }
+  }
+  const firstArr = cand.indexOf('['), lastArr = cand.lastIndexOf(']');
+  if (firstArr >= 0 && lastArr > firstArr) {
+    try { return JSON.parse(cand.slice(firstArr, lastArr + 1)); } catch { /* */ }
+  }
+  return null;
+}
+
+async function callSprintAi(env, orKey, messages, maxTokens = 1600) {
+  let lastErr = '';
+  if (orKey && orKey.trim().length > 10) {
+    for (const model of OR_FREE_MODELS) {
+      try {
+        const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            Authorization: 'Bearer ' + orKey.trim(),
+            'Content-Type': 'application/json',
+            'HTTP-Referer': 'https://nrnworld.one/MyOffiCity/',
+            'X-Title': 'MyOffiCity Agents',
+          },
+          body: JSON.stringify({ model, messages, max_tokens: maxTokens, temperature: 0.25 }),
+        });
+        if (!res.ok) { lastErr = 'OpenRouter ' + res.status; continue; }
+        const j = await res.json();
+        const text = String(j?.choices?.[0]?.message?.content || '').trim();
+        if (text) return { text, model };
+      } catch (e) {
+        lastErr = String(e && e.message || e);
+      }
+    }
+  }
+  if (!env.AI || !env.DB) throw new HttpError(503, 'ai_unavailable', lastErr || 'AI not configured');
+  const day = new Date().toISOString().slice(0, 10);
+  await ensureAiQuotaTable(env);
+  await env.DB.prepare('INSERT OR IGNORE INTO ai_quota (day, scope, count) VALUES (?, ?, 0)').bind(day, 'global_neurons').run();
+  const estNeurons = 90;
+  const nRes = await env.DB.prepare('UPDATE ai_quota SET count = count + ? WHERE day = ? AND scope = ? AND count + ? <= ?')
+    .bind(estNeurons, day, 'global_neurons', estNeurons, FREE_AI_GLOBAL_NEURONS_CAP).run();
+  if (!nRes?.meta?.changes) {
+    throw new HttpError(429, 'free_ai_neuron_cap_exceeded', 'Dagens gratisgräns på Cloudflare är nådd – nästa pass körs imorgon eller direkt om du lägger in en gratis OpenRouter-nyckel.');
+  }
+  for (const mid of ['@cf/qwen/qwen2.5-coder-32b-instruct', '@cf/meta/llama-3.1-8b-instruct-fast']) {
+    try {
+      const r = await env.AI.run(mid, { messages, max_tokens: Math.min(1024, maxTokens), temperature: 0.25 });
+      const text = String((r && (r.response || r.result || r?.choices?.[0]?.message?.content)) || '').trim();
+      if (text) return { text, model: mid };
+    } catch (e) {
+      lastErr = String(e && e.message || e);
+    }
+  }
+  await env.DB.prepare('UPDATE ai_quota SET count = MAX(0, count - ?) WHERE day = ? AND scope = ?').bind(estNeurons, day, 'global_neurons').run().catch(() => {});
+  throw new HttpError(502, 'ai_run_failed', 'AI-fel: ' + lastErr.slice(0, 180));
+}
+
+async function addSprintLog(env, sprintId, agent, message) {
+  await env.DB.prepare('INSERT INTO sprint_logs(sprint_id,created,agent,message) VALUES(?,?,?,?)')
+    .bind(sprintId, now(), clip(agent, 60), clip(message, 600)).run();
+}
+
+function sprintSummaryOut(s, tasks = [], logs = []) {
+  const doneCount = tasks.filter(t => t.status === 'done').length;
+  return {
+    id: s.id, repo: s.repo, baseBranch: s.base_branch, workBranch: s.work_branch,
+    goal: s.goal, days: s.days, status: s.status,
+    hasToken: !!s.gh_token, hasOrKey: !!s.or_key,
+    prUrl: s.pr_url, prNumber: s.pr_number,
+    created: s.created, endsAt: s.ends_at, lastRun: s.last_run, lastError: s.last_error,
+    progress: { done: doneCount, total: tasks.length },
+    tasks: tasks.map(t => ({
+      id: t.id, seq: t.seq, title: t.title, details: t.details, assignee: t.assignee,
+      status: t.status, commitSha: t.commit_sha, filesChanged: t.files_changed ? t.files_changed.split(',').filter(Boolean) : [],
+      summary: t.summary, updated: t.updated,
+    })),
+    logs: logs.map(l => ({ id: l.id, created: l.created, agent: l.agent, message: l.message })),
+  };
+}
+
+async function listSprints(env, user) {
+  await ensureSprintTables(env);
+  const co = await env.DB.prepare('SELECT id FROM companies WHERE owner_id=?').bind(user.id).first();
+  if (!co) return { sprints: [] };
+  const rows = (await env.DB.prepare('SELECT * FROM sprints WHERE company_id=? ORDER BY created DESC LIMIT 12').bind(co.id).all()).results;
+  const out = [];
+  for (const s of rows) {
+    const [tasks, logs] = await Promise.all([
+      env.DB.prepare('SELECT * FROM sprint_tasks WHERE sprint_id=? ORDER BY seq ASC').bind(s.id).all(),
+      env.DB.prepare('SELECT * FROM sprint_logs WHERE sprint_id=? ORDER BY id DESC LIMIT 20').bind(s.id).all(),
+    ]);
+    out.push(sprintSummaryOut(s, tasks.results, logs.results));
+  }
+  return { sprints: out };
+}
+
+async function getSprint(env, id, user) {
+  await ensureSprintTables(env);
+  const s = await env.DB.prepare('SELECT * FROM sprints WHERE id=? AND owner_id=?').bind(id, user.id).first();
+  if (!s) throw new HttpError(404, 'not_found', 'Sprint not found');
+  const [tasks, logs] = await Promise.all([
+    env.DB.prepare('SELECT * FROM sprint_tasks WHERE sprint_id=? ORDER BY seq ASC').bind(s.id).all(),
+    env.DB.prepare('SELECT * FROM sprint_logs WHERE sprint_id=? ORDER BY id DESC LIMIT 30').bind(s.id).all(),
+  ]);
+  return { sprint: sprintSummaryOut(s, tasks.results, logs.results) };
+}
+
+async function createSprint(req, env, user) {
+  await ensureSprintTables(env);
+  await limit(env, 'sprint:new:' + user.id, 10, 3600);
+  const co = await env.DB.prepare('SELECT id,name FROM companies WHERE owner_id=?').bind(user.id).first();
+  if (!co) throw bad('Create a company first', 'no_company');
+  const b = await readBody(req);
+  const rawRepo = String(b.repo || '').trim().replace(/^https?:\/\/github\.com\//i, '').replace(/\.git$/i, '').replace(/^\/+|\/+$/g, '');
+  if (!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(rawRepo)) throw bad('Ange repo som ägare/repo (t.ex. nRn-World/mitt-repo)', 'bad_repo');
+  const ghToken = String(b.ghToken || '').trim();
+  if (ghToken.length < 15) throw bad('GitHub-token krävs (Contents + Pull requests: Read & Write)', 'bad_token');
+  const goal = clip(b.goal, 2000).trim();
+  if (goal.length < 8) throw bad('Beskriv vad agenterna ska bygga/utveckla', 'bad_goal');
+  const days = Math.min(30, Math.max(1, Number(b.days) || 14));
+  const orKey = String(b.orKey || '').trim().slice(0, 200);
+
+  // 1. Verifiera repo & skapa arbetsbranch på GitHub
+  const repoInfo = await ghApi(ghToken, '/repos/' + rawRepo);
+  const baseBranch = repoInfo.default_branch || 'main';
+  const refInfo = await ghApi(ghToken, `/repos/${rawRepo}/git/ref/heads/${encodeURIComponent(baseBranch)}`);
+  const baseSha = refInfo?.object?.sha;
+  if (!baseSha) throw bad('Kunde inte läsa default-branchen på GitHub', 'bad_branch');
+
+  const id = rid('sp');
+  const workBranch = 'myofficity/' + id;
+  await ghApi(ghToken, `/repos/${rawRepo}/git/refs`, 'POST', { ref: 'refs/heads/' + workBranch, sha: baseSha });
+
+  // 2. Läs filstruktur & README för att planera smarta deluppgifter
+  let treePaths = [];
+  try {
+    const tr = await ghApi(ghToken, `/repos/${rawRepo}/git/trees/${encodeURIComponent(baseBranch)}?recursive=1`);
+    treePaths = (tr?.tree || []).filter(x => x.type === 'blob' && !/node_modules|\.git\/|\.png$|\.jpg$|\.glb$|\.bin$/i.test(x.path)).map(x => x.path).slice(0, 80);
+  } catch { /* tomt repo eller stort träd */ }
+
+  let readme = '';
+  try {
+    const rm = await ghApi(ghToken, `/repos/${rawRepo}/contents/README.md?ref=${encodeURIComponent(baseBranch)}`);
+    if (rm && rm.content) readme = b64DecodeUtf8(rm.content).slice(0, 2000);
+  } catch { /* ingen README */ }
+
+  // Hämta teamnamn
+  const tRows = (await env.DB.prepare('SELECT persona FROM company_team WHERE company_id=? AND fired IS NULL ORDER BY slot ASC').bind(co.id).all()).results;
+  const teamNames = tRows.map(r => { try { return JSON.parse(r.persona).name.split(' ')[0]; } catch { return ''; } }).filter(Boolean);
+  const agents = teamNames.length ? teamNames : ['Tomas', 'Ebba', 'Manus', 'Laila'];
+  const taskTarget = Math.min(12, Math.max(5, Math.round(days * 0.7)));
+
+  // 3. Låt Tomas skapa en konkret backlog (JSON)
+  let planned = [];
+  try {
+    const ai = await callSprintAi(env, orKey, [
+      { role: 'system', content: 'You are Tomas, an expert AI software team leader. Return ONLY valid JSON: {"tasks":[{"title":"...","details":"...","assignee":"..."}]}. Each task must be a small, concrete coding or documentation deliverable that can be completed in 1-3 files. Write titles and details in Swedish.' },
+      { role: 'user', content: `GitHub repo: ${rawRepo}\nGoal (${days} days): ${goal}\nTeam members: ${agents.join(', ')}\nExisting files:\n${treePaths.join('\n') || '(empty repo)'}\n\nREADME:\n${readme || '(none)'}\n\nCreate ${taskTarget} ordered, concrete tasks as JSON.` },
+    ], 1100);
+    const parsed = extractJson(ai.text);
+    const arr = Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.tasks) ? parsed.tasks : []);
+    planned = arr.filter(x => x && x.title).slice(0, 14).map((x, idx) => ({
+      title: clip(x.title, 120),
+      details: clip(x.details || x.title, 500),
+      assignee: agents.includes(x.assignee) ? x.assignee : agents[idx % agents.length],
+    }));
+  } catch { /* fallback nedan */ }
+
+  if (!planned.length) {
+    planned = [
+      { title: 'Arkitektur & utvecklingsplan', details: 'Dokumentera mål, arkitektur och delmål i ROADMAP.md baserat på: ' + goal, assignee: agents[0] },
+      { title: 'Kärnfunktionalitet – steg 1', details: 'Implementera första delen av kärnfunktionerna för: ' + goal, assignee: agents[1 % agents.length] },
+      { title: 'Kärnfunktionalitet – steg 2', details: 'Bygg vidare på logik och felhantering för: ' + goal, assignee: agents[2 % agents.length] },
+      { title: 'UI / UX & användarupplevelse', details: 'Förbättra gränssnitt, responsivitet och tydlighet.', assignee: agents[3 % agents.length] },
+      { title: 'Dokumentation & finputs', details: 'Uppdatera README.md med instruktioner, användning och granskning.', assignee: agents[0] },
+    ];
+  }
+
+  const ts = now(), endsAt = ts + days * 86400 * 1000;
+  await env.DB.prepare(`INSERT INTO sprints(id,company_id,owner_id,repo,base_branch,work_branch,goal,days,status,gh_token,or_key,created,ends_at)
+    VALUES(?,?,?,?,?,?,?,?,'active',?,?,?,?)`).bind(id, co.id, user.id, rawRepo, baseBranch, workBranch, goal, days, ghToken, orKey, ts, endsAt).run();
+
+  const stmts = planned.map((tk, i) =>
+    env.DB.prepare('INSERT INTO sprint_tasks(sprint_id,seq,title,details,assignee) VALUES(?,?,?,?,?)')
+      .bind(id, i + 1, tk.title, tk.details, tk.assignee)
+  );
+  await env.DB.batch(stmts);
+  await addSprintLog(env, id, agents[0], `Sprint startad på ${rawRepo} (branch ${workBranch}) med ${planned.length} deluppgifter över ${days} dagar.`);
+
+  return await getSprint(env, id, user);
+}
+
+async function runSprintStep(env, sprint) {
+  await ensureSprintTables(env);
+  const ts = now();
+  if (sprint.status !== 'active') return { ok: false, reason: 'not_active' };
+  if (ts >= sprint.ends_at) {
+    await env.DB.prepare("UPDATE sprints SET status='done', last_run=? WHERE id=?").bind(ts, sprint.id).run();
+    await addSprintLog(env, sprint.id, 'Tomas', 'Sprintperioden är klar! Alla genomförda ändringar finns i din Pull Request på GitHub.');
+    return { ok: true, done: true };
+  }
+  const task = await env.DB.prepare("SELECT * FROM sprint_tasks WHERE sprint_id=? AND status='todo' ORDER BY seq ASC LIMIT 1").bind(sprint.id).first();
+  if (!task) {
+    await env.DB.prepare("UPDATE sprints SET status='done', last_run=? WHERE id=?").bind(ts, sprint.id).run();
+    await addSprintLog(env, sprint.id, 'Tomas', 'Alla deluppgifter i sprinten är klara! Granska och merga gärna Pull Requesten på GitHub.');
+    return { ok: true, done: true };
+  }
+
+  await env.DB.prepare('UPDATE sprints SET last_run=?, last_error=? WHERE id=?').bind(ts, '', sprint.id).run();
+
+  try {
+    // 1. Läs nuvarande filstruktur på arbetsbranchen
+    let treePaths = [];
+    try {
+      const tr = await ghApi(sprint.gh_token, `/repos/${sprint.repo}/git/trees/${encodeURIComponent(sprint.work_branch)}?recursive=1`);
+      treePaths = (tr?.tree || []).filter(x => x.type === 'blob' && !/node_modules|\.git\/|\.png$|\.jpg$|\.glb$|\.bin$/i.test(x.path)).map(x => x.path).slice(0, 80);
+    } catch { /* */ }
+
+    // 2. Välj upp till 3 relevanta filer att läsa in i kontexten
+    const words = (task.title + ' ' + task.details).toLowerCase().split(/[^a-z0-9._-]+/).filter(w => w.length > 2);
+    const scored = treePaths.map(p => {
+      const lp = p.toLowerCase();
+      let sc = words.reduce((a, w) => a + (lp.includes(w) ? 3 : 0), 0);
+      if (/^(readme\.md|package\.json|index\.html|manifest\.json)$/i.test(p)) sc += 2;
+      return { p, sc };
+    }).sort((a, b) => b.sc - a.sc).slice(0, 3);
+
+    const fileCtx = [];
+    for (const item of scored) {
+      try {
+        const f = await ghApi(sprint.gh_token, `/repos/${sprint.repo}/contents/${encodeURIComponent(item.p).replace(/%2F/g, '/')}?ref=${encodeURIComponent(sprint.work_branch)}`);
+        if (f && f.content && f.size < 40000) fileCtx.push(`--- FILE: ${item.p} ---\n${b64DecodeUtf8(f.content).slice(0, 5000)}`);
+      } catch { /* */ }
+    }
+
+    // 3. Låt agenten producera konkreta filändringar som JSON
+    const ai = await callSprintAi(env, sprint.or_key, [
+      {
+        role: 'system',
+        content: `You are ${task.assignee}, a senior AI developer working autonomously on GitHub repo ${sprint.repo}.
+Return ONLY valid JSON with this exact shape:
+{"summary":"Short Swedish summary of what you built","commit_message":"Concise commit message","files":[{"path":"relative/file/path.ext","content":"COMPLETE file content"}]}
+Rules:
+- Create or update 1 to 3 real, clean, working files.
+- Never use placeholder comments like "// rest of code". Always output complete file contents.
+- Never output paths starting with / or containing ..`,
+      },
+      {
+        role: 'user',
+        content: `Sprint goal: ${sprint.goal}\nTask #${task.seq}: ${task.title}\nDetails: ${task.details}\n\nRepo files:\n${treePaths.join('\n') || '(empty)'}\n\nRelevant existing files:\n${fileCtx.join('\n\n') || '(none)'}`,
+      },
+    ], 1800);
+
+    const parsed = extractJson(ai.text);
+    const files = (parsed && Array.isArray(parsed.files) ? parsed.files : []).filter(f =>
+      f && typeof f.path === 'string' && typeof f.content === 'string'
+      && f.path.trim() && !f.path.startsWith('/') && !f.path.includes('..') && f.content.length < 120000
+    ).slice(0, 4);
+
+    if (!files.length) {
+      const tries = (task.tries || 0) + 1;
+      if (tries >= 2) {
+        await env.DB.prepare("UPDATE sprint_tasks SET status='skipped', tries=?, summary=?, updated=? WHERE id=?")
+          .bind(tries, 'Hoppades över efter 2 försök utan giltiga filändringar.', ts, task.id).run();
+        await addSprintLog(env, sprint.id, task.assignee, `Hoppade över "${task.title}" efter 2 försök så att sprinten fortsätter framåt.`);
+      } else {
+        await env.DB.prepare('UPDATE sprint_tasks SET tries=?, updated=? WHERE id=?').bind(tries, ts, task.id).run();
+        await addSprintLog(env, sprint.id, task.assignee, `Försökte lösa "${task.title}" men AI-svaret saknade filer – provar igen automatiskt nästa pass.`);
+      }
+      return { ok: true, retried: true };
+    }
+
+    // 4. Committa filerna direkt till arbetsbranchen via GitHub Contents API
+    const commitMsg = clip(parsed.commit_message || `${task.assignee}: ${task.title}`, 120);
+    const changed = [];
+    let lastSha = '';
+    for (const f of files) {
+      const cleanPath = f.path.trim().replace(/^\/+/, '');
+      const encPath = cleanPath.split('/').map(encodeURIComponent).join('/');
+      let existingSha = undefined;
+      try {
+        const ex = await ghApi(sprint.gh_token, `/repos/${sprint.repo}/contents/${encPath}?ref=${encodeURIComponent(sprint.work_branch)}`);
+        if (ex && ex.sha) existingSha = ex.sha;
+      } catch { /* ny fil */ }
+      const putRes = await ghApi(sprint.gh_token, `/repos/${sprint.repo}/contents/${encPath}`, 'PUT', {
+        message: commitMsg,
+        content: b64EncodeUtf8(f.content),
+        branch: sprint.work_branch,
+        ...(existingSha ? { sha: existingSha } : {}),
+      });
+      if (putRes?.commit?.sha) lastSha = putRes.commit.sha;
+      changed.push(cleanPath);
+    }
+
+    // 5. Öppna Pull Request på första committen
+    let prUrl = sprint.pr_url, prNum = sprint.pr_number;
+    if (!prNum && changed.length) {
+      try {
+        const pr = await ghApi(sprint.gh_token, `/repos/${sprint.repo}/pulls`, 'POST', {
+          title: `[MyOffiCity] ${clip(sprint.goal, 72)}`,
+          head: sprint.work_branch,
+          base: sprint.base_branch,
+          body: `Autonom ${sprint.days}-dagars sprint skapad av ditt AI-team i MyOffiCity.\n\n**Mål:** ${sprint.goal}\n\nAlla commits från teamet samlas här så du kan granska och merga i lugn och ro.`,
+        });
+        if (pr && pr.html_url) { prUrl = pr.html_url; prNum = pr.number || 1; }
+      } catch { /* PR kanske redan finns */ }
+      if (prNum) await env.DB.prepare('UPDATE sprints SET pr_url=?, pr_number=? WHERE id=?').bind(prUrl, prNum, sprint.id).run();
+    }
+
+    const summary = clip(parsed.summary || `Klart: ${changed.join(', ')}`, 400);
+    await env.DB.prepare("UPDATE sprint_tasks SET status='done', commit_sha=?, files_changed=?, summary=?, updated=? WHERE id=?")
+      .bind(lastSha, changed.join(','), summary, ts, task.id).run();
+    await addSprintLog(env, sprint.id, task.assignee, `Klar med "${task.title}" (${ai.model}): ${summary} [${changed.join(', ')}]`);
+    return { ok: true, task: task.title, files: changed, prUrl };
+  } catch (e) {
+    const msg = clip(String(e && e.message || e), 240);
+    await env.DB.prepare('UPDATE sprints SET last_error=? WHERE id=?').bind(msg, sprint.id).run();
+    await addSprintLog(env, sprint.id, task.assignee, `Tillfälligt stopp på "${task.title}": ${msg} (provar igen automatiskt nästa pass).`);
+    return { ok: false, error: msg };
+  }
+}
+
+async function stepSprintNow(env, id, user) {
+  await ensureSprintTables(env);
+  const s = await env.DB.prepare('SELECT * FROM sprints WHERE id=? AND owner_id=?').bind(id, user.id).first();
+  if (!s) throw new HttpError(404, 'not_found', 'Sprint not found');
+  const res = await runSprintStep(env, s);
+  const updated = await getSprint(env, id, user);
+  return { ...updated, step: res };
+}
+
+async function toggleSprint(req, env, id, user) {
+  await ensureSprintTables(env);
+  const s = await env.DB.prepare('SELECT id,status FROM sprints WHERE id=? AND owner_id=?').bind(id, user.id).first();
+  if (!s) throw new HttpError(404, 'not_found', 'Sprint not found');
+  const b = await readBody(req);
+  const next = b.status === 'paused' ? 'paused' : 'active';
+  await env.DB.prepare('UPDATE sprints SET status=? WHERE id=?').bind(next, id).run();
+  await addSprintLog(env, id, 'Tomas', next === 'paused' ? 'Sprint pausad av ägaren.' : 'Sprint återupptagen av ägaren.');
+  return await getSprint(env, id, user);
+}
+
+async function deleteSprint(env, id, user) {
+  await ensureSprintTables(env);
+  const s = await env.DB.prepare('SELECT id FROM sprints WHERE id=? AND owner_id=?').bind(id, user.id).first();
+  if (!s) throw new HttpError(404, 'not_found', 'Sprint not found');
+  await env.DB.batch([
+    env.DB.prepare('DELETE FROM sprint_logs WHERE sprint_id=?').bind(id),
+    env.DB.prepare('DELETE FROM sprint_tasks WHERE sprint_id=?').bind(id),
+    env.DB.prepare('DELETE FROM sprints WHERE id=?').bind(id),
+  ]);
+  return { ok: true };
+}
+
+async function runScheduledSprints(env) {
+  await ensureSprintTables(env);
+  const active = (await env.DB.prepare("SELECT * FROM sprints WHERE status='active' ORDER BY last_run ASC LIMIT 3").all()).results;
+  for (const s of active) {
+    try { await runSprintStep(env, s); } catch (e) { console.log('cron sprint err', s.id, String(e)); }
+  }
+}
+
 export default {
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(runScheduledSprints(env));
+  },
   async fetch(req, env, ctx) {
     const url = new URL(req.url);
     let prefix = '';

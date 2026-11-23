@@ -1,0 +1,53 @@
+MyOffiCity Educational & Source-Available License (Non-Commercial)
+Copyright (c) 2026 nRn World (https://nrnworld.one/MyOffiCity/)
+All Rights Reserved.
+
+1. GRANT OF EDUCATIONAL LICENSE
+Subject to the terms and conditions of this License, the copyright holder
+("Licensor", nRn World) hereby grants you a limited, revocable, non-exclusive,
+non-transferable, royalty-free license to view, download, and run the source
+code and associated assets of this repository ("Software") solely for:
+  (a) Personal learning and self-education;
+  (b) Academic research, classroom demonstration, or non-commercial study; and
+  (c) Inspecting and evaluating the Software's architecture and functionality.
+
+2. STRICT RESTRICTIONS (NO COPYING, NO REDISTRIBUTION, NO COMMERCIAL USE)
+Unless you have obtained a separate, prior written commercial license agreement
+from the Licensor, you are STRICTLY PROHIBITED from:
+  (a) Commercial Use & Monetization: Using the Software, in whole or in part,
+      for any commercial purpose, revenue generation, paid product, SaaS
+      offering, client work, advertising-supported service, or business
+      operation (whether direct or indirect).
+  (b) Direct Copying & Cloning: Copying, duplicating, rebranding, or
+      republishing the Software, its codebase, UI/UX design, or substantial
+      portions thereof as your own project, product, or public service.
+  (c) Redistribution & Public Hosting: Distributing, sublicensing, selling,
+      renting, leasing, or publicly hosting modified or unmodified versions of
+      the Software for third parties.
+  (d) Removal of Notices: Removing, altering, or obscuring any copyright,
+      trademark, attribution, or license notices contained in the Software.
+
+3. COMMERCIAL LICENSING & RIGHTS PURCHASE
+If you wish to use, adapt, host, distribute, or monetize MyOffiCity (or any
+portion of its codebase) for commercial purposes, you must first contact the
+Licensor to purchase a commercial license or obtain written permission:
+
+  Owner:   nRn World
+  Email:   bynrnworld@gmail.com
+  Website: https://nrnworld.one/MyOffiCity/
+
+4. THIRD-PARTY ASSETS & DEPENDENCIES
+Certain third-party 3D models, libraries, and open-source packages used by this
+project remain subject to their respective licenses (such as CC0, CC BY 4.0,
+and MIT). Full attributions and license details are listed in CREDITS.md.
+Nothing in this License restricts rights granted to you under those separate
+third-party licenses.
+
+5. NO WARRANTY & LIMITATION OF LIABILITY
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+LICENSOR OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM,
+OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

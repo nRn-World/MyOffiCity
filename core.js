@@ -198,6 +198,12 @@ const Core = (() => {
     return [...list, clean].slice(-maxItems);
   }
 
-  return { parse, plan, review, decision, files, audit, routineDue, shiftDue, reportCounts, tierFor, validState, summarizeChanges, mergeProjectMemory };
+  const FREE_MODELS = [
+    { id: 'qwen/qwen-2.5-coder-32b-instruct:free', role: 'dev', label: 'Qwen 2.5 Coder 32B (Free)' },
+    { id: 'deepseek/deepseek-r1:free', role: 'leader', label: 'DeepSeek R1 (Free)' },
+    { id: 'meta-llama/llama-3.3-70b-instruct:free', role: 'lead', label: 'Llama 3.3 70B (Free)' },
+  ];
+
+  return { parse, plan, review, decision, files, audit, routineDue, shiftDue, reportCounts, tierFor, validState, summarizeChanges, mergeProjectMemory, FREE_MODELS };
 })();
 if (typeof module !== 'undefined') module.exports = Core;

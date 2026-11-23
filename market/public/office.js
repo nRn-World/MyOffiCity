@@ -1649,12 +1649,26 @@ function resize(){
 function init(c,ov){
   canvas=c;overlay=ov;
   renderer=new T3.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});
-  renderer.setPixelRatio(Math.min(devicePixelRatio,2.4));renderer.shadowMap.enabled=true;renderer.shadowMap.type=T3.PCFShadowMap;
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2.4));renderer.shadowMap.enabled=true;renderer.shadowMap.type=T3.PCFSoftShadowMap;
   // Filmatisk färg: sRGB-utdata och mjuk tone mapping ger renare färger och
   // behåller detaljerna i både fönsterljus och skuggor.
   renderer.outputColorSpace=T3.SRGBColorSpace;
-  renderer.toneMapping=T3.ACESFilmicToneMapping;renderer.toneMappingExposure=.9;
+  renderer.toneMapping=T3.ACESFilmicToneMapping;renderer.toneMappingExposure=.95;
   scene=new T3.Scene();
+  // Lättviktig environment map via PMREMGenerator för realistiska reflektioner på glas, metall och bilar
+  try{
+    const pmrem=new T3.PMREMGenerator(renderer);
+    const envScene=new T3.Scene();
+    envScene.background=new T3.Color(0xc8dcf0);
+    const envHemi=new T3.HemisphereLight(0xeef6ff,0x5a6354,1.6);
+    envScene.add(envHemi);
+    const envSun=new T3.DirectionalLight(0xfff4e0,2.2);
+    envSun.position.set(-10,20,14);
+    envScene.add(envSun);
+    scene.environment=pmrem.fromScene(envScene,0.04).texture;
+    scene.environmentIntensity=0.45;
+    pmrem.dispose();
+  }catch(_){}
   bgC=cv(4,256);bgT=new T3.CanvasTexture(bgC);bgT.colorSpace=T3.SRGBColorSpace;scene.background=bgT;
   camera=new T3.OrthographicCamera(-10,10,10,-10,.1,500);
   hemi=new T3.HemisphereLight(0xffffff,0xb4b8a6,.95*Math.PI);scene.add(hemi);

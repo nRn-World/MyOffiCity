@@ -2207,12 +2207,12 @@ const Office = (() => {
     if (!R) return;
     group.updateMatrixWorld(true);
     const spd = busy ? 11 : 6.4;
-    const tapL = Math.sin(t * spd + (ph || 0)) * 0.14;
-    const tapR = Math.sin(t * spd + (ph || 0) + 2.3) * 0.14;
-    aimBoneToChild(group, R.uL, R.lL, 0.12, -0.52, 0.84);
-    aimBoneToChild(group, R.uR, R.lR, -0.12, -0.52, 0.84);
-    aimBoneToChild(group, R.lL, R.hL || (R.lL && R.lL.children[0]), -0.22, -0.05 + tapL, 0.97);
-    aimBoneToChild(group, R.lR, R.hR || (R.lR && R.lR.children[0]), 0.22, -0.05 + tapR, 0.97);
+    const tapL = Math.sin(t * spd + (ph || 0)) * 0.08;
+    const tapR = Math.sin(t * spd + (ph || 0) + 2.3) * 0.08;
+    aimBoneToChild(group, R.uL, R.lL, 0.06, -0.86, 0.50);
+    aimBoneToChild(group, R.uR, R.lR, -0.06, -0.86, 0.50);
+    aimBoneToChild(group, R.lL, R.hL || (R.lL && R.lL.children[0]), -0.18, -0.38 + tapL, 0.91);
+    aimBoneToChild(group, R.lR, R.hR || (R.lR && R.lR.children[0]), 0.18, -0.38 + tapR, 0.91);
     if (R.head) R.head.rotation.y += Math.sin(t * 0.7 + (ph || 0)) * 0.14;
   }
   function frame(now) {

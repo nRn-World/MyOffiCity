@@ -663,7 +663,7 @@ function buildCarTemplates(scene){
     // paketets bilar står radiellt i en cirkel och alla har fronten mot cirkelns mitt: framåt = rakt mot mitten
     const yaw=Math.atan2(-cen.z,-cen.x);
     const g=new T3.Group(),inner=new T3.Group();g.add(inner);inner.position.set(-cen.x,0,-cen.z);
-    const parts=[b,...b.parent.children.filter(c=>c.isMesh&&c!==b),...ws];
+    const parts=[b,...b.parent.children.filter(c=>c.isMesh&&c!==b&&c.userData.c&&c.userData.c.distanceTo(b.userData.c)<3.5),...ws];
     const box=new T3.Box3();
     parts.forEach(m=>{const c=new T3.Mesh(m.geometry,m.material);m.matrixWorld.decompose(c.position,c.quaternion,c.scale);c.castShadow=true;c.name=m.name;inner.add(c);});
     g.rotation.y=yaw;g.updateMatrixWorld(true);box.setFromObject(g);

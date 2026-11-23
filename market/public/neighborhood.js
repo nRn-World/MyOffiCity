@@ -294,7 +294,19 @@ window.Neighborhood = (() => {
     renderer.toneMapping = T.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 0.94;
     /* Långa, mjuka skuggor från en låg sol ger staden djup – som en stadskarta. */
-    renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFShadowMap;
+    renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap;
+    try {
+      const pmrem = new T.PMREMGenerator(renderer);
+      const envScene = new T.Scene();
+      envScene.background = new T.Color(0xc8dcf0);
+      envScene.add(new T.HemisphereLight(0xeef6ff, 0x5a6354, 1.6));
+      const envSun = new T.DirectionalLight(0xfff4e0, 2.2);
+      envSun.position.set(-10, 20, 14);
+      envScene.add(envSun);
+      scene.environment = pmrem.fromScene(envScene, 0.04).texture;
+      scene.environmentIntensity = 0.45;
+      pmrem.dispose();
+    } catch (_) {}
     renderer.domElement.style.display = 'block';
     renderer.domElement.style.width = '100%';
     renderer.domElement.style.height = '100%';

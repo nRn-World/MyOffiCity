@@ -85,55 +85,40 @@ Du styr **Max fixes per day** och **Max findings** i Reports. Granskningen kan o
 
 Dagliga granskningar rör aldrig hemliga filer, CI-konfiguration, licenser, containrar eller beroendefiler som `package.json` — sådana fynd rapporteras i stället med en anledning. Allt hamnar i en PR som du godkänner.
 
-**Try a demo audit** i GitHub-vyn visar hela flödet med ett påhittat repo, utan GitHub-token. Den använder fortfarande teamets AI-modeller.
+**Try a demo audit** i GitHub-vy
 
-## GitHub
+## Kom igång
 
-1. Skapa en **fine-grained token**: GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens.
-   - Repository access: *Only select repositories* (eller *All repositories* om teamet ska få skapa nya repon).
-   - Permissions: **Contents: Read and write**, **Pull requests: Read and write**, **Metadata: Read-only**. För nya repon även **Administration: Read and write**.
-2. Klistra in token i **GitHub-vyn** (eller lägg den i `.env` som `GITHUB_TOKEN` och starta om servern).
-3. **Testa anslutning** i GitHub-vyn eller Inställningar.
-4. Nytt uppdrag → välj repo (eller "＋ Nytt repo"). Teamet läser relevanta filer, gör ändringarna, granskar, och Tomas öppnar en **pull request** på grenen `nrn/…`.
-5. Du mergar med knappen **Merga** (eller på GitHub). `main` ändras aldrig utan ditt godkännande. "Bygg vidare" fortsätter på samma gren.
+För att komma igång med MyOffiCity, följ dessa steg:
 
-Hemliga filer (`.env*`, `*.pem`, `*.key`, `id_rsa*`, `secrets*`) skickas aldrig till AI och kan inte ändras. Max 200 kB per fil, 40 filer per uppdrag.
+1. Klona repot:
+   ```bash
+   git clone https://github.com/nRn-World/MyOffiCity.git
+   cd MyOffiCity
+   ```
 
-## Ekonomi
+2. Installera beroenden:
+   ```bash
+   npm install
+   ```
 
-Kostnad per anrop beräknas från leverantörens tokenräkning (OpenRouter returnerar exakt kostnad i `usage.cost`). Priser per modell kommer från den live-hämtade katalogen och kan justeras per modell i Inställningar. Hyran är simulerad.
+3. Konfigurera dina API-nycklar i `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+   Öppna `.env` och lägg till dina API-nycklar för OpenRouter, OpenAI, Anthropic och Ollama.
 
-## Tester
+4. Starta applikationen:
+   ```bash
+   npm start
+   ```
 
-```bash
-node test/core.test.js     # JSON-utdragning, validering, importkontroll, i18n
-node test/github.test.js   # grenskydd, hemliga filer, commit-flöde (mockad GitHub)
-```
+5. Öppna din webbläsare och gå till `http://localhost:8765`.
 
-Portalen och API:t har egna sviter (kräver lokal Wrangler, se `market/README.md`): `e2e`, `e2e3`, `e2e4`, `network`, `city`, `oauth` och `website`.
+## Bidra
 
-## Filer
+Vi välkomnar bidrag! För att bidra, följ dessa steg:
 
-| Fil | Ansvar |
-| --- | --- |
-| `server.py` | statisk server, AI-proxy, GitHub-proxy, modellkatalog |
-| `core.js` | ren logik: JSON-utdragning, schema- och importvalidering |
-| `app.js` | företagslogik, uppdragsflöde, ekonomi, gränssnitt |
-| `office.js` | 3D-kontoret (Three.js) |
-| `orders.js` | beställningar, förslag och leverans till kunder |
-| `github.js` | GitHub-anrop via proxyn, gren- och filskydd |
-| `flags.js` | språk- och funktionsflaggor |
-| `i18n.js` | 9 språk; nya nycklar faller tillbaka på engelska |
-| `i18n-daily.js` | texter för GitHub, rapporter och dagliga granskningar |
-| `i18n-orders.js` | texter för beställningar och kundchatten |
-| `market/` | kundportalen, API:t och 3D-stadsdelen på Cloudflare (egen README) |
-
-## Kända begränsningar
-
-- Ingen riktig inloggning eller flera användare, inga riktiga betalningar.
-- Den dagliga granskningen kräver att appen är öppen. Stängd app = ingen körning; öppnar du senare samma dag körs den en gång.
-- AI-svaren streamas inte; ett anrop kan ta upp till två minuter innan det ger upp.
-- `custom`-leverantörens valfria nyckel ligger kvar i webbläsaren (den skickas bara till localhost och till din egen server).
-- `office.js` är fortfarande en stor fil; 3D-scenen byggs om vid våningsbyte och gamla GPU-resurser frigörs nu, men den kan delas upp mer.
-
-Säkerhet: servern lyssnar bara på 127.0.0.1 och vägrar servera `.env`, `.env.example`, `.gitignore` eller `server.py` över HTTP. Nycklarna kan alltså inte hämtas från webbläsaren.
+1. Forka repot.
+2. Skapa en ny branch (`git checkout -b feature/ny-funktion`).
+3. Gör dina

@@ -1755,18 +1755,30 @@ Rules:
       changed.push(cleanPath);
     }
 
-    // 5. Öppna Pull Request på första committen
+    // 5. Öppna Pull Request om ingen öppen PR redan finns för arbetsbranchen (t.ex. efter auto-merge)
     let prUrl = sprint.pr_url, prNum = sprint.pr_number;
-    if (!prNum && changed.length) {
+    if (changed.length) {
+      let hasOpenPr = false;
       try {
-        const pr = await ghApi(sprint.gh_token, `/repos/${sprint.repo}/pulls`, 'POST', {
-          title: `[MyOffiCity] ${clip(sprint.goal, 72)}`,
-          head: sprint.work_branch,
-          base: sprint.base_branch,
-          body: `Autonom ${sprint.days}-dagars sprint skapad av ditt AI-team i MyOffiCity.\n\n**Mål:** ${sprint.goal}\n\nAlla commits från teamet samlas här så du kan granska och merga i lugn och ro.`,
-        });
-        if (pr && pr.html_url) { prUrl = pr.html_url; prNum = pr.number || 1; }
-      } catch { /* PR kanske redan finns */ }
+        const owner = sprint.repo.split('/')[0];
+        const openPrs = await ghApi(sprint.gh_token, `/repos/${sprint.repo}/pulls?head=${encodeURIComponent(owner + ':' + sprint.work_branch)}&state=open`);
+        if (Array.isArray(openPrs) && openPrs.length) {
+          hasOpenPr = true;
+          prUrl = openPrs[0].html_url || prUrl;
+          prNum = openPrs[0].number || prNum;
+        }
+      } catch { /* */ }
+      if (!hasOpenPr) {
+        try {
+          const pr = await ghApi(sprint.gh_token, `/repos/${sprint.repo}/pulls`, 'POST', {
+            title: `[MyOffiCity] ${clip(task.title, 72)}`,
+            head: sprint.work_branch,
+            base: sprint.base_branch,
+            body: `Autonom uppdatering av **${task.assignee}** i MyOffiCity.\n\n**Uppgift:** ${task.title}\n**Ändrade filer:** ${changed.join(', ')}\n\nVerifieras automatiskt av GitHub Actions innan merge.`,
+          });
+          if (pr && pr.html_url) { prUrl = pr.html_url; prNum = pr.number || 1; }
+        } catch { /* */ }
+      }
       if (prNum) await env.DB.prepare('UPDATE sprints SET pr_url=?, pr_number=? WHERE id=?').bind(prUrl, prNum, sprint.id).run();
     }
 

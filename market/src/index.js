@@ -1128,6 +1128,49 @@ async function api(req, env, ctx) {
   throw new HttpError(404, 'not_found', 'Not found');
 }
 
+const FREE_AI_MODEL = '@cf/qwen/qwen2.5-coder-32b-instruct';
+const FREE_AI_GLOBAL_DAILY_CAP = 350;
+const FREE_AI_IP_DAILY_CAP = 20;
+
+async function freeAiChat(req, env) {
+  if (!env.AI) throw new HttpError(503, 'ai_unavailable', 'Cloudflare Workers AI is not configured');
+  const body = await req.json().catch(() => null);
+  if (!body || !Array.isArray(body.messages) || !body.messages.length) {
+    throw new HttpError(400, 'bad_request', 'messages array is required');
+  }
+  const day = new Date().toISOString().slice(0, 10);
+  const ip = (req.headers.get('CF-Connecting-IP') || req.headers.get('X-Forwarded-For') || 'anon').split(',')[0].trim().slice(0, 64);
+  if (env.DB) {
+    await env.DB.prepare('CREATE TABLE IF NOT EXISTS ai_quota (day TEXT NOT NULL, scope TEXT NOT NULL, count INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (day, scope))').run();
+    const gRow = await env.DB.prepare('SELECT count FROM ai_quota WHERE day = ? AND scope = ?').bind(day, 'global').first();
+    if ((gRow?.count || 0) >= FREE_AI_GLOBAL_DAILY_CAP) {
+      throw new HttpError(429, 'free_ai_quota_exceeded', 'Daily free AI limit reached. Add a free OpenRouter API key in Settings to continue.');
+    }
+    const ipRow = await env.DB.prepare('SELECT count FROM ai_quota WHERE day = ? AND scope = ?').bind(day, 'ip:' + ip).first();
+    if ((ipRow?.count || 0) >= FREE_AI_IP_DAILY_CAP) {
+      throw new HttpError(429, 'free_ai_ip_quota_exceeded', 'Your daily free AI limit (20/day) is reached. Add a free OpenRouter API key in Settings.');
+    }
+    await env.DB.batch([
+      env.DB.prepare('INSERT INTO ai_quota (day, scope, count) VALUES (?, ?, 1) ON CONFLICT(day, scope) DO UPDATE SET count = count + 1').bind(day, 'global'),
+      env.DB.prepare('INSERT INTO ai_quota (day, scope, count) VALUES (?, ?, 1) ON CONFLICT(day, scope) DO UPDATE SET count = count + 1').bind(day, 'ip:' + ip),
+    ]);
+  }
+  const messages = body.messages.slice(-16).map(m => ({
+    role: m && ['system', 'user', 'assistant'].includes(m.role) ? m.role : 'user',
+    content: String(m && m.content || '').slice(0, 12000),
+  }));
+  const res = await env.AI.run(FREE_AI_MODEL, {
+    messages,
+    max_tokens: Math.min(1024, Math.max(64, Number(body.max_tokens) || 800)),
+    temperature: typeof body.temperature === 'number' ? Math.min(1, Math.max(0, body.temperature)) : 0.3,
+  });
+  return {
+    model: FREE_AI_MODEL,
+    content: (res && (res.response || res.result || '')) || '',
+    free_tier: true,
+  };
+}
+
 export default {
   async fetch(req, env, ctx) {
     const url = new URL(req.url);
@@ -1148,6 +1191,7 @@ export default {
     try {
       const oa = await oauthFetch(req, env, url); if (oa) return oa;
       if (url.pathname === '/api/mcp') return await mcp(req, env, ctx);
+      if (req.method === 'POST' && url.pathname === '/api/ai/chat') return send(await freeAiChat(req, env), 200, req, env);
       return send(await api(req, env, ctx), 200, req, env);
     } catch (err) {
       if (err instanceof HttpError) return send({ error: { code: err.code, message: err.message } }, err.status, req, env);

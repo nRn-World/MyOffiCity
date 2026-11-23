@@ -1814,11 +1814,16 @@ Rules:
     for (const f of files) {
       const cleanPath = f.path.trim().replace(/^\/+/, '');
       const encPath = cleanPath.split('/').map(encodeURIComponent).join('/');
-      let existingSha = undefined;
+      let existingSha = undefined, existingLen = 0;
       try {
         const ex = await ghApi(sprint.gh_token, `/repos/${sprint.repo}/contents/${encPath}?ref=${encodeURIComponent(sprint.work_branch)}`);
-        if (ex && ex.sha) existingSha = ex.sha;
+        if (ex && ex.sha) { existingSha = ex.sha; existingLen = ex.size || 0; }
       } catch { /* ny fil */ }
+      // Skyddsspärr: låt aldrig en agent radera/trunkera en befintlig fil med >20 % (skyddar design.css, index.html, app.js m.fl.)
+      if (existingLen > 400 && f.content.length < existingLen * 0.8) {
+        await addSprintLog(env, sprint.id, task.assignee, `Skyddsspärr stoppade överskrivning av ${cleanPath} (${f.content.length} B < ${existingLen} B).`);
+        continue;
+      }
       const putRes = await ghApi(sprint.gh_token, `/repos/${sprint.repo}/contents/${encPath}`, 'PUT', {
         message: commitMsg,
         content: b64EncodeUtf8(f.content),

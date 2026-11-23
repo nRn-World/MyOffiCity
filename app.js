@@ -1,37 +1,45 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const fs = require('fs');
-const path = require('path');
-require('dotenv').config();
+// app.js
+// Main application file for MyOffiCity
 
-const app = express();
-const PORT = process.env.PORT || 8765;
+import { storage, userData, currentUserData } from './core.js';
 
-app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, 'public')));
+// Initialize the app
+function initApp() {
+  // Load user data
+  const userData = userData.load();
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
+  // Set up event listeners
+  setupEventListeners();
 
-app.post('/api/command', (req, res) => {
-  const { command } = req.body;
-  try {
-    if (!command) throw new Error('No command provided');
-    // Simulate command processing
-    console.log(`Processing command: ${command}`);
-    res.status(200).json({ message: 'Command processed successfully' });
-  } catch (error) {
-    console.error('Error processing command:', error.message);
-    res.status(400).json({ error: error.message });
-  }
-});
+  // Initialize UI
+  initUI();
 
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send('Something broke!');
-});
+  // Load city assets
+  loadCityAssets();
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+  console.log('App initialized with user data:', userData);
+}
+
+// Set up event listeners
+function setupEventListeners() {
+  // Example: Save user data when window is about to unload
+  window.addEventListener('beforeunload', () => {
+    userData.save(currentUserData);
+  });
+
+  // Add more event listeners as needed
+}
+
+// Initialize UI
+function initUI() {
+  // Initialize UI components
+  // This would include setting up the office view, chat, team, etc.
+}
+
+// Load city assets
+function loadCityAssets() {
+  // Load 3D models and other assets for the city
+}
+
+// Start the app
+initApp();

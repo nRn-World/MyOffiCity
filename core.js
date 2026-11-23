@@ -1,43 +1,55 @@
-class Core {
-  constructor() {
-    this.apiKeys = {
-      openRouter: process.env.OPENROUTER_API_KEY,
-      openAI: process.env.OPENAI_API_KEY,
-      anthropic: process.env.ANTHROPIC_API_KEY,
-      github: process.env.GITHUB_TOKEN,
-    };
-    this.validateAPIKeys();
-  }
+// core.js
+// Core functionality for MyOffiCity
 
-  validateAPIKeys() {
-    Object.keys(this.apiKeys).forEach(key => {
-      if (!this.apiKeys[key]) {
-        console.warn(`Warning: ${key} is not set in environment variables.`);
-      }
-    });
-  }
-
-  async fetchFromAPI(endpoint, options = {}) {
+// Local storage helper functions
+const storage = {
+  get: (key) => {
     try {
-      const response = await fetch(endpoint, options);
-      if (!response.ok) {
-        throw new Error(`API call failed with status ${response.status}: ${response.statusText}`);
-      }
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching from API:', error.message);
-      throw error;
+      const value = localStorage.getItem(key);
+      return value ? JSON.parse(value) : null;
+    } catch (e) {
+      console.error('Error getting from localStorage', e);
+      return null;
+    }
+  },
+  set: (key, value) => {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (e) {
+      console.error('Error setting to localStorage', e);
+    }
+  },
+  remove: (key) => {
+    try {
+      localStorage.removeItem(key);
+    } catch (e) {
+      console.error('Error removing from localStorage', e);
+    }
+  },
+  clear: () => {
+    try {
+      localStorage.clear();
+    } catch (e) {
+      console.error('Error clearing localStorage', e);
     }
   }
+};
 
-  async processCommand(command) {
-    if (!command) {
-      throw new Error('No command provided');
-    }
-    console.log(`Processing command: ${command}`);
-    // Simulate command processing
-    return { message: 'Command processed successfully' };
+// User data management
+const userData = {
+  save: (data) => {
+    storage.set('userData', data);
+  },
+  load: () => {
+    return storage.get('userData') || {};
+  },
+  clear: () => {
+    storage.remove('userData');
   }
-}
+};
 
-module.exports = Core;
+// Initialize user data
+let currentUserData = userData.load();
+
+// Export functions for use in other modules
+export { storage, userData, currentUserData };

@@ -1068,7 +1068,14 @@ const Office = (() => {
             if (a.chair) { a.chair.position.set(.68, 0, .22); a.chair.rotation.y = -.45; }
           }
           if (p.mixer) p.mixer.update((idx * 1.13) % 2.5);
-          p.group.userData = { glb: true, key: kind, mixer: p.mixer };
+          const typeRig = (p.actions && p.actions.sit) ? {
+            uL: p.group.getObjectByName('UpperArm.L'),
+            uR: p.group.getObjectByName('UpperArm.R'),
+            lL: p.group.getObjectByName('LowerArm.L'),
+            lR: p.group.getObjectByName('LowerArm.R'),
+            head: p.group.getObjectByName('Head'),
+          } : null;
+          p.group.userData = { glb: true, key: kind, mixer: p.mixer, typeRig };
           parent.add(p.group);
           a.p.visible = false; parent.remove(a.p);
           a.p = p.group; a.glbApplied = kind;
@@ -2171,6 +2178,32 @@ const Office = (() => {
       if (alive()) { root.remove(m); L.p.visible = true; L.mover = null; L.away = null; T.socialWith = false; socializing = false; }
     }
   }
+  const _twq = new T3.Quaternion(), _tpq = new T3.Quaternion(), _tdq = new T3.Quaternion(), _tcur = new T3.Vector3(), _twant = new T3.Vector3(), _tgq = new T3.Quaternion();
+  function aimBoneLocal(group, bone, lx, ly, lz) {
+    if (!bone || !bone.parent) return;
+    group.getWorldQuaternion(_tgq);
+    _twant.set(lx, ly, lz).normalize().applyQuaternion(_tgq);
+    bone.getWorldQuaternion(_twq);
+    _tcur.set(0, 1, 0).applyQuaternion(_twq).normalize();
+    _tdq.setFromUnitVectors(_tcur, _twant);
+    bone.parent.getWorldQuaternion(_tpq);
+    const localDelta = _tpq.clone().invert().multiply(_tdq).multiply(_tpq);
+    bone.quaternion.premultiply(localDelta);
+    bone.updateMatrixWorld(true);
+  }
+  function poseTypingArms(group, t, busy, ph) {
+    const R = group && group.userData && group.userData.typeRig;
+    if (!R) return;
+    group.updateMatrixWorld(true);
+    const spd = busy ? 11 : 6.2;
+    const tapL = Math.sin(t * spd + (ph || 0)) * 0.13;
+    const tapR = Math.sin(t * spd + (ph || 0) + 2.3) * 0.13;
+    aimBoneLocal(group, R.uL, 0.08, -0.62, 0.78);
+    aimBoneLocal(group, R.uR, -0.08, -0.62, 0.78);
+    aimBoneLocal(group, R.lL, -0.18, -0.04 + tapL, 0.98);
+    aimBoneLocal(group, R.lR, 0.18, -0.04 + tapR, 0.98);
+    if (R.head) R.head.rotation.y += Math.sin(t * 0.7 + (ph || 0)) * 0.14;
+  }
   function frame(now) {
     // Rendera bara när kontoret faktiskt syns (och fliken är aktiv). Sparar GPU/CPU
     // när man sitter i chatten, ekonomin eller inställningarna.
@@ -2195,7 +2228,10 @@ const Office = (() => {
     const W = canvas.clientWidth, H = canvas.clientHeight;
     for (const id in agents) {
       const a = agents[id], b = a.busy > 0;
-      if (a.p && a.p.userData && a.p.userData.mixer && a.p.visible !== false) a.p.userData.mixer.update(dt);
+      if (a.p && a.p.userData && a.p.userData.mixer && a.p.visible !== false) {
+        a.p.userData.mixer.update(dt);
+        if (a.p.userData.typeRig) poseTypingArms(a.p, t, b, a.phase);
+      }
       else if (a.p && a.p.userData && a.p.userData.rig && a.p.visible !== false) stepGlbRig(a.p, t, false);
       else animPerson(a.p, t, b, a.phase);
       if (a.mover && a.mover.visible !== false) {

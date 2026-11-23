@@ -1135,8 +1135,9 @@ async function api(req, env, ctx) {
 }
 
 const FREE_AI_MODELS = {
-  code: { id: '@cf/qwen/qwen2.5-coder-32b-instruct', fallbacks: ['@cf/meta/llama-3.1-8b-instruct-fast', '@cf/meta/llama-3.1-8b-instruct'], neuronsPer1k: 70, minNeurons: 40, maxNeurons: 160, maxOut: 1024 },
-  chat: { id: '@cf/meta/llama-3.1-8b-instruct-fast', fallbacks: ['@cf/meta/llama-3.1-8b-instruct', '@cf/meta/llama-3-8b-instruct'], neuronsPer1k: 18, minNeurons: 12, maxNeurons: 48, maxOut: 768 },
+  code: { id: '@cf/qwen/qwen2.5-coder-32b-instruct', fallbacks: ['@cf/meta/llama-3.3-70b-instruct-fp8-fast', '@cf/meta/llama-3.1-8b-instruct-fast'], neuronsPer1k: 70, minNeurons: 40, maxNeurons: 160, maxOut: 1500 },
+  chat: { id: '@cf/meta/llama-3.3-70b-instruct-fp8-fast', fallbacks: ['@cf/qwen/qwen2.5-coder-32b-instruct', '@cf/meta/llama-3.1-8b-instruct-fast'], neuronsPer1k: 45, minNeurons: 28, maxNeurons: 120, maxOut: 1200 },
+  gemma: { id: '@cf/google/gemma-3-12b-it', fallbacks: ['@cf/qwen/qwen2.5-coder-32b-instruct', '@cf/meta/llama-3.3-70b-instruct-fp8-fast'], neuronsPer1k: 35, minNeurons: 22, maxNeurons: 95, maxOut: 1200 },
 };
 // Hårt skydd mot Cloudflare Workers AI gratisgräns (10 000 neurons/dag).
 // 7 500 lämnar 2 500 neurons marginal för porträttbilder och avrundning -> garanterat 0 kr.
@@ -1194,7 +1195,8 @@ async function freeAiChat(req, env) {
   }
   const hasImage = typeof body.image === 'string' && body.image.length > 20;
   const hasAudio = typeof body.audio === 'string' && body.audio.length > 20;
-  const mode = (body.mode === 'chat' || body.model === 'llama' || String(body.model || '').includes('llama')) ? 'chat' : 'code';
+  const rawMode = String(body.mode || '').toLowerCase();
+  const mode = rawMode === 'gemma' ? 'gemma' : (rawMode === 'chat' || body.model === 'llama' || String(body.model || '').includes('llama')) ? 'chat' : 'code';
   const spec = FREE_AI_MODELS[mode];
   const messages = body.messages.slice(-14).map(m => ({
     role: m && ['system', 'user', 'assistant'].includes(m.role) ? m.role : 'user',
@@ -1325,10 +1327,11 @@ async function freeAiChat(req, env) {
 
 /* ---------- Autonoma online GitHub-sprintar (100 % i molnet, 0 kr, Cron varannan timme) ---------- */
 const OR_FREE_MODELS = [
+  'google/gemma-4-31b-it:free',
+  'google/gemma-4-26b-a4b-it:free',
   'qwen/qwen-2.5-coder-32b-instruct:free',
   'meta-llama/llama-3.3-70b-instruct:free',
   'deepseek/deepseek-r1:free',
-  'google/gemma-3-27b-it:free',
   'openrouter/free',
 ];
 

@@ -774,7 +774,7 @@
     const staff = opts.staff || [];
     const leaderId = (staff.find((s) => s.rank === 'leader') || staff[0] || {}).id || 'm0';
     const legacyKey = 'nrn.teamchat.' + c.id, storeKey = 'nrn.teamchats.' + c.id;
-    let mode = 'chat', busy = false, pendImg = '', pendAud = '', pendAudName = '';
+    let mode = 'code', busy = false, pendImg = '', pendAud = '', pendAudName = '';
     let rec = null, recChunks = [], recStream = null, recTimer = null, recSec = 0;
     const mkThread = (msgs = []) => ({
       id: 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
@@ -866,7 +866,7 @@
     wrap.innerHTML = '<button type="button" class="tchat-fab" id="tcfab"><span class="tchat-dot"></span><span>' + esc(tn('tChatOpen', { name: leaderName })) + '</span></button>'
       + '<div class="tchat-box">'
       + '<div class="tchat-head"><div><b>' + esc(leaderName) + '</b><small id="tcsub">' + esc(t('tChatSub')) + '</small></div>'
-      + '<div class="tchat-act"><div class="tchat-modes"><button type="button" class="on" data-m="chat">' + esc(t('tChatModeChat')) + '</button><button type="button" data-m="code">' + esc(t('tChatModeCode')) + '</button></div>'
+      + '<div class="tchat-act"><div class="tchat-modes"><button type="button" class="on" data-m="code">Qwen 32B</button><button type="button" data-m="chat">Llama 70B</button><button type="button" data-m="gemma">Gemma</button></div>'
       + '<button type="button" class="tchat-ico" id="tcfull" title="' + esc(t('tChatFull')) + '">⛶</button>'
       + '<button type="button" class="tchat-ico" id="tcmin" title="−">−</button></div></div>'
       + '<div class="tchat-bar">'

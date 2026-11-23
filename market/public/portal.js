@@ -766,24 +766,7 @@
     bt.onclick = send; ta.onkeydown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } };
     clearInterval(poll); poll = setInterval(async () => { if (document.hidden || !document.body.contains(box)) return; try { add((await o.more(last)).messages); } catch { /* */ } }, 4000);
   }
-  let _webLlmMod = null, _webLlmEngine = null, _webLlmModelId = '';
-  async function getLocalEngine(kind, onProgress) {
-    if (!navigator.gpu) throw new Error(lang === 'sv' ? 'Din webbläsare saknar WebGPU (använd Chrome/Edge på dator, eller byt till Moln 32B).' : 'WebGPU is not available in this browser (use Chrome/Edge on desktop, or switch to Cloud 32B).');
-    const adapter = await navigator.gpu.requestAdapter();
-    if (!adapter) throw new Error(lang === 'sv' ? 'Ingen WebGPU-grafik hittades på enheten.' : 'No WebGPU adapter found.');
-    const f16 = adapter.features && adapter.features.has('shader-f16');
-    const q = f16 ? 'q4f16_1-MLC' : 'q4f32_1-MLC';
-    const modelId = kind === 'local-gemma' ? ('gemma-2-2b-it-' + q) : ('Qwen2.5-Coder-3B-Instruct-' + q);
-    if (_webLlmEngine && _webLlmModelId === modelId) return { engine: _webLlmEngine, modelId };
-    if (!_webLlmMod) _webLlmMod = await import('https://esm.run/@mlc-ai/web-llm');
-    if (_webLlmEngine) { try { await _webLlmEngine.unload(); } catch { /* */ } _webLlmEngine = null; }
-    _webLlmEngine = await _webLlmMod.CreateMLCEngine(modelId, {
-      initProgressCallback: (rep) => { if (onProgress) onProgress(rep); },
-    });
-    _webLlmModelId = modelId;
-    return { engine: _webLlmEngine, modelId };
-  }
-  function mountTeamChat(host, c, roster, opts = {}) {   // online + inbyggd offline WebGPU AI-chatt direkt till teamledaren (Tomas)
+  function mountTeamChat(host, c, roster, opts = {}) {   // 100 % online AI-chatt direkt till teamledaren (Tomas) – ingen nedladdning
     const active = (roster && roster.team ? roster.team : []).filter((m) => m.fired == null);
     const lead = active.find((m) => m.slot === 0) || active.find((m) => m.persona && m.persona.role === 'dRoleLead') || active[0];
     const leaderName = lead && lead.persona && lead.persona.name ? lead.persona.name.split(' ')[0] : 'Tomas';
@@ -791,7 +774,7 @@
     const staff = opts.staff || [];
     const leaderId = (staff.find((s) => s.rank === 'leader') || staff[0] || {}).id || 'm0';
     const legacyKey = 'nrn.teamchat.' + c.id, storeKey = 'nrn.teamchats.' + c.id;
-    let mode = 'local-qwen', busy = false, pendImg = '', pendAud = '', pendAudName = '';
+    let mode = 'code', busy = false, pendImg = '', pendAud = '', pendAudName = '';
     let rec = null, recChunks = [], recStream = null, recTimer = null, recSec = 0;
     const mkThread = (msgs = []) => ({
       id: 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
@@ -883,7 +866,7 @@
     wrap.innerHTML = '<button type="button" class="tchat-fab" id="tcfab"><span class="tchat-dot"></span><span>' + esc(tn('tChatOpen', { name: leaderName })) + '</span></button>'
       + '<div class="tchat-box">'
       + '<div class="tchat-head"><div><b>' + esc(leaderName) + '</b><small id="tcsub">' + esc(t('tChatSub')) + '</small></div>'
-      + '<div class="tchat-act"><div class="tchat-modes"><button type="button" class="on" data-m="local-qwen" title="Inbyggd Qwen 2.5 3B (Offline · 0 kr · obegränsad)">⚡ Qwen ∞</button><button type="button" data-m="local-gemma" title="Inbyggd Gemma 2 2B (Offline · 0 kr · obegränsad)">⚡ Gemma ∞</button><button type="button" data-m="code" title="Cloudflare Moln Qwen 32B">☁️ Moln 32B</button></div>'
+      + '<div class="tchat-act"><div class="tchat-modes"><button type="button" class="on" data-m="code">Qwen 32B</button><button type="button" data-m="chat">Llama 70B</button><button type="button" data-m="gemma">Gemma</button></div>'
       + '<button type="button" class="tchat-ico" id="tcfull" title="' + esc(t('tChatFull')) + '">⛶</button>'
       + '<button type="button" class="tchat-ico" id="tcmin" title="−">−</button></div></div>'
       + '<div class="tchat-bar">'
@@ -1053,10 +1036,6 @@
       ms.scrollTop = ms.scrollHeight;
     };
     const refreshQuota = () => {
-      if (mode.startsWith('local-')) {
-        if (sub) sub.textContent = (lang === 'sv' ? 'Teamledare · Egen Offline-AI (0 kr · ∞ obegränsad)' : 'Team leader · Built-in Offline AI (0 kr · ∞ unlimited)');
-        return;
-      }
       api('GET', '/ai/quota').then((q) => {
         if (q && q.ok && sub) sub.textContent = t('tChatSub') + ' · ' + q.remaining_ip + '/80';
       }).catch(() => { });
@@ -1186,38 +1165,15 @@
       try { if (window.Office && Office.has && Office.has(leaderId)) { Office.busy(leaderId, true); Office.say(leaderId, t('tChatThinking'), 4000); } } catch { /* */ }
       try {
         const apiMsgs = [{ role: 'system', content: sysPrompt() }, ...th.messages.slice(-12).map((m) => ({ role: m.role, content: m.content }))];
-        let reply = '';
-        if (mode.startsWith('local-') && !imgNow && !audNow) {
-          const waitTxt = waitEl.querySelector('.tchat-txt');
-          const { engine } = await getLocalEngine(mode, (rep) => {
-            if (waitTxt && rep) {
-              const pct = typeof rep.progress === 'number' ? Math.round(rep.progress * 100) + '% · ' : '';
-              waitTxt.textContent = (lang === 'sv' ? 'Laddar inbyggd offline-hjärna (sparas i webbläsaren): ' : 'Loading built-in offline brain (cached in browser): ') + pct + (rep.text || '');
-            }
-          });
-          if (waitTxt) waitTxt.textContent = '';
-          const stream = await engine.chat.completions.create({
-            messages: apiMsgs,
-            temperature: 0.35,
-            max_tokens: 900,
-            stream: true,
-          });
-          for await (const chunk of stream) {
-            const delta = chunk?.choices?.[0]?.delta?.content || '';
-            if (delta) { reply += delta; if (waitTxt) waitTxt.textContent = reply; ms.scrollTop = ms.scrollHeight; }
-          }
-          reply = reply.trim() || '…';
-        } else {
-          const payload = { mode: mode.startsWith('local-') ? 'code' : mode, messages: apiMsgs, max_tokens: 1024 };
-          if (imgNow) payload.image = imgNow;
-          if (audNow) payload.audio = audNow;
-          const res = await api('POST', '/ai/chat', payload);
-          if (res.transcript) {
-            userMsg.transcript = res.transcript;
-            if (th.title === t('tChatAudLbl')) th.title = res.transcript.replace(/\s+/g, ' ').trim().slice(0, 34);
-          }
-          reply = String(res.content || res.response || '').trim() || '…';
+        const payload = { mode, messages: apiMsgs, max_tokens: 1024 };
+        if (imgNow) payload.image = imgNow;
+        if (audNow) payload.audio = audNow;
+        const res = await api('POST', '/ai/chat', payload);
+        if (res.transcript) {
+          userMsg.transcript = res.transcript;
+          if (th.title === t('tChatAudLbl')) th.title = res.transcript.replace(/\s+/g, ' ').trim().slice(0, 34);
         }
+        const reply = String(res.content || res.response || '').trim() || '…';
         th.messages.push({ role: 'assistant', content: reply });
         th.updated = Date.now();
         saveThreads(); renderThreads(); render(); refreshQuota();

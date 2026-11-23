@@ -253,7 +253,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--gold);bo
 .doffice{position:relative;flex:1;min-height:0;background:#0d1424}.doffice .city-host{position:absolute;inset:0}
 .dscroll{flex:1;overflow:auto;padding:22px}
 .dsplit{flex:1;display:grid;grid-template-columns:300px 1fr;min-height:0}
-.dlist{overflow:auto;border-right:1px solid var(--line);display:flex;flex-direction:column}
+.dlist{overflow:auto;border-right:1px solid var(--line);display:flex;flex-direction:column}.dlist>p.muted{padding:16px;margin:0}
 .dli{display:flex;flex-direction:column;gap:3px;text-align:left;background:transparent;border:0;border-bottom:1px solid var(--line);color:var(--ink);padding:14px 16px;cursor:pointer;font:inherit;transition:background .15s}
 .dli:hover,.dli.on{background:color-mix(in srgb,var(--gold) 12%,transparent)}.dli.on{box-shadow:inset 3px 0 0 var(--gold)}.dli small{color:var(--mut)}.dli span:not(.pill){color:var(--mut);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dthread{padding:18px;overflow:auto;display:flex;flex-direction:column;gap:10px}.dthread .dmsgs{max-height:none;flex:1;min-height:200px}.dbrief{border:1px solid var(--line);padding:12px 14px;margin-bottom:10px;background:var(--glass)}
@@ -293,3 +293,35 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--gold);bo
 .idinfo dd small{display:block;color:var(--mut);font-weight:400;font-size:12px}
 .idact{margin-top:16px;padding-top:14px;border-top:1px solid color-mix(in srgb,var(--gold) 30%,transparent)}
 button.item{width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer}
+
+/* online AI-chatt med teamledaren (Tomas) i 3D-kontoret */
+.tchat{position:absolute;right:16px;bottom:16px;z-index:25;display:flex;flex-direction:column;align-items:flex-end;pointer-events:none}
+.tchat-fab{display:none;pointer-events:auto;align-items:center;gap:9px;padding:11px 18px;border-radius:999px;border:1px solid var(--gold);background:rgba(10,15,29,.92);backdrop-filter:blur(10px);color:#f3ecdc;font:600 14px var(--sans);cursor:pointer;box-shadow:0 12px 32px rgba(0,0,0,.55);transition:transform .15s,background .15s}
+.tchat-fab:hover{transform:translateY(-2px);background:rgba(18,26,49,.98)}
+.tchat-dot{width:9px;height:9px;border-radius:50%;background:#3fe08f;box-shadow:0 0 8px #3fe08f}
+.tchat.min .tchat-fab{display:inline-flex}.tchat.min .tchat-box{display:none}
+.tchat-box{pointer-events:auto;width:min(400px,calc(100vw - 32px));height:min(460px,56vh);display:flex;flex-direction:column;background:rgba(10,15,29,.92);backdrop-filter:blur(12px);border:1px solid color-mix(in srgb,var(--gold) 60%,transparent);border-radius:12px;box-shadow:0 24px 60px rgba(0,0,0,.65);overflow:hidden;color:#f3ecdc}
+.tchat-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-bottom:1px solid color-mix(in srgb,var(--gold) 30%,transparent);background:rgba(18,26,49,.75)}
+.tchat-head b{display:block;font:600 16px var(--serif);color:var(--gold);line-height:1.15}
+.tchat-head small{display:block;font-size:11px;color:var(--mut)}
+.tchat-act{display:flex;align-items:center;gap:6px}
+.tchat-modes{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.tchat-modes button{background:transparent;border:0;color:var(--mut);font:600 11px var(--sans);padding:4px 8px;cursor:pointer}
+.tchat-modes button.on{background:var(--gold);color:#0a0e18}
+.tchat-ico{background:transparent;border:1px solid var(--line);color:var(--mut);border-radius:6px;width:26px;height:26px;cursor:pointer;font:600 13px var(--sans);display:grid;place-items:center}
+.tchat-ico:hover{color:#fff;border-color:var(--gold)}
+.tchat-msgs{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:9px}
+.tchat-empty{margin:auto 6px;text-align:center;line-height:1.5}
+.tchat-msg{max-width:92%;align-self:flex-start;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:8px 11px;font-size:13.5px;line-height:1.45}
+.tchat-msg.me{align-self:flex-end;background:color-mix(in srgb,var(--gold) 20%,rgba(16,22,38,.9));border-color:color-mix(in srgb,var(--gold) 45%,transparent)}
+.tchat-msg.wait{opacity:.75;font-style:italic}
+.tchat-msg small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);margin-bottom:3px;font-weight:700}
+.tchat-txt{white-space:pre-wrap;word-break:break-word}
+.tchat-code{margin:6px 0;border:1px solid rgba(255,255,255,.15);border-radius:6px;overflow:hidden;background:#070b14}
+.tchat-code-h{display:flex;justify-content:space-between;align-items:center;padding:4px 8px;background:rgba(255,255,255,.06);font-size:11px;color:var(--mut)}
+.tchat-cp{background:transparent;border:1px solid var(--line);color:var(--gold);font:600 10px var(--sans);padding:2px 7px;border-radius:4px;cursor:pointer}
+.tchat-code pre{margin:0;padding:8px;overflow:auto;max-height:200px;font-size:12px;line-height:1.4}
+.tchat-foot{display:flex;gap:8px;padding:10px;border-top:1px solid color-mix(in srgb,var(--gold) 25%,transparent);background:rgba(8,12,22,.85)}
+.tchat-foot textarea{flex:1;resize:none;min-height:38px;max-height:96px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:#f3ecdc;font:inherit;font-size:13.5px}
+.tchat-foot textarea:focus{outline:none;border-color:var(--gold)}
+@media(max-width:640px){.tchat{right:10px;bottom:10px;left:10px}.tchat-box{width:100%;height:52vh}}

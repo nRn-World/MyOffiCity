@@ -1,0 +1,56 @@
+name: MyOffiCity Agent Check
+
+on:
+  push:
+    branches:
+      - main
+      - 'myofficity/**'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  verify-agent-work:
+    name: Verify Agent Commit & Summary
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Syntax check JavaScript & Python files
+        run: |
+          set -e
+          for f in app.js office.js cityassets.js market/src/index.js market/public/portal.js market/public/office.js market/public/cityassets.js; do
+            if [ -f "$f" ]; then
+              echo "Checking $f..."
+              node --check "$f"
+            fi
+          done
+          if [ -f server.py ]; then
+            echo "Checking server.py..."
+            python3 -m py_compile server.py
+          fi
+
+      - name: Write Agent Activity Summary
+        if: always()
+        run: |
+          {
+            echo "## 🤖 MyOffiCity Agent Update"
+            echo "- **Branch:** \`${GITHUB_REF_NAME}\`"
+            echo "- **Commit:** \`${GITHUB_SHA::7}\` — $(git log -1 --pretty=%s)"
+            echo "- **Author:** $(git log -1 --pretty='%an')"
+            echo "- **Time (UTC):** $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+            echo ""
+            echo "### Changed files"
+            echo '```'
+            git diff-tree --no-commit-id --name-status -r HEAD || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

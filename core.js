@@ -204,6 +204,30 @@ const Core = (() => {
     { id: 'meta-llama/llama-3.3-70b-instruct:free', role: 'lead', label: 'Llama 3.3 70B (Free)' },
   ];
 
-  return { parse, plan, review, decision, files, audit, routineDue, shiftDue, reportCounts, tierFor, validState, summarizeChanges, mergeProjectMemory, FREE_MODELS };
+  function buildPreviewHtml(filesList) {
+    const list = Array.isArray(filesList) ? filesList : [];
+    const byName = new Map(list.map(f => [String(f.path || '').split('/').pop().toLowerCase(), String(f.content || '')]));
+    let html = byName.get('index.html') || '<!doctype html><html><body><p>No index.html found</p></body></html>';
+    const css = byName.get('style.css') || byName.get('styles.css') || '';
+    const js = byName.get('app.js') || byName.get('main.js') || '';
+    if (css && !html.includes(css)) html = html.replace('</head>', `<style>${css}</style></head>`);
+    if (js && !html.includes(js)) html = html.replace('</body>', `<script>${js}</script></body>`);
+    return html;
+  }
+
+  function formatTestFailure(command, exitCode, output, maxChars = 1500) {
+    const clean = String(output || '').trim().slice(-maxChars);
+    return `Test failed (${command}, exit ${exitCode}):\n${clean}\nFix the failing test before submitting for review.`;
+  }
+
+  function pickNeighborForSubcontract(neighbors, requiredService) {
+    const list = Array.isArray(neighbors) ? neighbors : [];
+    const req = String(requiredService || '').toLowerCase().trim();
+    return list
+      .filter(n => n && n.id && (!req || (Array.isArray(n.services) && n.services.some(s => String(s).toLowerCase().includes(req)))))
+      .sort((a, b) => (Number(a.distance) || 999) - (Number(b.distance) || 999))[0] || null;
+  }
+
+  return { parse, plan, review, decision, files, audit, routineDue, shiftDue, reportCounts, tierFor, validState, summarizeChanges, mergeProjectMemory, FREE_MODELS, buildPreviewHtml, formatTestFailure, pickNeighborForSubcontract };
 })();
 if (typeof module !== 'undefined') module.exports = Core;

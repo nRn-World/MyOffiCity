@@ -133,4 +133,23 @@ assert(I18N.en.st_rejected && I18N.sv.only_leader_chat, 'nya nycklar finns');
   assert.deepStrictEqual(mem, ['Använd alltid strict mode', 'Undvik globala variabler'], 'deduplicerar minne');
 }
 
+// buildPreviewHtml, formatTestFailure, pickNeighborForSubcontract
+{
+  const html = Core.buildPreviewHtml([
+    { path: 'index.html', content: '<html><head></head><body><h1>Hej</h1></body></html>' },
+    { path: 'style.css', content: 'body{color:red}' },
+    { path: 'app.js', content: 'console.log(1)' }
+  ]);
+  assert(html.includes('<style>body{color:red}</style>') && html.includes('<script>console.log(1)</script>'), 'bygger preview html');
+
+  const fail = Core.formatTestFailure('node test/core.test.js', 1, 'AssertionError: expected 1 to equal 2');
+  assert(fail.includes('Test failed (node test/core.test.js, exit 1)'), 'formaterar testfel');
+
+  const pick = Core.pickNeighborForSubcontract([
+    { id: 'c2', distance: 50, services: ['design', 'web'] },
+    { id: 'c1', distance: 12, services: ['web', 'seo'] }
+  ], 'web');
+  assert.strictEqual(pick.id, 'c1', 'väljer närmaste matchande granne');
+}
+
 console.log('core.js + i18n OK');

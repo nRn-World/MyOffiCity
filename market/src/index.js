@@ -1149,26 +1149,31 @@ const FREE_AI_IP_DAILY_CAP = 80;
 /* ---------- Multi-provider gratis AI-stafett (byts automatiskt i bakgrunden utan att användaren märker något) ---------- */
 function activeRelaySpecs(env, mode, extraOrKey = '') {
   const list = [];
+  const isLead = mode === 'lead';
   if (env.GEMINI_API_KEY) {
     const models = mode === 'gemma'
       ? ['gemma-3-27b-it', 'gemini-2.5-flash', 'gemini-2.0-flash']
-      : ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemma-3-27b-it'];
+      : isLead
+        ? ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemma-3-27b-it']
+        : ['gemini-2.0-flash', 'gemini-2.5-flash'];
     list.push({ name: 'gemini', url: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', key: env.GEMINI_API_KEY, models });
   }
   if (env.GROQ_API_KEY) {
-    const models = mode === 'code'
-      ? ['qwen-qwq-32b', 'llama-3.3-70b-versatile', 'llama-3.1-8b-instant']
-      : ['llama-3.3-70b-versatile', 'qwen-qwq-32b', 'llama-3.1-8b-instant'];
+    const models = isLead
+      ? ['llama-3.3-70b-versatile', 'qwen-qwq-32b']
+      : mode === 'worker'
+        ? ['llama-3.1-8b-instant', 'qwen-qwq-32b', 'llama-3.3-70b-versatile']
+        : ['llama-3.3-70b-versatile', 'qwen-qwq-32b', 'llama-3.1-8b-instant'];
     list.push({ name: 'groq', url: 'https://api.groq.com/openai/v1/chat/completions', key: env.GROQ_API_KEY, models });
   }
   if (env.CEREBRAS_API_KEY) {
     list.push({ name: 'cerebras', url: 'https://api.cerebras.ai/v1/chat/completions', key: env.CEREBRAS_API_KEY, models: ['qwen-3-32b', 'llama-3.3-70b'] });
   }
   if (env.SAMBANOVA_API_KEY) {
-    list.push({ name: 'sambanova', url: 'https://api.sambanova.ai/v1/chat/completions', key: env.SAMBANOVA_API_KEY, models: ['Meta-Llama-3.3-70B-Instruct', 'Qwen2.5-Coder-32B-Instruct'] });
+    list.push({ name: 'sambanova', url: 'https://api.sambanova.ai/v1/chat/completions', key: env.SAMBANOVA_API_KEY, models: isLead ? ['Meta-Llama-3.3-70B-Instruct', 'Qwen2.5-Coder-32B-Instruct'] : ['Qwen2.5-Coder-32B-Instruct', 'Meta-Llama-3.3-70B-Instruct'] });
   }
   if (env.MISTRAL_API_KEY) {
-    list.push({ name: 'mistral', url: 'https://api.mistral.ai/v1/chat/completions', key: env.MISTRAL_API_KEY, models: ['mistral-small-latest', 'codestral-latest'] });
+    list.push({ name: 'mistral', url: 'https://api.mistral.ai/v1/chat/completions', key: env.MISTRAL_API_KEY, models: isLead ? ['codestral-latest', 'mistral-small-latest'] : ['mistral-small-latest', 'codestral-latest'] });
   }
   const orKey = (extraOrKey && extraOrKey.trim().length > 10 ? extraOrKey.trim() : '') || (env.OPENROUTER_API_KEY || '').trim();
   if (orKey) {
@@ -1497,9 +1502,9 @@ function extractJson(txt) {
   return null;
 }
 
-async function callSprintAi(env, orKey, messages, maxTokens = 1600) {
-  // Prova först hela externa gratis-stafetten (Gemini, Groq, Cerebras, SambaNova, Mistral, OpenRouter :free)
-  const ext = await runExternalRelay(env, 'code', messages, maxTokens, 0.25, orKey);
+async function callSprintAi(env, orKey, messages, maxTokens = 1600, tier = 'worker') {
+  // Tomas ('lead') får alltid högsta AI-nivån (70B/Gemini 2.5/Codestral); övriga agenter ('worker') använder snabbare byggmodeller
+  const ext = await runExternalRelay(env, tier === 'lead' ? 'lead' : 'worker', messages, maxTokens, 0.25, orKey);
   if (ext.text) return { text: ext.text, model: ext.model };
   let lastErr = ext.lastErr || '';
   if (!env.AI || !env.DB) throw new HttpError(503, 'ai_unavailable', lastErr || 'AI not configured');
@@ -1510,9 +1515,12 @@ async function callSprintAi(env, orKey, messages, maxTokens = 1600) {
   const nRes = await env.DB.prepare('UPDATE ai_quota SET count = count + ? WHERE day = ? AND scope = ? AND count + ? <= ?')
     .bind(estNeurons, day, 'global_neurons', estNeurons, FREE_AI_GLOBAL_NEURONS_CAP).run();
   if (!nRes?.meta?.changes) {
-    throw new HttpError(429, 'free_ai_neuron_cap_exceeded', 'Dagens gratisgräns på Cloudflare är nådd – nästa pass körs imorgon eller direkt om du lägger in en gratis OpenRouter-nyckel.');
+    throw new HttpError(429, 'free_ai_neuron_cap_exceeded', 'Dagens gratisgräns på Cloudflare är nådd – nästa pass körs imorgon.');
   }
-  for (const mid of ['@cf/qwen/qwen2.5-coder-32b-instruct', '@cf/meta/llama-3.1-8b-instruct-fast']) {
+  const cfModels = tier === 'lead'
+    ? ['@cf/meta/llama-3.3-70b-instruct-fp8-fast', '@cf/qwen/qwen2.5-coder-32b-instruct']
+    : ['@cf/qwen/qwen2.5-coder-32b-instruct', '@cf/meta/llama-3.1-8b-instruct-fast'];
+  for (const mid of cfModels) {
     try {
       const r = await env.AI.run(mid, { messages, max_tokens: Math.min(2048, maxTokens), temperature: 0.25 });
       const text = String((r && (r.response || r.result || r?.choices?.[0]?.message?.content)) || '').trim();
@@ -1689,9 +1697,9 @@ async function runSprintStep(env, sprint) {
         treePaths = (tr?.tree || []).filter(x => x.type === 'blob' && !/node_modules|\.git\/|\.png$|\.jpg$|\.glb$|\.bin$/i.test(x.path)).map(x => x.path).slice(0, 80);
       } catch { /* */ }
       const ai = await callSprintAi(env, sprint.or_key, [
-        { role: 'system', content: 'You are Tomas, AI team leader. Return ONLY valid JSON: {"tasks":[{"title":"...","details":"...","assignee":"..."}]}. Create 5 NEW concrete improvement, bugfix, UI/UX or feature tasks that have NOT been done yet. Write in Swedish.' },
+        { role: 'system', content: 'You are Tomas, Chief Architect & AI Team Leader (top-tier brain). Return ONLY valid JSON: {"tasks":[{"title":"...","details":"...","assignee":"..."}]}. Create 5 NEW concrete improvement, bugfix, UI/UX or feature tasks that visibly improve the project and have NOT been done yet. Write in Swedish.' },
         { role: 'user', content: `Repo: ${sprint.repo}\nGoal: ${sprint.goal}\nTeam: ${agents.join(', ')}\nFiles:\n${treePaths.join('\n') || '(empty)'}\n\nAlready done:\n${prevTasks.map(x => `- ${x.title}: ${x.summary || x.status}`).join('\n')}\n\nPlan 5 new next-iteration tasks as JSON.` },
-      ], 900);
+      ], 900, 'lead');
       const parsed = extractJson(ai.text);
       const arr = Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.tasks) ? parsed.tasks : []);
       nextBatch = arr.filter(x => x && x.title).slice(0, 5).map((x, idx) => ({
@@ -1761,11 +1769,12 @@ async function runSprintStep(env, sprint) {
       } catch { /* */ }
     }
 
-    // 3. Låt agenten producera konkreta filändringar med robust ===FILE: ...=== format (ingen JSON-escaping som kan spricka!)
+    // 3. Låt agenten (worker-modell, eller lead-modell om Tomas själv kodar) producera konkreta filändringar
+    const isTomasTask = /^tomas\b/i.test(task.assignee || '');
     const ai = await callSprintAi(env, sprint.or_key, [
       {
         role: 'system',
-        content: `You are ${task.assignee}, a senior AI developer working autonomously on GitHub repo ${sprint.repo}.
+        content: `You are ${task.assignee}, an AI developer working under Team Leader Tomas on GitHub repo ${sprint.repo}.
 Output your work using THIS EXACT plain-text format (do NOT wrap the whole response in JSON):
 
 SUMMARY: Kort sammanfattning på svenska av vad du byggde
@@ -1776,15 +1785,15 @@ COMMIT: Kort commit-meddelande
 
 Rules:
 - Output 1 or 2 real, clean, working files using ===FILE: path=== and ===END===.
+- Never overwrite/truncate large core files (like design.css, portal.js, office.js, index.html) with shorter code. Prefer creating clean modular enhancements or complete upgrades.
 - Never use paths starting with / or containing ..
-- Never use placeholder comments like "// rest of code".
-- Keep files focused and concise (under 150 lines) so they fit completely.`,
+- Never use placeholder comments like "// rest of code".`,
       },
       {
         role: 'user',
         content: `Sprint goal: ${sprint.goal}\nTask #${task.seq}: ${task.title}\nDetails: ${task.details}\n\nRepo files:\n${treePaths.join('\n') || '(empty)'}\n\nRelevant existing files:\n${fileCtx.join('\n\n') || '(none)'}`,
       },
-    ], 1900);
+    ], 1900, isTomasTask ? 'lead' : 'worker');
 
     const parseAgentFiles = (raw) => {
       const txt = String(raw || '');
@@ -1825,8 +1834,29 @@ Rules:
       return { ok: true, retried: true, task: task.title };
     }
 
+    // 3b. Tomas (högsta AI-modellen) granskar & godkänner kollegans kod innan den får pushas till GitHub!
+    let tomasNote = '';
+    if (!isTomasTask) {
+      try {
+        const preview = files.map(f => `FILE: ${f.path} (${f.content.length} B)\n${f.content.slice(0, 1200)}`).join('\n\n');
+        const rev = await callSprintAi(env, sprint.or_key, [
+          { role: 'system', content: 'You are Tomas, Chief Architect & Team Leader. Review your teammate\'s code before it is pushed to GitHub. Reply ONLY with "APPROVE: <short Swedish approval note>" if the code is valid and helpful, OR "REJECT: <short Swedish reason>" if it is broken, empty, placeholder-only, or destructive.' },
+          { role: 'user', content: `Task: ${task.title} (by ${task.assignee})\nGoal: ${sprint.goal}\n\nSubmitted files:\n${preview}` },
+        ], 200, 'lead');
+        const verdict = String(rev.text || '').trim();
+        if (/^REJECT\b/i.test(verdict)) {
+          const reason = verdict.replace(/^REJECT:?\s*/i, '').slice(0, 220);
+          const tries = (task.tries || 0) + 1;
+          await env.DB.prepare('UPDATE sprint_tasks SET tries=?, updated=? WHERE id=?').bind(tries, ts, task.id).run();
+          await addSprintLog(env, sprint.id, 'Tomas', `Granskade & nekade ${task.assignee}s utkast på "${task.title}": ${reason} (skickar tillbaka för förbättring).`);
+          return { ok: true, retried: true, task: task.title };
+        }
+        tomasNote = verdict.replace(/^APPROVE:?\s*/i, '').slice(0, 160);
+      } catch { /* om granskningsanropet tillfälligt misslyckas, låt skyddsspärren & GitHub Actions verifiera */ }
+    }
+
     // 4. Committa filerna direkt till arbetsbranchen via GitHub Contents API
-    const commitMsg = clip(parsed.commit_message || `${task.assignee}: ${task.title}`, 120);
+    const commitMsg = clip((isTomasTask ? '' : '[Godkänd av Tomas] ') + (parsed.commit_message || `${task.assignee}: ${task.title}`), 120);
     const changed = [];
     let lastSha = '';
     for (const f of files) {
@@ -1879,10 +1909,10 @@ Rules:
       if (prNum) await env.DB.prepare('UPDATE sprints SET pr_url=?, pr_number=? WHERE id=?').bind(prUrl, prNum, sprint.id).run();
     }
 
-    const summary = clip(parsed.summary || `Klart: ${changed.join(', ')}`, 400);
+    const summary = clip((parsed.summary || `Klart: ${changed.join(', ')}`) + (tomasNote ? ` · Tomas: ${tomasNote}` : ''), 400);
     await env.DB.prepare("UPDATE sprint_tasks SET status='done', commit_sha=?, files_changed=?, summary=?, updated=? WHERE id=?")
       .bind(lastSha, changed.join(','), summary, ts, task.id).run();
-    await addSprintLog(env, sprint.id, task.assignee, `Klar med "${task.title}" (${ai.model}): ${summary} [${changed.join(', ')}]`);
+    await addSprintLog(env, sprint.id, isTomasTask ? 'Tomas' : `${task.assignee} → godkänd av Tomas`, `Klar med "${task.title}" (${ai.model}): ${summary} [${changed.join(', ')}]`);
     const commitUrl = lastSha ? `https://github.com/${sprint.repo}/commit/${lastSha}` : '';
     return { ok: true, task: task.title, files: changed, prUrl, commitUrl, summary };
   } catch (e) {

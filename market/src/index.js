@@ -1143,7 +1143,7 @@ const FREE_AI_MODELS = {
 // 7 500 lämnar 2 500 neurons marginal för porträttbilder och avrundning -> garanterat 0 kr.
 const FREE_AI_GLOBAL_NEURONS_CAP = 7500;
 const FREE_AI_GLOBAL_DAILY_CAP = 180;
-const FREE_AI_IP_DAILY_CAP = 15;
+const FREE_AI_IP_DAILY_CAP = 80;
 
 function clientIp(req) {
   return (req.headers.get('CF-Connecting-IP') || req.headers.get('X-Forwarded-For') || 'anon').split(',')[0].trim().slice(0, 64);

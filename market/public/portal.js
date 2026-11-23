@@ -811,10 +811,16 @@
       try {
         const slim = threads.slice(0, 30).map((th) => ({
           id: th.id, title: th.title || '', updated: th.updated || Date.now(), sprintId: th.sprintId || '',
-          messages: (th.messages || []).slice(-30).map((m) => ({ role: m.role, content: m.content, transcript: m.transcript || '' })),
+          messages: (th.messages || []).slice(-30).map((m) => ({ role: m.role, content: m.content, transcript: m.transcript || '', ts: m.ts || 0 })),
         }));
         localStorage.setItem(storeKey, JSON.stringify(slim));
       } catch { /* */ }
+    };
+    const fmtTs = (ms) => {
+      if (!ms) return '';
+      const d = new Date(ms);
+      return d.toLocaleDateString(lang === 'sv' ? 'sv-SE' : 'en-GB', { year: 'numeric', month: '2-digit', day: '2-digit' })
+        + ' ' + d.toLocaleTimeString(lang === 'sv' ? 'sv-SE' : 'en-GB', { hour: '2-digit', minute: '2-digit' });
     };
     const isMin = () => { if (opts.forceOpen) return false; try { return sessionStorage.getItem('nrn.tchat.min') === '1'; } catch { return false; } };
     const setMin = (v) => { try { sessionStorage.setItem('nrn.tchat.min', v ? '1' : '0'); } catch { /* */ } };
@@ -967,6 +973,7 @@
         if (!th.title) th.title = sp.repo.slice(0, 34);
         th.messages.push({
           role: 'assistant',
+          ts: Date.now(),
           content: (lang === 'sv'
             ? `GitHub-projektet **${sp.repo}** är nu kopplat! Jag har skapat branchen \`${sp.workBranch}\` och planerat ${sp.tasks.length} deluppgifter över ${sp.days} dagar:\n\n`
             : `GitHub repo **${sp.repo}** is now linked! I created branch \`${sp.workBranch}\` and planned ${sp.tasks.length} tasks over ${sp.days} days:\n\n`)
@@ -987,7 +994,7 @@
         const th = curThread();
         if (r.step && r.step.error) { toast(r.step.error); }
         else if (r.step && r.step.retried) {
-          th.messages.push({ role: 'assistant', content: lang === 'sv' ? `⚠️ Försökte köra "${r.step.task || ''}" men fick inga filer från AI – klicka "▶ Kör steg" igen för ett nytt försök.` : `⚠️ Tried "${r.step.task || ''}" but AI returned no files – click "Run step" to retry.` });
+          th.messages.push({ role: 'assistant', ts: Date.now(), content: lang === 'sv' ? `⚠️ Försökte köra "${r.step.task || ''}" men fick inga filer från AI – klicka "▶ Kör steg" igen för ett nytt försök.` : `⚠️ Tried "${r.step.task || ''}" but AI returned no files – click "Run step" to retry.` });
           saveThreads(); render();
         } else {
           const msg = r.step && r.step.done
@@ -995,7 +1002,7 @@
             : (lang === 'sv'
               ? `✅ Klart steg på ${sp.repo}: "${r.step?.task || ''}"\n${r.step?.summary ? r.step.summary + '\n' : ''}Ändrade filer: ${(r.step?.files || []).join(', ')}` + (r.step?.commitUrl ? `\nCommit: ${r.step.commitUrl}` : '') + (r.step?.prUrl ? `\nPull Request: ${r.step.prUrl}` : '')
               : `✅ Completed step on ${sp.repo}: "${r.step?.task || ''}"\n${r.step?.summary ? r.step.summary + '\n' : ''}Changed files: ${(r.step?.files || []).join(', ')}` + (r.step?.commitUrl ? `\nCommit: ${r.step.commitUrl}` : '') + (r.step?.prUrl ? `\nPull Request: ${r.step.prUrl}` : ''));
-          th.messages.push({ role: 'assistant', content: msg });
+          th.messages.push({ role: 'assistant', ts: Date.now(), content: msg });
           saveThreads(); render();
         }
         renderGhBar();
@@ -1047,7 +1054,8 @@
           + (m.audio ? '<audio class="tchat-maud" controls src="' + esc(m.audio) + '"></audio>' : '')
           + (m.transcript ? '<div class="tchat-tr">🎙 "' + esc(m.transcript) + '"</div>' : '');
         const body = m.role === 'user' ? '<div class="tchat-txt">' + esc(m.content) + '</div>' : fmtReply(m.content);
-        return '<div class="tchat-msg' + (m.role === 'user' ? ' me' : '') + '"><small>' + esc(m.role === 'user' ? t('tChatYou') : leaderName) + '</small>' + media + body + '</div>';
+        const when = m.ts ? ' · ' + fmtTs(m.ts) : '';
+        return '<div class="tchat-msg' + (m.role === 'user' ? ' me' : '') + '"><small>' + esc((m.role === 'user' ? t('tChatYou') : leaderName) + when) + '</small>' + media + body + '</div>';
       }).join('');
       ms.querySelectorAll('.tchat-cp').forEach((b) => {
         b.onclick = () => {
@@ -1152,17 +1160,17 @@
       const th = curThread();
       const sp = curSprint();
       const displayTxt = v || (imgNow && audNow ? t('tChatImgLbl') + ' + ' + t('tChatAudLbl') : imgNow ? t('tChatImgLbl') : t('tChatAudLbl'));
-      const userMsg = { role: 'user', content: displayTxt, image: imgNow || '', audio: audNow || '', transcript: '' };
+      const userMsg = { role: 'user', content: displayTxt, image: imgNow || '', audio: audNow || '', transcript: '', ts: Date.now() };
       th.messages.push(userMsg);
       if (!th.title) th.title = displayTxt.replace(/\s+/g, ' ').trim().slice(0, 34);
       th.updated = Date.now();
       saveThreads(); renderThreads(); render();
       // Om ett GitHub-projekt är kopplat och användaren skriver "stoppa/pausa" eller "kör/bygg/fortsätt" -> utför riktig åtgärd på servern!
-      if (sp && !imgNow && !audNow && /^(stopp|stoppa|pausa|sluta|stop|pause)\b/i.test(v)) {
+      if (sp && !imgNow && !audNow && /^(stopp|stoppa|stanna|pausa|sluta|stop|pause)\b/i.test(v)) {
         try {
           const r = await api('POST', '/sprints/' + sp.id + '/status', { status: 'paused' });
           if (r.sprint) sprints = sprints.map((x) => x.id === r.sprint.id ? r.sprint : x);
-          th.messages.push({ role: 'assistant', content: lang === 'sv' ? `⏸ Sprinten på **${sp.repo}** är nu pausad. Agenterna väntar tills du ber dem fortsätta!` : `⏸ Sprint on **${sp.repo}** is now paused.` });
+          th.messages.push({ role: 'assistant', ts: Date.now(), content: lang === 'sv' ? `⏸ Sprinten på **${sp.repo}** är nu pausad. Agenterna väntar tills du ber dem fortsätta!` : `⏸ Sprint on **${sp.repo}** is now paused.` });
           saveThreads(); renderGhBar(); render();
         } catch (e) { toast(e.message); }
         busy = false; sb.disabled = false; ta.focus();
@@ -1180,9 +1188,9 @@
           const msg = r.step && r.step.error
             ? (lang === 'sv' ? `⚠️ Tillfälligt fel vid GitHub-steget: ${r.step.error}` : `⚠️ Temporary error: ${r.step.error}`)
             : (lang === 'sv'
-              ? `✅ **Riktig GitHub-commit klar på ${sp.repo}!**\nUppgift: ${r.step?.task || ''}\nÄndrade filer: ${(r.step?.files || []).join(', ')}` + (r.step?.prUrl ? `\nPull Request: ${r.step.prUrl}` : '') + `\n\nTeamet fortsätter nu automatiskt varannan timme i bakgrunden tills du ber oss pausa.`
+              ? `✅ **Riktig GitHub-commit klar på ${sp.repo}!**\nUppgift: ${r.step?.task || ''}\nÄndrade filer: ${(r.step?.files || []).join(', ')}` + (r.step?.prUrl ? `\nPull Request: ${r.step.prUrl}` : '') + `\n\nTeamet fortsätter nu automatiskt enligt schemat i bakgrunden tills du ber oss pausa.`
               : `✅ **Real GitHub commit pushed to ${sp.repo}!**\nTask: ${r.step?.task || ''}\nFiles: ${(r.step?.files || []).join(', ')}` + (r.step?.prUrl ? `\nPull Request: ${r.step.prUrl}` : ''));
-          th.messages.push({ role: 'assistant', content: msg });
+          th.messages.push({ role: 'assistant', ts: Date.now(), content: msg });
           saveThreads(); renderGhBar(); render();
         } catch (e) { waitEl.remove(); toast(e.message); }
         busy = false; sb.disabled = false; ta.focus();
@@ -1204,7 +1212,7 @@
           if (th.title === t('tChatAudLbl')) th.title = res.transcript.replace(/\s+/g, ' ').trim().slice(0, 34);
         }
         const reply = String(res.content || res.response || '').trim() || '…';
-        th.messages.push({ role: 'assistant', content: reply });
+        th.messages.push({ role: 'assistant', ts: Date.now(), content: reply });
         th.updated = Date.now();
         saveThreads(); renderThreads(); render(); refreshQuota();
         try {

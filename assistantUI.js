@@ -1,50 +1,81 @@
-// Assistant UI Module for MyOffiCity
+// assistantUI.js
+import AIAssistant from './aiAssistant.js';
+
 class AssistantUI {
-  constructor(assistant) {
-    this.assistant = assistant;
-    this.uiElement = document.getElementById('assistant-ui');
-    this.initUI();
+  constructor() {
+    this.meetingSuggestionsContainer = document.getElementById('meeting-suggestions');
+    this.init();
   }
 
-  // Initialize the assistant UI
-  initUI() {
-    if (!this.uiElement) {
-      this.createUI();
+  async init() {
+    // Get user ID from session or authentication
+    const userId = 'current-user-id'; // Replace with actual user ID
+
+    // Get meeting suggestions
+    const suggestions = await AIAssistant.suggestMeetings(userId);
+
+    // Display meeting suggestions
+    this.displayMeetingSuggestions(suggestions);
+  }
+
+  displayMeetingSuggestions(suggestions) {
+    if (!this.meetingSuggestionsContainer) return;
+
+    this.meetingSuggestionsContainer.innerHTML = '';
+
+    if (suggestions.length === 0) {
+      this.meetingSuggestionsContainer.innerHTML = '<p>No meeting suggestions at the moment.</p>';
+      return;
     }
-    this.updateUI();
-  }
 
-  // Create the assistant UI if it doesn't exist
-  createUI() {
-    const appElement = document.getElementById('app');
-    const assistantUI = document.createElement('div');
-    assistantUI.id = 'assistant-ui';
-    assistantUI.className = 'assistant-ui';
-    appElement.appendChild(assistantUI);
-    this.uiElement = assistantUI;
-  }
+    const suggestionsList = document.createElement('ul');
+    suggestionsList.className = 'meeting-suggestions-list';
 
-  // Update the assistant UI with the latest recommendations
-  updateUI() {
-    const recommendations = this.assistant.getRecommendations();
-    this.uiElement.innerHTML = '<h2>Your Personal Assistant</h2>';
+    suggestions.forEach(suggestion => {
+      const listItem = document.createElement('li');
+      listItem.className = 'meeting-suggestion';
 
-    recommendations.forEach(rec => {
-      const recElement = document.createElement('div');
-      recElement.className = 'recommendation';
-      recElement.innerHTML = `
-        <h3>${rec.title}</h3>
-        <p>${rec.description}</p>
-      `;
-      this.uiElement.appendChild(recElement);
+      const title = document.createElement('h3');
+      title.textContent = suggestion.title;
+
+      const time = document.createElement('p');
+      time.textContent = `Time: ${this.formatTime(suggestion.startTime)} - ${this.formatTime(suggestion.endTime)}`;
+
+      const participants = document.createElement('p');
+      participants.textContent = `Participants: ${suggestion.participants.join(', ')}`;
+
+      const suggestedBy = document.createElement('p');
+      suggestedBy.textContent = `Suggested by: ${suggestion.suggestedBy}`;
+
+      const acceptButton = document.createElement('button');
+      acceptButton.textContent = 'Accept';
+      acceptButton.className = 'accept-meeting';
+      acceptButton.addEventListener('click', () => this.acceptMeeting(suggestion));
+
+      listItem.appendChild(title);
+      listItem.appendChild(time);
+      listItem.appendChild(participants);
+      listItem.appendChild(suggestedBy);
+      listItem.appendChild(acceptButton);
+
+      suggestionsList.appendChild(listItem);
     });
+
+    this.meetingSuggestionsContainer.appendChild(suggestionsList);
   }
 
-  // Update the assistant UI when new data is available
-  onDataUpdate() {
-    this.updateUI();
+  formatTime(date) {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  acceptMeeting(meeting) {
+    // Logic to accept the meeting
+    console.log('Meeting accepted:', meeting);
+    // In a real application, this would add the meeting to the calendar
   }
 }
 
-// Export the AssistantUI class
-export default AssistantUI;
+// Initialize the Assistant UI when the DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+  new AssistantUI();
+});

@@ -1,0 +1,99 @@
+/* ==========================================================================
+   MyOffiCity — Live Agent Addons Stylesheet (always loaded on nrnworld.one/MyOffiCity/)
+   Autonomous agents (Tomas & team) append visible UI/UX upgrades here.
+   IMPORTANT: Always preserve existing rules below and append new rules at the end.
+   ========================================================================== */
+
+/* Smooth scrolling & subtle interactive polish */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Scroll-to-top floating button */
+.moc-scroll-top {
+  position: fixed;
+  right: 22px;
+  bottom: 84px;
+  z-index: 950;
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: 1px solid rgba(217, 180, 106, 0.45);
+  background: rgba(15, 23, 42, 0.88);
+  color: #f3ecdc;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px);
+  transition: opacity 0.22s ease, transform 0.22s ease, border-color 0.2s ease, background 0.2s ease;
+}
+.moc-scroll-top.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+.moc-scroll-top:hover {
+  border-color: #d9b46a;
+  background: rgba(20, 32, 61, 0.96);
+  transform: translateY(-2px);
+}
+
+/* Live Agent Addons status pill in footer */
+.moc-addon-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-left: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: #e9d7b0;
+  background: rgba(217, 180, 106, 0.12);
+  border: 1px solid rgba(217, 180, 106, 0.32);
+  vertical-align: middle;
+}
+.moc-addon-badge::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.75);
+}
+
+/* Mobile responsiveness polish for portal topbar, cards, and dashboard */
+@media (max-width: 768px) {
+  .bar {
+    padding: 10px 14px;
+    gap: 8px;
+  }
+  .bar-r {
+    gap: 6px;
+  }
+  .cards {
+    grid-template-columns: 1fr !important;
+    gap: 14px;
+  }
+  .moc-scroll-top {
+    right: 14px;
+    bottom: 76px;
+    width: 38px;
+    height: 38px;
+  }
+  .moc-addon-badge {
+    display: flex;
+    width: fit-content;
+    margin: 8px auto 0;
+  }
+}
+
+/* === APPEND NEW AGENT CSS UPGRADES BELOW THIS LINE === */

@@ -1708,8 +1708,12 @@ async function runSprintStep(env, sprint) {
         const tr = await ghApi(sprint.gh_token, `/repos/${sprint.repo}/git/trees/${encodeURIComponent(sprint.work_branch)}?recursive=1`);
         treePaths = (tr?.tree || []).filter(x => x.type === 'blob' && !/node_modules|\.git\/|\.png$|\.jpg$|\.glb$|\.bin$/i.test(x.path)).map(x => x.path).slice(0, 80);
       } catch { /* */ }
+      const hasAddons = treePaths.includes('market/public/agent-addons.js');
+      const addonHint = hasAddons
+        ? ' IMPORTANT LIVE ARCHITECTURE: The live website (nrnworld.one/MyOffiCity/) is served from market/public/ and ALWAYS loads market/public/agent-addons.css and market/public/agent-addons.js. Plan concrete, VISIBLY NOTICEABLE website UI/UX improvements, interactive widgets, micro-interactions, status indicators, quick tools, or visual polish that work directly in those two live addon files (real DOM: #topbar, #nav, #app, #foot, .dash, .dsb, .dmain, .cards, .tc-box). NEVER plan disconnected root files or fake backend/SQL files.'
+        : '';
       const ai = await callSprintAi(env, sprint.or_key, [
-        { role: 'system', content: 'You are Tomas, Chief Architect & AI Team Leader (top-tier brain). Return ONLY valid JSON: {"tasks":[{"title":"...","details":"...","assignee":"..."}]}. Create 5 NEW concrete improvement, bugfix, UI/UX or feature tasks that visibly improve the project and have NOT been done yet. Write in Swedish.' },
+        { role: 'system', content: 'You are Tomas, Chief Architect & AI Team Leader (top-tier brain). Return ONLY valid JSON: {"tasks":[{"title":"...","details":"...","assignee":"..."}]}. Create 5 NEW concrete improvement, bugfix, UI/UX or feature tasks that visibly improve the live website and have NOT been done yet. Write in Swedish.' + addonHint },
         { role: 'user', content: `Repo: ${sprint.repo}\nGoal: ${sprint.goal}\nTeam: ${agents.join(', ')}\nFiles:\n${treePaths.join('\n') || '(empty)'}\n\nAlready done:\n${prevTasks.map(x => `- ${x.title}: ${x.summary || x.status}`).join('\n')}\n\nPlan 5 new next-iteration tasks as JSON.` },
       ], 900, 'lead');
       const parsed = extractJson(ai.text);
@@ -1764,12 +1768,14 @@ async function runSprintStep(env, sprint) {
       treePaths = (tr?.tree || []).filter(x => x.type === 'blob' && !/node_modules|\.git\/|\.png$|\.jpg$|\.glb$|\.bin$/i.test(x.path)).map(x => x.path).slice(0, 80);
     } catch { /* */ }
 
-    // 2. Välj upp till 3 relevanta filer att läsa in i kontexten
+    // 2. Välj upp till 3 relevanta filer att läsa in i kontexten (prioritera alltid live addon-filerna!)
+    const hasAddons = treePaths.includes('market/public/agent-addons.js');
     const words = (task.title + ' ' + task.details).toLowerCase().split(/[^a-z0-9._-]+/).filter(w => w.length > 2);
     const scored = treePaths.map(p => {
       const lp = p.toLowerCase();
       let sc = words.reduce((a, w) => a + (lp.includes(w) ? 3 : 0), 0);
-      if (/^(readme\.md|package\.json|index\.html|manifest\.json)$/i.test(p)) sc += 2;
+      if (p === 'market/public/agent-addons.js' || p === 'market/public/agent-addons.css') sc += 50;
+      if (/^(readme\.md|package\.json|market\/public\/index\.html|manifest\.json)$/i.test(p)) sc += 2;
       return { p, sc };
     }).sort((a, b) => b.sc - a.sc).slice(0, 3);
 
@@ -1777,12 +1783,16 @@ async function runSprintStep(env, sprint) {
     for (const item of scored) {
       try {
         const f = await ghApi(sprint.gh_token, `/repos/${sprint.repo}/contents/${encodeURIComponent(item.p).replace(/%2F/g, '/')}?ref=${encodeURIComponent(sprint.work_branch)}`);
-        if (f && f.content && f.size < 40000) fileCtx.push(`--- FILE: ${item.p} ---\n${b64DecodeUtf8(f.content).slice(0, 5000)}`);
+        const limit = item.p.includes('agent-addons.') ? 16000 : 5000;
+        if (f && f.content && f.size < 40000) fileCtx.push(`--- FILE: ${item.p} ---\n${b64DecodeUtf8(f.content).slice(0, limit)}`);
       } catch { /* */ }
     }
 
     // 3. Låt agenten (worker-modell, eller lead-modell om Tomas själv kodar) producera konkreta filändringar
     const isTomasTask = /^tomas\b/i.test(task.assignee || '');
+    const addonRules = hasAddons
+      ? `\n- LIVE WEBSITE CHANNEL: market/public/agent-addons.js and market/public/agent-addons.css are ALWAYS loaded live on nrnworld.one/MyOffiCity/. Put ALL visible UI/UX features, interactive widgets, animations, or visual enhancements into market/public/agent-addons.js and/or market/public/agent-addons.css!\n- When editing market/public/agent-addons.js or market/public/agent-addons.css, ALWAYS include ALL existing code from the file and APPEND your new self-contained IIFE module at the bottom (calling window.MyOffiCityAddons.register('Your Feature Name')).\n- FORBIDDEN: NEVER create disconnected root-level .js/.css files (they are NOT served by the website!), NEVER import nonexistent files, and NEVER invent fake database tables.`
+      : '';
     const ai = await callSprintAi(env, sprint.or_key, [
       {
         role: 'system',
@@ -1797,15 +1807,15 @@ COMMIT: Kort commit-meddelande
 
 Rules:
 - Output 1 or 2 real, clean, working files using ===FILE: path=== and ===END===.
-- Never overwrite/truncate large core files (like design.css, portal.js, office.js, index.html) with shorter code. Prefer creating clean modular enhancements or complete upgrades.
+- Never overwrite/truncate large core files (like design.css, portal.js, office.js, index.html, core.js) with shorter code.${addonRules}
 - Never use paths starting with / or containing ..
-- Never use placeholder comments like "// rest of code".`,
+- Never use placeholder comments like "// rest of code" or leave code incomplete/truncated.`,
       },
       {
         role: 'user',
         content: `Sprint goal: ${sprint.goal}\nTask #${task.seq}: ${task.title}\nDetails: ${task.details}\n\nRepo files:\n${treePaths.join('\n') || '(empty)'}\n\nRelevant existing files:\n${fileCtx.join('\n\n') || '(none)'}`,
       },
-    ], 1900, isTomasTask ? 'lead' : 'worker');
+    ], 3200, isTomasTask ? 'lead' : 'worker');
 
     const parseAgentFiles = (raw) => {
       const txt = String(raw || '');
@@ -1852,7 +1862,7 @@ Rules:
       try {
         const preview = files.map(f => `FILE: ${f.path} (${f.content.length} B)\n${f.content.slice(0, 1200)}`).join('\n\n');
         const rev = await callSprintAi(env, sprint.or_key, [
-          { role: 'system', content: 'You are Tomas, Chief Architect & Team Leader. Review your teammate\'s code before it is pushed to GitHub. Reply ONLY with "APPROVE: <short Swedish approval note>" if the code is valid and helpful, OR "REJECT: <short Swedish reason>" if it is broken, empty, placeholder-only, or destructive.' },
+          { role: 'system', content: 'You are Tomas, Chief Architect & Team Leader. Review your teammate\'s code before it is pushed to GitHub. Reply ONLY with "APPROVE: <short Swedish approval note>" if the code is valid, complete, and actually wired into the live site (e.g. market/public/agent-addons.js or market/public/agent-addons.css), OR "REJECT: <short Swedish reason>" if it is broken, truncated, creates disconnected standalone root .js/.css files not loaded by index.html, imports nonexistent files, or deletes existing code.' },
           { role: 'user', content: `Task: ${task.title} (by ${task.assignee})\nGoal: ${sprint.goal}\n\nSubmitted files:\n${preview}` },
         ], 200, 'lead');
         const verdict = String(rev.text || '').trim();
@@ -1879,7 +1889,12 @@ Rules:
         const ex = await ghApi(sprint.gh_token, `/repos/${sprint.repo}/contents/${encPath}?ref=${encodeURIComponent(sprint.work_branch)}`);
         if (ex && ex.sha) { existingSha = ex.sha; existingLen = ex.size || 0; }
       } catch { /* ny fil */ }
-      // Skyddsspärr: låt aldrig en agent radera/trunkera en befintlig fil med >20 % (skyddar design.css, index.html, app.js m.fl.)
+      // Skyddsspärr 1: stoppa fristående rotfiler (.js/.css) som inte laddas av hemsidan när live addon-kanalen finns
+      if (hasAddons && !existingSha && !cleanPath.includes('/') && /\.(js|css)$/i.test(cleanPath)) {
+        await addSprintLog(env, sprint.id, task.assignee, `Skyddsspärr stoppade okopplad rotfil ${cleanPath} – använd market/public/agent-addons.js/css i stället.`);
+        continue;
+      }
+      // Skyddsspärr 2: låt aldrig en agent radera/trunkera en befintlig fil med >20 % (skyddar design.css, index.html, app.js m.fl.)
       if (existingLen > 400 && f.content.length < existingLen * 0.8) {
         await addSprintLog(env, sprint.id, task.assignee, `Skyddsspärr stoppade överskrivning av ${cleanPath} (${f.content.length} B < ${existingLen} B).`);
         continue;
@@ -2009,7 +2024,15 @@ export default {
       const h = new Headers(req.headers); prefix ? h.set('X-Prefix', prefix) : h.delete('X-Prefix');
       req = new Request(url.toString(), { method: req.method, headers: h, body: ['GET', 'HEAD'].includes(req.method) ? undefined : req.body });
     }
-    if (!url.pathname.startsWith('/api/') && !url.pathname.startsWith('/.well-known/')) return env.ASSETS.fetch(req);   // statiska sidor (portalen) under prefixet
+    if (!url.pathname.startsWith('/api/') && !url.pathname.startsWith('/.well-known/')) {
+      const assetRes = await env.ASSETS.fetch(req);
+      if (/^\/agent-addons\.(js|css)$/.test(url.pathname)) {
+        const res = new Response(assetRes.body, assetRes);
+        res.headers.set('Cache-Control', 'no-cache, must-revalidate');
+        return res;
+      }
+      return assetRes;
+    }   // statiska sidor (portalen) under prefixet
     const lg = req.method === 'GET' && new RegExp('^/api/companies/([a-z0-9]+)/logo\\.png$').exec(url.pathname);
     if (lg) return await logoFile(env, lg[1]);
     const tp = req.method === 'GET' && new RegExp('^/api/team-photo/([a-z0-9]+)\\.jpg$').exec(url.pathname);

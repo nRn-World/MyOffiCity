@@ -1818,6 +1818,44 @@ async function runSprintStep(env, sprint) {
     }
   }
 
+  // 0b. Om det finns en öppen PR på ett repo med egna GitHub Actions-tester: auto-merga så fort alla tester är gröna!
+  try {
+    const owner = sprint.repo.split('/')[0];
+    const openPrs = await ghApi(sprint.gh_token, `/repos/${sprint.repo}/pulls?head=${encodeURIComponent(owner + ':' + sprint.work_branch)}&state=open`);
+    if (Array.isArray(openPrs) && openPrs.length) {
+      const pr = openPrs[0];
+      const headSha = pr?.head?.sha;
+      if (headSha) {
+        const cr = await ghApi(sprint.gh_token, `/repos/${sprint.repo}/commits/${headSha}/check-runs`);
+        const runs = Array.isArray(cr?.check_runs) ? cr.check_runs : [];
+        if (runs.length > 0 && runs.every(r => r.status === 'completed' && (r.conclusion === 'success' || r.conclusion === 'neutral' || r.conclusion === 'skipped'))) {
+          for (const method of ['squash', 'merge']) {
+            try {
+              const mr = await ghApi(sprint.gh_token, `/repos/${sprint.repo}/pulls/${pr.number}/merge`, 'PUT', {
+                commit_title: `${pr.title} (#${pr.number})`,
+                merge_method: method,
+              });
+              if (mr && mr.merged) {
+                await addSprintLog(env, sprint.id, 'Tomas', `✅ Alla GitHub Actions-tester gröna – auto-mergade PR #${pr.number} till ${sprint.base_branch}!`);
+                break;
+              }
+            } catch { /* */ }
+          }
+        } else if (runs.some(r => r.status === 'completed' && (r.conclusion === 'failure' || r.conclusion === 'timed_out'))) {
+          // Självläkning: stäng trasig PR och återställ arbetsbranchen till senaste gröna main så den inte blockerar nästa uppgift
+          try {
+            await ghApi(sprint.gh_token, `/repos/${sprint.repo}/pulls/${pr.number}`, 'PATCH', { state: 'closed' });
+            const baseRef = await ghApi(sprint.gh_token, `/repos/${sprint.repo}/git/ref/heads/${encodeURIComponent(sprint.base_branch)}`);
+            if (baseRef?.object?.sha) {
+              await ghApi(sprint.gh_token, `/repos/${sprint.repo}/git/refs/heads/${encodeURIComponent(sprint.work_branch)}`, 'PATCH', { sha: baseRef.object.sha, force: true });
+            }
+            await addSprintLog(env, sprint.id, 'Tomas', `♻️ PR #${pr.number} misslyckades i GitHub Actions – stängde PR:n och återställde branchen till gröna ${sprint.base_branch} så nästa uppgift startar rent.`);
+          } catch { /* */ }
+        }
+      }
+    }
+  } catch { /* */ }
+
   try {
     // 1. Läs nuvarande filstruktur på arbetsbranchen
     let treePaths = [];
@@ -1846,8 +1884,8 @@ async function runSprintStep(env, sprint) {
       } catch { /* */ }
     }
 
-    // 3. Låt agenten (worker-modell, eller lead-modell om Tomas själv kodar) producera konkreta filändringar
-    const isTomasTask = /^tomas\b/i.test(task.assignee || '');
+    // 3. Låt agenten (worker-modell, eller lead-modell om Tomas själv kodar eller tar över efter 2 nekade försök) producera konkreta filändringar
+    const isTomasTask = /^tomas\b/i.test(task.assignee || '') || (task.tries || 0) >= 2;
     const addonRules = hasAddons
       ? `\n- LIVE WEBSITE CHANNEL: market/public/agent-addons.js and market/public/agent-addons.css are ALWAYS loaded live on nrnworld.one/MyOffiCity/. Put ALL visible UI/UX features, interactive widgets, animations, or visual enhancements into market/public/agent-addons.js and/or market/public/agent-addons.css!\n- When editing market/public/agent-addons.js or market/public/agent-addons.css, ALWAYS include ALL existing code from the file and APPEND your new self-contained IIFE module at the bottom (calling window.MyOffiCityAddons.register('Your Feature Name')).\n- FORBIDDEN: NEVER create disconnected root-level .js/.css files (they are NOT served by the website!), NEVER import nonexistent files, and NEVER invent fake database tables.`
       : '';
@@ -1918,9 +1956,17 @@ Rules:
     let tomasNote = '';
     if (!isTomasTask) {
       try {
-        const preview = files.map(f => `FILE: ${f.path} (${f.content.length} B)\n${f.content.slice(0, 1200)}`).join('\n\n');
+        const preview = files.map(f => {
+          const body = f.content.length <= 12000
+            ? f.content
+            : (f.content.slice(0, 6000) + '\n/* ... (' + (f.content.length - 10000) + ' chars omitted in middle) ... */\n' + f.content.slice(-4000));
+          return `FILE: ${f.path} (${f.content.length} B, complete=${f.content.length <= 12000})\n${body}`;
+        }).join('\n\n');
+        const revRule = hasAddons
+          ? 'Reply ONLY with "APPROVE: <short Swedish approval note>" if the code is valid, complete, and actually wired into the live site (e.g. market/public/agent-addons.js or market/public/agent-addons.css), OR "REJECT: <short Swedish reason>" if it is broken, truncated, creates disconnected standalone root .js/.css files not loaded by index.html, imports nonexistent files, or deletes existing code.'
+          : 'Reply ONLY with "APPROVE: <short Swedish approval note>" if the code is valid, complete, and fits the repository structure, OR "REJECT: <short Swedish reason>" if it is broken, truncated, empty, placeholder-only, or deletes existing code.';
         const rev = await callSprintAi(env, sprint.or_key, [
-          { role: 'system', content: 'You are Tomas, Chief Architect & Team Leader. Review your teammate\'s code before it is pushed to GitHub. Reply ONLY with "APPROVE: <short Swedish approval note>" if the code is valid, complete, and actually wired into the live site (e.g. market/public/agent-addons.js or market/public/agent-addons.css), OR "REJECT: <short Swedish reason>" if it is broken, truncated, creates disconnected standalone root .js/.css files not loaded by index.html, imports nonexistent files, or deletes existing code.' },
+          { role: 'system', content: 'You are Tomas, Chief Architect & Team Leader. Review your teammate\'s code before it is pushed to GitHub. ' + revRule },
           { role: 'user', content: `Task: ${task.title} (by ${task.assignee})\nGoal: ${sprint.goal}\n\nSubmitted files:\n${preview}` },
         ], 200, 'lead');
         const verdict = String(rev.text || '').trim();
@@ -1928,7 +1974,7 @@ Rules:
           const reason = verdict.replace(/^REJECT:?\s*/i, '').slice(0, 220);
           const tries = (task.tries || 0) + 1;
           await env.DB.prepare('UPDATE sprint_tasks SET tries=?, updated=? WHERE id=?').bind(tries, ts, task.id).run();
-          await addSprintLog(env, sprint.id, 'Tomas', `Granskade & nekade ${task.assignee}s utkast på "${task.title}": ${reason} (skickar tillbaka för förbättring).`);
+          await addSprintLog(env, sprint.id, 'Tomas', `Granskade & nekade ${task.assignee}s utkast på "${task.title}": ${reason} (${tries >= 2 ? 'Tomas tar över nästa pass' : 'skickar tillbaka för förbättring'}).`);
           return { ok: true, retried: true, task: task.title };
         }
         tomasNote = verdict.replace(/^APPROVE:?\s*/i, '').slice(0, 160);
@@ -1992,6 +2038,28 @@ Rules:
         } catch { /* */ }
       }
       if (prNum) await env.DB.prepare('UPDATE sprints SET pr_url=?, pr_number=? WHERE id=?').bind(prUrl, prNum, sprint.id).run();
+
+      // 5b. Säker auto-merge:
+      // - Om repot har egna GitHub Actions-workflows (t.ex. TypeScript/byggtester): vänta tills testerna blir gröna (mergas automatiskt i steg 0b eller av agent-verify.yml).
+      // - Om repot INTE har några workflows: auto-merga direkt efter Tomas godkännande.
+      const hasAnyWorkflow = treePaths.some(p => /^\.github\/workflows\/.+\.ya?ml$/i.test(p));
+      if (prNum && !hasAnyWorkflow) {
+        try {
+          let merged = false;
+          for (const method of ['squash', 'merge']) {
+            try {
+              const mr = await ghApi(sprint.gh_token, `/repos/${sprint.repo}/pulls/${prNum}/merge`, 'PUT', {
+                commit_title: `[MyOffiCity] ${clip(task.title, 72)} (#${prNum})`,
+                merge_method: method,
+              });
+              if (mr && mr.merged) { merged = true; break; }
+            } catch { /* prova nästa metod */ }
+          }
+          if (merged) tomasNote = (tomasNote ? tomasNote + ' · ' : '') + `✅ Auto-mergad till ${sprint.base_branch}`;
+        } catch { /* PR ligger kvar öppen om GitHub branch protection kräver manuell merge */ }
+      } else if (prNum && hasAnyWorkflow) {
+        tomasNote = (tomasNote ? tomasNote + ' · ' : '') + '⏳ Väntar på grönt GitHub Actions-test före auto-merge';
+      }
     }
 
     const summary = clip((parsed.summary || `Klart: ${changed.join(', ')}`) + (tomasNote ? ` · Tomas: ${tomasNote}` : ''), 400);

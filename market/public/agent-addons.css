@@ -335,3 +335,257 @@ html {
 .theme-high-contrast .moc-map-placeholder {
   color: #ff0;
 }
+
+/* AI Agent Market Widget */
+.moc-agent-market-widget {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 300px;
+  height: 400px;
+  background: rgba(15, 23, 42, 0.9);
+  border-radius: 12px;
+  border: 1px solid rgba(217, 180, 106, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.32);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.moc-agent-market-header {
+  padding: 12px 16px;
+  background: rgba(26, 32, 44, 0.8);
+  border-bottom: 1px solid rgba(217, 180, 106, 0.2);
+  color: #f3ecdc;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.moc-agent-market-content {
+  flex: 1;
+  padding: 12px;
+  overflow-y: auto;
+}
+
+.moc-agent-market-footer {
+  padding: 8px 12px;
+  background: rgba(26, 32, 44, 0.8);
+  border-top: 1px solid rgba(217, 180, 106, 0.2);
+  display: flex;
+  justify-content: space-between;
+}
+
+.moc-agent-market-button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: rgba(217, 180, 106, 0.15);
+  color: #f3ecdc;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.2s ease;
+}
+
+.moc-agent-market-button:hover {
+  background: rgba(217, 180, 106, 0.25);
+}
+
+.moc-agent-card {
+  background: rgba(26, 32, 44, 0.6);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(217, 180, 106, 0.15);
+}
+
+.moc-agent-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f3ecdc;
+  margin-bottom: 4px;
+}
+
+.moc-agent-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.moc-agent-stat {
+  font-size: 12px;
+  color: #a0aec0;
+}
+
+.moc-agent-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.moc-agent-action {
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: rgba(217, 180, 106, 0.15);
+  color: #f3ecdc;
+  border: none;
+  cursor: pointer;
+  font-size: 10px;
+  transition: background 0.2s ease;
+}
+
+.moc-agent-action:hover {
+  background: rgba(217, 180, 106, 0.25);
+}
+
+/* Mobile responsiveness for the agent market widget */
+@media (max-width: 768px) {
+  .moc-agent-market-widget {
+    width: 240px;
+    height: 320px;
+    top: 10px;
+    left: 10px;
+  }
+
+  .moc-agent-market-header {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+
+  .moc-agent-market-content {
+    padding: 8px;
+  }
+
+  .moc-agent-market-footer {
+    padding: 6px 8px;
+  }
+
+  .moc-agent-market-button {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+
+  .moc-agent-card {
+    padding: 8px;
+  }
+
+  .moc-agent-name {
+    font-size: 12px;
+  }
+
+  .moc-agent-stat {
+    font-size: 10px;
+  }
+
+  .moc-agent-action {
+    padding: 3px 6px;
+    font-size: 8px;
+  }
+}
+
+/* Theme-specific styles for agent market widget */
+.theme-light .moc-agent-market-widget {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(217, 180, 106, 0.3);
+}
+
+.theme-light .moc-agent-market-header {
+  background: rgba(247, 250, 252, 0.8);
+  color: #1a202c;
+}
+
+.theme-light .moc-agent-market-footer {
+  background: rgba(247, 250, 252, 0.8);
+}
+
+.theme-light .moc-agent-market-button {
+  color: #1a202c;
+}
+
+.theme-light .moc-agent-card {
+  background: rgba(247, 250, 252, 0.6);
+  border: 1px solid rgba(217, 180, 106, 0.15);
+}
+
+.theme-light .moc-agent-name {
+  color: #1a202c;
+}
+
+.theme-light .moc-agent-stat {
+  color: #4a5568;
+}
+
+.theme-light .moc-agent-action {
+  color: #1a202c;
+}
+
+.theme-dark .moc-agent-market-widget {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(217, 180, 106, 0.3);
+}
+
+.theme-dark .moc-agent-market-header {
+  background: rgba(26, 32, 44, 0.8);
+  color: #f3ecdc;
+}
+
+.theme-dark .moc-agent-market-footer {
+  background: rgba(26, 32, 44, 0.8);
+}
+
+.theme-dark .moc-agent-market-button {
+  color: #f3ecdc;
+}
+
+.theme-dark .moc-agent-card {
+  background: rgba(26, 32, 44, 0.6);
+  border: 1px solid rgba(217, 180, 106, 0.15);
+}
+
+.theme-dark .moc-agent-name {
+  color: #f3ecdc;
+}
+
+.theme-dark .moc-agent-stat {
+  color: #a0aec0;
+}
+
+.theme-dark .moc-agent-action {
+  color: #f3ecdc;
+}
+
+.theme-high-contrast .moc-agent-market-widget {
+  background: #000;
+  border: 2px solid #ff0;
+}
+
+.theme-high-contrast .moc-agent-market-header {
+  background: #000;
+  color: #ff0;
+}
+
+.theme-high-contrast .moc-agent-market-footer {
+  background: #000;
+}
+
+.theme-high-contrast .moc-agent-market-button {
+  color: #ff0;
+  border: 1px solid #ff0;
+}
+
+.theme-high-contrast .moc-agent-card {
+  background: #000;
+  border: 1px solid #ff0;
+}
+
+.theme-high-contrast .moc-agent-name {
+  color: #ff0;
+}
+
+.theme-high-contrast .moc-agent-stat {
+  color: #ff0;
+}
+
+.theme-high-contrast .moc-agent-action {
+  color: #ff0;
+  border: 1px solid #ff0;
+}

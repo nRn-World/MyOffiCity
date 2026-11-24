@@ -594,3 +594,74 @@
     boot();
   }
 })();
+
+(() => {
+  // 8. Dashboard Keyboard Navigation Shortcuts
+  function initDashboardNavigation() {
+    if (!window.MyOffiCity || !window.MyOffiCity.dashboard) return;
+
+    const dashboard = window.MyOffiCity.dashboard;
+
+    document.addEventListener('keydown', (e) => {
+      // Check if we're in a dashboard view
+      if (!document.querySelector('.dashboard-view')) return;
+
+      // Check if we're not in an input field
+      const tag = (e.target && e.target.tagName || '').toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'select' || (e.target && e.target.isContentEditable)) {
+        return;
+      }
+
+      // Number keys 1-9 for section navigation
+      if (e.key >= '1' && e.key <= '9') {
+        const sectionIndex = parseInt(e.key) - 1;
+        const sections = document.querySelectorAll('.dashboard-section');
+        if (sections.length > sectionIndex) {
+          e.preventDefault();
+          sections[sectionIndex].scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+
+      // H and J keys for up/down navigation
+      if (e.key === 'h' || e.key === 'j') {
+        e.preventDefault();
+        const currentSection = document.querySelector('.dashboard-section.active') ||
+                              document.querySelector('.dashboard-section');
+        if (!currentSection) return;
+
+        const items = currentSection.querySelectorAll('.dashboard-item');
+        if (items.length === 0) return;
+
+        let currentItem = currentSection.querySelector('.dashboard-item.active');
+        if (!currentItem) {
+          currentItem = items[0];
+          currentItem.classList.add('active');
+        }
+
+        let newIndex = Array.from(items).indexOf(currentItem);
+        if (e.key === 'h') {
+          newIndex = Math.max(0, newIndex - 1);
+        } else if (e.key === 'j') {
+          newIndex = Math.min(items.length - 1, newIndex + 1);
+        }
+
+        currentItem.classList.remove('active');
+        items[newIndex].classList.add('active');
+        items[newIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    });
+
+    window.MyOffiCityAddons.register('Dashboard Keyboard Navigation');
+  }
+
+  // Add the dashboard navigation to the initialization
+  function boot() {
+    initDashboardNavigation();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();

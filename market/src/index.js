@@ -1828,7 +1828,9 @@ async function runSprintStep(env, sprint) {
       if (headSha) {
         const cr = await ghApi(sprint.gh_token, `/repos/${sprint.repo}/commits/${headSha}/check-runs`);
         const runs = Array.isArray(cr?.check_runs) ? cr.check_runs : [];
-        if (runs.length > 0 && runs.every(r => r.status === 'completed' && (r.conclusion === 'success' || r.conclusion === 'neutral' || r.conclusion === 'skipped'))) {
+        const prAgeMs = Date.now() - Date.parse(pr.updated_at || pr.created_at || 0);
+        const allDoneOk = runs.length > 0 && runs.some(r => r.conclusion === 'success') && runs.every(r => r.status === 'completed' && (r.conclusion === 'success' || r.conclusion === 'neutral' || r.conclusion === 'skipped'));
+        if (prAgeMs > 60000 && allDoneOk) {
           for (const method of ['squash', 'merge']) {
             try {
               const mr = await ghApi(sprint.gh_token, `/repos/${sprint.repo}/pulls/${pr.number}/merge`, 'PUT', {

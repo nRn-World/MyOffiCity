@@ -807,14 +807,62 @@
     activeId = threads[0].id;
     const curThread = () => threads.find((x) => x.id === activeId) || threads[0];
     const curSprint = () => sprints.find((s) => s.id === (curThread().sprintId || '')) || null;
-    const saveThreads = () => {
+    let cloudSyncTimer = null;
+    const slimThreads = () => threads.slice(0, 30).map((th) => ({
+      id: th.id, title: th.title || '', updated: th.updated || Date.now(), sprintId: th.sprintId || '', lastLogId: th.lastLogId || 0,
+      messages: (th.messages || []).slice(-40).map((m) => ({ role: m.role, content: m.content, transcript: m.transcript || '', ts: m.ts || 0 })),
+    }));
+    const saveThreads = (skipCloud = false) => {
       try {
-        const slim = threads.slice(0, 30).map((th) => ({
-          id: th.id, title: th.title || '', updated: th.updated || Date.now(), sprintId: th.sprintId || '', lastLogId: th.lastLogId || 0,
-          messages: (th.messages || []).slice(-30).map((m) => ({ role: m.role, content: m.content, transcript: m.transcript || '', ts: m.ts || 0 })),
-        }));
+        const slim = slimThreads();
         localStorage.setItem(storeKey, JSON.stringify(slim));
+        if (!skipCloud) {
+          clearTimeout(cloudSyncTimer);
+          cloudSyncTimer = setTimeout(() => {
+            api('PUT', '/tomas/threads', { threads: slim }).catch(() => { /* */ });
+          }, 500);
+        }
       } catch { /* */ }
+    };
+    const syncCloudThreads = () => {
+      api('GET', '/tomas/threads').then((j) => {
+        const cloud = (j && Array.isArray(j.threads)) ? j.threads : [];
+        const hasRealLocal = threads.some((th) => (th.messages && th.messages.length) || th.sprintId);
+        if (!cloud.length) {
+          if (hasRealLocal) api('PUT', '/tomas/threads', { threads: slimThreads() }).catch(() => { /* */ });
+          return;
+        }
+        if (!hasRealLocal) {
+          threads = cloud.slice(0, 30);
+          activeId = threads[0].id;
+          saveThreads(true);
+          renderThreads(); renderGhBar(); render();
+          return;
+        }
+        // Smart merge av lokala + molntrådar (behåll senaste version av varje tråd-ID)
+        const byId = new Map();
+        cloud.forEach((th) => { if (th && th.id) byId.set(th.id, th); });
+        let localNewer = false;
+        threads.forEach((th) => {
+          if (!th || !th.id) return;
+          if (!(th.messages && th.messages.length) && !th.sprintId && byId.size) return;
+          const prev = byId.get(th.id);
+          if (!prev || (th.updated || 0) > (prev.updated || 0) || (th.messages?.length || 0) > (prev.messages?.length || 0)) {
+            byId.set(th.id, th);
+            localNewer = true;
+          }
+        });
+        const merged = [...byId.values()].sort((a, b) => (b.updated || 0) - (a.updated || 0)).slice(0, 30);
+        if (merged.length) {
+          threads = merged;
+          if (!threads.some((x) => x.id === activeId)) activeId = threads[0].id;
+          saveThreads(true);
+          renderThreads(); renderGhBar(); render();
+          if (localNewer || merged.length > cloud.length) {
+            api('PUT', '/tomas/threads', { threads: slimThreads() }).catch(() => { /* */ });
+          }
+        }
+      }).catch(() => { /* */ });
     };
     const fmtTs = (ms) => {
       if (!ms) return '';
@@ -1244,7 +1292,7 @@
         }
       }).catch(() => { });
     };
-    renderThreads(); render(); refreshQuota(); loadSprintsForChat(true);
+    renderThreads(); render(); refreshQuota(); loadSprintsForChat(true); syncCloudThreads();
     if (opts.forceOpen) setTimeout(() => ta.focus(), 60);
 
     const setFull = (on) => {

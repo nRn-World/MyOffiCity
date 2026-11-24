@@ -1846,8 +1846,8 @@ async function runSprintStep(env, sprint) {
       } catch { /* */ }
     }
 
-    // 3. Låt agenten (worker-modell, eller lead-modell om Tomas själv kodar) producera konkreta filändringar
-    const isTomasTask = /^tomas\b/i.test(task.assignee || '');
+    // 3. Låt agenten (worker-modell, eller lead-modell om Tomas själv kodar eller tar över efter 2 nekade försök) producera konkreta filändringar
+    const isTomasTask = /^tomas\b/i.test(task.assignee || '') || (task.tries || 0) >= 2;
     const addonRules = hasAddons
       ? `\n- LIVE WEBSITE CHANNEL: market/public/agent-addons.js and market/public/agent-addons.css are ALWAYS loaded live on nrnworld.one/MyOffiCity/. Put ALL visible UI/UX features, interactive widgets, animations, or visual enhancements into market/public/agent-addons.js and/or market/public/agent-addons.css!\n- When editing market/public/agent-addons.js or market/public/agent-addons.css, ALWAYS include ALL existing code from the file and APPEND your new self-contained IIFE module at the bottom (calling window.MyOffiCityAddons.register('Your Feature Name')).\n- FORBIDDEN: NEVER create disconnected root-level .js/.css files (they are NOT served by the website!), NEVER import nonexistent files, and NEVER invent fake database tables.`
       : '';
@@ -1918,7 +1918,12 @@ Rules:
     let tomasNote = '';
     if (!isTomasTask) {
       try {
-        const preview = files.map(f => `FILE: ${f.path} (${f.content.length} B)\n${f.content.slice(0, 1200)}`).join('\n\n');
+        const preview = files.map(f => {
+          const body = f.content.length <= 12000
+            ? f.content
+            : (f.content.slice(0, 6000) + '\n/* ... (' + (f.content.length - 10000) + ' chars omitted in middle) ... */\n' + f.content.slice(-4000));
+          return `FILE: ${f.path} (${f.content.length} B, complete=${f.content.length <= 12000})\n${body}`;
+        }).join('\n\n');
         const revRule = hasAddons
           ? 'Reply ONLY with "APPROVE: <short Swedish approval note>" if the code is valid, complete, and actually wired into the live site (e.g. market/public/agent-addons.js or market/public/agent-addons.css), OR "REJECT: <short Swedish reason>" if it is broken, truncated, creates disconnected standalone root .js/.css files not loaded by index.html, imports nonexistent files, or deletes existing code.'
           : 'Reply ONLY with "APPROVE: <short Swedish approval note>" if the code is valid, complete, and fits the repository structure, OR "REJECT: <short Swedish reason>" if it is broken, truncated, empty, placeholder-only, or deletes existing code.';
@@ -1931,7 +1936,7 @@ Rules:
           const reason = verdict.replace(/^REJECT:?\s*/i, '').slice(0, 220);
           const tries = (task.tries || 0) + 1;
           await env.DB.prepare('UPDATE sprint_tasks SET tries=?, updated=? WHERE id=?').bind(tries, ts, task.id).run();
-          await addSprintLog(env, sprint.id, 'Tomas', `Granskade & nekade ${task.assignee}s utkast på "${task.title}": ${reason} (skickar tillbaka för förbättring).`);
+          await addSprintLog(env, sprint.id, 'Tomas', `Granskade & nekade ${task.assignee}s utkast på "${task.title}": ${reason} (${tries >= 2 ? 'Tomas tar över nästa pass' : 'skickar tillbaka för förbättring'}).`);
           return { ok: true, retried: true, task: task.title };
         }
         tomasNote = verdict.replace(/^APPROVE:?\s*/i, '').slice(0, 160);

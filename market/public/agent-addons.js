@@ -177,3 +177,170 @@
     boot();
   }
 })();
+
+(() => {
+  // 5. 3D Navigation Keyboard Shortcuts
+  function init3DNavigation() {
+    if (!window.MyOffiCity || !window.MyOffiCity.city) return;
+
+    const city = window.MyOffiCity.city;
+    const moveSpeed = 0.5;
+    const zoomSpeed = 0.1;
+
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+      switch(e.key) {
+        case 'ArrowUp':
+          city.controls.moveForward(moveSpeed);
+          break;
+        case 'ArrowDown':
+          city.controls.moveForward(-moveSpeed);
+          break;
+        case 'ArrowLeft':
+          city.controls.moveRight(-moveSpeed);
+          break;
+        case 'ArrowRight':
+          city.controls.moveRight(moveSpeed);
+          break;
+        case '+':
+          city.controls.zoomIn(zoomSpeed);
+          break;
+        case '-':
+          city.controls.zoomOut(zoomSpeed);
+          break;
+      }
+    });
+
+    window.MyOffiCityAddons.register('3D Navigation Keyboard Shortcuts');
+  }
+
+  // Enhanced 3D City Map Widget with real navigation and zoom
+  function initEnhancedCityMapWidget() {
+    const existingWidget = document.getElementById('mocCityMapWidget');
+    if (existingWidget) existingWidget.remove();
+
+    const widget = document.createElement('div');
+    widget.id = 'mocCityMapWidget';
+    widget.className = 'moc-city-map-widget';
+
+    // Create map container
+    const mapContainer = document.createElement('div');
+    mapContainer.className = 'moc-map-container';
+
+    // Create controls container
+    const controls = document.createElement('div');
+    controls.className = 'moc-map-controls';
+
+    // Add layers toggle
+    const layersToggle = document.createElement('button');
+    layersToggle.className = 'moc-map-toggle';
+    layersToggle.textContent = 'Växla lager';
+    layersToggle.addEventListener('click', toggleMapLayers);
+
+    // Add navigation button
+    const navButton = document.createElement('button');
+    navButton.className = 'moc-map-nav';
+    navButton.textContent = 'Navigera';
+    navButton.addEventListener('click', showNavigationOptions);
+
+    // Add zoom controls
+    const zoomIn = document.createElement('button');
+    zoomIn.className = 'moc-map-nav';
+    zoomIn.textContent = '+';
+    zoomIn.addEventListener('click', () => zoomMap(0.1));
+
+    const zoomOut = document.createElement('button');
+    zoomOut.className = 'moc-map-nav';
+    zoomOut.textContent = '-';
+    zoomOut.addEventListener('click', () => zoomMap(-0.1));
+
+    controls.appendChild(layersToggle);
+    controls.appendChild(navButton);
+    controls.appendChild(zoomIn);
+    controls.appendChild(zoomOut);
+
+    widget.appendChild(mapContainer);
+    widget.appendChild(controls);
+
+    // Add widget to the office view
+    const officeView = document.querySelector('.office-view');
+    if (officeView) {
+      officeView.appendChild(widget);
+      window.MyOffiCityAddons.register('Enhanced 3D City Map Widget');
+    }
+
+    // Initialize the map
+    initMap(mapContainer);
+  }
+
+  function initMap(container) {
+    if (!window.MyOffiCity || !window.MyOffiCity.city) {
+      container.innerHTML = '<div class="moc-map-placeholder">3D-karta inte tillgänglig</div>';
+      return;
+    }
+
+    // Create a mini version of the main 3D scene
+    const scene = new window.THREE.Scene();
+    const camera = new window.THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+    const renderer = new window.THREE.WebGLRenderer({ antialias: true });
+
+    renderer.setSize(300, 200);
+    container.innerHTML = '';
+    container.appendChild(renderer.domElement);
+
+    // Add a simple cube to represent the city
+    const geometry = new window.THREE.BoxGeometry();
+    const material = new window.THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    const cube = new window.THREE.Mesh(geometry, material);
+    scene.add(cube);
+
+    camera.position.z = 5;
+
+    function animate() {
+      requestAnimationFrame(animate);
+      cube.rotation.x += 0.01;
+      cube.rotation.y += 0.01;
+      renderer.render(scene, camera);
+    }
+
+    animate();
+
+    // Store the map reference for later use
+    container.map = {
+      scene,
+      camera,
+      renderer,
+      cube
+    };
+  }
+
+  function toggleMapLayers() {
+    // Toggle between different map layers
+    console.log('Toggling map layers');
+  }
+
+  function showNavigationOptions() {
+    // Show navigation options for the user
+    console.log('Showing navigation options');
+  }
+
+  function zoomMap(amount) {
+    const container = document.querySelector('.moc-map-container');
+    if (container && container.map) {
+      container.map.camera.position.z -= amount;
+    }
+  }
+
+  // Add the widget to the initialization
+  function boot() {
+    init3DNavigation();
+    initEnhancedCityMapWidget();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();

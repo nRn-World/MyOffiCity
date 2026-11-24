@@ -1033,3 +1033,79 @@
     boot();
   }
 })();
+
+(() => {
+  // 7. AI Agent Market Widget
+  function initAgentMarketWidget() {
+    if (document.getElementById('mocAgentMarketWidget')) return;
+
+    const widget = document.createElement('div');
+    widget.id = 'mocAgentMarketWidget';
+    widget.className = 'moc-agent-market-widget';
+
+    // Create header
+    const header = document.createElement('div');
+    header.className = 'moc-agent-market-header';
+    header.textContent = 'AI Agent Market';
+
+    // Create content container
+    const content = document.createElement('div');
+    content.className = 'moc-agent-market-content';
+
+    // Create footer
+    const footer = document.createElement('div');
+    footer.className = 'moc-agent-market-footer';
+
+    // Add refresh button
+    const refreshBtn = document.createElement('button');
+    refreshBtn.className = 'moc-agent-market-button';
+    refreshBtn.textContent = 'Refresh';
+    refreshBtn.addEventListener('click', refreshAgentData);
+
+    // Add close button
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'moc-agent-market-button';
+    closeBtn.textContent = 'Close';
+    closeBtn.addEventListener('click', () => widget.remove());
+
+    footer.appendChild(refreshBtn);
+    footer.appendChild(closeBtn);
+
+    widget.appendChild(header);
+    widget.appendChild(content);
+    widget.appendChild(footer);
+
+    // Add widget to the office view
+    const officeView = document.querySelector('.office-view');
+    if (officeView) {
+      officeView.appendChild(widget);
+      window.MyOffiCityAddons.register('AI Agent Market Widget');
+    }
+
+    // Load agent data
+    loadAgentData(content);
+  }
+
+  function loadAgentData(container) {
+    // In a real implementation, this would fetch data from an API
+    // For now, we'll use mock data
+    const mockAgents = [
+      {
+        name: 'Gemini 2.5 Flash',
+        performance: 92,
+        reliability: 95,
+        cost: 75,
+        speed: 88
+      },
+      {
+        name: 'Groq Llama 3.3 70B',
+        performance: 88,
+        reliability: 90,
+        cost: 65,
+        speed: 92
+      },
+      {
+        name: 'SambaNova DeepSeek V3',
+        performance: 85,
+        reliability: 88,
+        cost: 7

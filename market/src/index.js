@@ -1818,6 +1818,34 @@ async function runSprintStep(env, sprint) {
     }
   }
 
+  // 0b. Om det finns en öppen PR på ett repo med egna GitHub Actions-tester: auto-merga så fort alla tester är gröna!
+  try {
+    const owner = sprint.repo.split('/')[0];
+    const openPrs = await ghApi(sprint.gh_token, `/repos/${sprint.repo}/pulls?head=${encodeURIComponent(owner + ':' + sprint.work_branch)}&state=open`);
+    if (Array.isArray(openPrs) && openPrs.length) {
+      const pr = openPrs[0];
+      const headSha = pr?.head?.sha;
+      if (headSha) {
+        const cr = await ghApi(sprint.gh_token, `/repos/${sprint.repo}/commits/${headSha}/check-runs`);
+        const runs = Array.isArray(cr?.check_runs) ? cr.check_runs : [];
+        if (runs.length > 0 && runs.every(r => r.status === 'completed' && (r.conclusion === 'success' || r.conclusion === 'neutral' || r.conclusion === 'skipped'))) {
+          for (const method of ['squash', 'merge']) {
+            try {
+              const mr = await ghApi(sprint.gh_token, `/repos/${sprint.repo}/pulls/${pr.number}/merge`, 'PUT', {
+                commit_title: `${pr.title} (#${pr.number})`,
+                merge_method: method,
+              });
+              if (mr && mr.merged) {
+                await addSprintLog(env, sprint.id, 'Tomas', `✅ Alla GitHub Actions-tester gröna – auto-mergade PR #${pr.number} till ${sprint.base_branch}!`);
+                break;
+              }
+            } catch { /* */ }
+          }
+        }
+      }
+    }
+  } catch { /* */ }
+
   try {
     // 1. Läs nuvarande filstruktur på arbetsbranchen
     let treePaths = [];
@@ -2001,9 +2029,11 @@ Rules:
       }
       if (prNum) await env.DB.prepare('UPDATE sprints SET pr_url=?, pr_number=? WHERE id=?').bind(prUrl, prNum, sprint.id).run();
 
-      // 5b. Auto-merge direkt till main för repos som inte har egen agent-verify.yml GitHub Action
-      const hasAgentWorkflow = treePaths.some(p => /^\.github\/workflows\/agent-verify\.ya?ml$/i.test(p));
-      if (prNum && !hasAgentWorkflow) {
+      // 5b. Säker auto-merge:
+      // - Om repot har egna GitHub Actions-workflows (t.ex. TypeScript/byggtester): vänta tills testerna blir gröna (mergas automatiskt i steg 0b eller av agent-verify.yml).
+      // - Om repot INTE har några workflows: auto-merga direkt efter Tomas godkännande.
+      const hasAnyWorkflow = treePaths.some(p => /^\.github\/workflows\/.+\.ya?ml$/i.test(p));
+      if (prNum && !hasAnyWorkflow) {
         try {
           let merged = false;
           for (const method of ['squash', 'merge']) {
@@ -2017,6 +2047,8 @@ Rules:
           }
           if (merged) tomasNote = (tomasNote ? tomasNote + ' · ' : '') + `✅ Auto-mergad till ${sprint.base_branch}`;
         } catch { /* PR ligger kvar öppen om GitHub branch protection kräver manuell merge */ }
+      } else if (prNum && hasAnyWorkflow) {
+        tomasNote = (tomasNote ? tomasNote + ' · ' : '') + '⏳ Väntar på grönt GitHub Actions-test före auto-merge';
       }
     }
 

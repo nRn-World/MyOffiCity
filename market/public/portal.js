@@ -897,11 +897,29 @@
       + '<div class="tchat-gh">'
       + '<span class="tchat-gh-ico">⎇</span>'
       + '<select id="tcghsel" aria-label="GitHub"></select>'
-      + '<select id="tcghint" title="Uppdateringsschema" hidden style="flex:0 0 auto;max-width:155px"></select>'
+      + '<button type="button" class="tchat-gh-btn" id="tcghsched" hidden title="Ställ in hur ofta Tomas uppdaterar och hur länge projektet ska gå">📅 Schema</button>'
       + '<button type="button" class="tchat-gh-btn" id="tcghstep" hidden>' + esc(t('tChatGhStep')) + '</button>'
       + '<a class="tchat-gh-btn" id="tcghpr" target="_blank" rel="noopener" hidden>PR ↗</a>'
       + '<button type="button" class="tchat-gh-btn gold" id="tcghadd">' + esc(t('tChatGhLink')) + '</button>'
       + '</div>'
+      + '<div class="tchat-gh-form" id="tcghsched-box" hidden style="gap:8px">'
+      + '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:12px">'
+      + '<strong style="color:#d9b46a">📅 Projektschema</strong>'
+      + '<span id="tcgh-ends" style="opacity:.8"></span>'
+      + '</div>'
+      + '<div class="tchat-gh-row" style="flex-wrap:wrap">'
+      + '<label style="flex:1;min-width:150px;font-size:11px;display:flex;flex-direction:column;gap:4px">Hur ofta Tomas uppdaterar<select id="tcghint" style="width:100%"></select></label>'
+      + '<label style="flex:1;min-width:150px;font-size:11px;display:flex;flex-direction:column;gap:4px">Hur länge projektet ska gå<select id="tcghdur" style="width:100%">'
+      + '<option value="1">1 dag</option><option value="3">3 dagar</option><option value="7">7 dagar (1 vecka)</option>'
+      + '<option value="14">14 dagar (2 veckor)</option><option value="30">30 dagar (1 månad)</option>'
+      + '<option value="90">90 dagar (3 månader)</option><option value="365">Tills jag pausar (1 år)</option>'
+      + '</select></label>'
+      + '</div>'
+      + '<div class="tchat-gh-row">'
+      + '<button type="button" class="btn sm" id="tcghsched-save">Spara schema</button>'
+      + '<button type="button" class="btn ghost sm" id="tcghpause">⏸ Pausa</button>'
+      + '<button type="button" class="btn ghost sm" id="tcghsched-x">Stäng</button>'
+      + '</div></div>'
       + '<form class="tchat-gh-form" id="tcghf" autocomplete="off" hidden>'
       + '<div id="tcgh-acct" style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:12px;margin-bottom:6px;padding:6px 8px;border-radius:8px;background:rgba(217,180,106,.08);border:1px solid rgba(217,180,106,.25)">'
       + '<span id="tcgh-status">Koppla hela ditt GitHub-konto en gång för att välja bland alla dina repos.</span>'
@@ -917,7 +935,8 @@
       + '<div class="tchat-gh-row">'
       + '<select id="tcgh-reposel" hidden style="flex:1"></select>'
       + '<input id="tcgh-repo" name="gh_repo_slug" autocomplete="off" placeholder="' + esc(t('dProjRepoPh')) + '">'
-      + '<select id="tcgh-days" style="flex:0 0 auto"><option value="3">' + esc(t('dProjD3')) + '</option><option value="7">' + esc(t('dProjD7')) + '</option><option value="14" selected>' + esc(t('dProjD14')) + '</option></select></div>'
+      + '<select id="tcgh-days" style="flex:0 0 auto;width:155px" title="Hur länge projektet ska gå"><option value="1">1 dag</option><option value="3">' + esc(t('dProjD3')) + '</option><option value="7">' + esc(t('dProjD7')) + '</option><option value="14" selected>' + esc(t('dProjD14')) + '</option><option value="30">30 dagar</option><option value="90">90 dagar</option><option value="365">Tills jag pausar</option></select>'
+      + '<select id="tcgh-newint" style="flex:0 0 auto;width:145px" title="Hur ofta Tomas uppdaterar"><option value="5" selected>Var 5:e minut</option><option value="15">Var 15:e minut</option><option value="30">Var 30:e minut</option><option value="60">Varje timme</option><option value="120">Varannan timme</option><option value="300">Var 5:e timme</option><option value="1440">Varje dag</option></select></div>'
       + '<input id="tcgh-goal" name="gh_sprint_goal" autocomplete="off" required placeholder="' + esc(t('dProjGoal')) + '">'
       + '<div class="tchat-gh-row"><button type="submit" class="btn sm" id="tcgh-go">' + esc(t('tChatGhConn')) + '</button><button type="button" class="btn ghost sm" id="tcgh-x">' + esc(t('tChatGhCancel')) + '</button></div>'
       + '</form>'
@@ -939,25 +958,63 @@
     const att = wrap.querySelector('#tcatt'), fullBtn = wrap.querySelector('#tcfull'), recBtn = wrap.querySelector('#tcrecb');
     const imgIn = wrap.querySelector('#tcimgf'), audIn = wrap.querySelector('#tcaudf');
     const sel = wrap.querySelector('#tcsel'), slist = wrap.querySelector('#tcslist');
-    const ghSel = wrap.querySelector('#tcghsel'), ghInt = wrap.querySelector('#tcghint'), ghStep = wrap.querySelector('#tcghstep'), ghPr = wrap.querySelector('#tcghpr'), ghForm = wrap.querySelector('#tcghf');
+    const ghSel = wrap.querySelector('#tcghsel'), ghInt = wrap.querySelector('#tcghint'), ghDur = wrap.querySelector('#tcghdur'), ghSchedBtn = wrap.querySelector('#tcghsched'), ghSchedBox = wrap.querySelector('#tcghsched-box'), ghEnds = wrap.querySelector('#tcgh-ends'), ghPause = wrap.querySelector('#tcghpause'), ghStep = wrap.querySelector('#tcghstep'), ghPr = wrap.querySelector('#tcghpr'), ghForm = wrap.querySelector('#tcghf');
+
+    const schedIntOpts = (cur) => [
+      [5, 'Var 5:e minut'], [15, 'Var 15:e minut'], [30, 'Var 30:e minut'],
+      [60, 'Varje timme'], [120, 'Varannan timme'], [300, 'Var 5:e timme'],
+      [600, 'Var 10:e timme'], [1440, 'Varje dag'], [2880, 'Varannan dag'], [7200, 'Var 5:e dag'],
+    ].map(([v, l]) => '<option value="' + v + '"' + (Number(cur) === v ? ' selected' : '') + '>' + l + '</option>').join('');
 
     const renderGhBar = () => {
       const th = curThread();
       ghSel.innerHTML = '<option value="">' + esc(t('tChatGhNone')) + '</option>'
-        + sprints.map((s) => '<option value="' + esc(s.id) + '"' + (s.id === th.sprintId ? ' selected' : '') + '>' + esc(s.repo) + ' (' + s.progress.done + '/' + s.progress.total + ')</option>').join('');
+        + sprints.map((s) => '<option value="' + esc(s.id) + '"' + (s.id === th.sprintId ? ' selected' : '') + '>' + esc(s.repo) + ' (' + s.progress.done + '/' + s.progress.total + ')' + (s.status === 'paused' ? ' ⏸' : '') + '</option>').join('');
       const sp = curSprint();
       ghStep.hidden = !sp || sp.status === 'done';
-      ghInt.hidden = !sp || sp.status === 'done';
-      if (sp && sp.status !== 'done') ghInt.innerHTML = intervalOpts(sp.intervalMin || 5);
+      ghSchedBtn.hidden = !sp;
+      if (!sp) ghSchedBox.hidden = true;
+      if (sp) {
+        const iv = sp.intervalMin || 5;
+        const ivShort = iv < 60 ? `Var ${iv}m` : iv < 1440 ? `Var ${iv / 60}h` : `Var ${iv / 1440}d`;
+        ghSchedBtn.textContent = (sp.status === 'paused' ? '⏸ ' : '📅 ') + ivShort + ' · ' + (sp.days >= 365 ? '∞' : (sp.days || 14) + 'd');
+        ghInt.innerHTML = schedIntOpts(iv);
+        const durChoices = [1, 3, 7, 14, 30, 90, 365];
+        const nearestDur = durChoices.reduce((a, b) => Math.abs(b - (sp.days || 14)) < Math.abs(a - (sp.days || 14)) ? b : a, 14);
+        ghDur.value = String(nearestDur);
+        const endDate = sp.endsAt ? new Date(sp.endsAt).toISOString().slice(0, 10) : '';
+        ghEnds.textContent = sp.status === 'paused'
+          ? '⏸ Pausad'
+          : (endDate ? `Aktiv t.o.m. ${endDate}` : 'Aktiv');
+        ghPause.textContent = sp.status === 'paused' ? '▶ Återuppta' : '⏸ Pausa';
+      }
       if (sp && sp.prUrl) { ghPr.hidden = false; ghPr.href = sp.prUrl; } else { ghPr.hidden = true; }
     };
-    ghInt.onchange = async () => {
+    ghSchedBtn.onclick = () => { ghSchedBox.hidden = !ghSchedBox.hidden; if (!ghSchedBox.hidden) ghForm.hidden = true; };
+    wrap.querySelector('#tcghsched-x').onclick = () => { ghSchedBox.hidden = true; };
+    wrap.querySelector('#tcghsched-save').onclick = async () => {
       const sp = curSprint(); if (!sp) return;
-      const val = Number(ghInt.value);
+      const btn = wrap.querySelector('#tcghsched-save'); btn.disabled = true; btn.textContent = 'Sparar…';
       try {
-        const r = await api('POST', '/sprints/' + sp.id + '/interval', { intervalMin: val });
+        const r = await api('POST', '/sprints/' + sp.id + '/interval', {
+          intervalMin: Number(ghInt.value),
+          days: Number(ghDur.value),
+        });
         if (r.sprint) sprints = sprints.map((x) => x.id === r.sprint.id ? r.sprint : x);
-        toast('📅 ' + (ghInt.options[ghInt.selectedIndex]?.text || 'OK'));
+        renderGhBar();
+        ghSchedBox.hidden = true;
+        toast('📅 Schema sparat!');
+      } catch (err) { toast(err.message); }
+      btn.disabled = false; btn.textContent = 'Spara schema';
+    };
+    ghPause.onclick = async () => {
+      const sp = curSprint(); if (!sp) return;
+      const nextStatus = sp.status === 'paused' ? 'active' : 'paused';
+      try {
+        const r = await api('POST', '/sprints/' + sp.id + '/interval', { status: nextStatus });
+        if (r.sprint) sprints = sprints.map((x) => x.id === r.sprint.id ? r.sprint : x);
+        renderGhBar();
+        toast(nextStatus === 'paused' ? '⏸ Projekt pausat' : '▶ Projekt återupptaget');
       } catch (err) { toast(err.message); }
     };
     const syncSprintLogs = (initial = false) => {
@@ -1073,6 +1130,7 @@
           ghToken: tok,
           goal: wrap.querySelector('#tcgh-goal').value.trim(),
           days: Number(wrap.querySelector('#tcgh-days').value) || 14,
+          intervalMin: Number(wrap.querySelector('#tcgh-newint')?.value) || 5,
         });
         const sp = res.sprint;
         sprints = [sp, ...sprints.filter((x) => x.id !== sp.id)];

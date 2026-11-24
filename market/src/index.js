@@ -1666,8 +1666,8 @@ async function createSprint(req, env, user) {
   if (ghToken.length < 15) throw bad('GitHub-token krävs — koppla ditt GitHub-konto först eller ange en token', 'bad_token');
   const goal = clip(b.goal, 2000).trim();
   if (goal.length < 8) throw bad('Beskriv vad agenterna ska bygga/utveckla', 'bad_goal');
-  const days = Math.min(30, Math.max(1, Number(b.days) || 14));
-  const allowedIntervals = [5, 60, 120, 300, 600, 1440, 2880, 7200];
+  const days = Math.min(365, Math.max(1, Number(b.days) || 14));
+  const allowedIntervals = [5, 15, 30, 60, 120, 300, 600, 1440, 2880, 7200];
   const reqInt = Number(b.intervalMin) || 5;
   const intervalMin = allowedIntervals.includes(reqInt) ? reqInt : 5;
   const orKey = String(b.orKey || '').trim().slice(0, 200);
@@ -1892,7 +1892,7 @@ async function runSprintStep(env, sprint) {
     const workerTier = isTomasTask ? 'lead' : (isDesignTask ? 'design' : 'coder');
     const addonRules = hasAddons
       ? `\n- LIVE WEBSITE CHANNEL: market/public/agent-addons.js and market/public/agent-addons.css are ALWAYS loaded live on nrnworld.one/MyOffiCity/. Put ALL visible UI/UX features, interactive widgets, animations, or visual enhancements into them using ===APPEND: market/public/agent-addons.js=== and/or ===APPEND: market/public/agent-addons.css===!\n- Using ===APPEND: ...=== automatically preserves ALL existing code — ONLY output your new self-contained (() => { ... })(); IIFE module (calling window.MyOffiCityAddons.register('Your Feature Name')) and its CSS rules!\n- FORBIDDEN: NEVER create disconnected root-level .js/.css files, NEVER invent fake "/meeting/" pages, and NEVER invent fake database tables.`
-      : `\n- EDITING EXISTING FILES: For any existing medium/large file (> 60 lines), ALWAYS use ===PATCH: path=== with exact <<<FIND / ===REPLACE / >>>END blocks instead of rewriting the whole file! This preserves 100% of existing code and never triggers truncation.\n- NEVER create orphan .css files unless you also import/wire them into the corresponding .tsx/.jsx/.html file in the SAME response!`;
+      : `\n- EDITING EXISTING FILES: For any existing medium/large file (> 60 lines), ALWAYS use ===PATCH: path=== with exact <<<FIND / ===REPLACE / >>>END blocks instead of rewriting the whole file! ONLY use exact file paths that actually appear in "Repo files:" — NEVER invent nonexistent paths like Header.tsx.\n- NEVER create orphan .css files unless you also import/wire them into the corresponding .tsx/.jsx/.html file in the SAME response!`;
     const ai = await callSprintAi(env, sprint.or_key, [
       {
         role: 'system',
@@ -2185,15 +2185,40 @@ async function deleteSprint(env, id, user) {
 
 async function setSprintInterval(req, env, id, user) {
   await ensureSprintTables(env);
-  const s = await env.DB.prepare('SELECT id FROM sprints WHERE id=? AND owner_id=?').bind(id, user.id).first();
+  const s = await env.DB.prepare('SELECT id, interval_min, days, ends_at, status FROM sprints WHERE id=? AND owner_id=?').bind(id, user.id).first();
   if (!s) throw new HttpError(404, 'not_found', 'Sprint not found');
   const b = await readBody(req);
-  const allowed = [5, 60, 120, 300, 600, 1440, 2880, 7200];
-  const val = Number(b.intervalMin);
-  if (!allowed.includes(val)) throw bad('Ogiltigt intervall', 'bad_interval');
-  await env.DB.prepare('UPDATE sprints SET interval_min=? WHERE id=?').bind(val, id).run();
-  const lbl = val < 60 ? `${val} min` : val < 1440 ? `${val / 60} h` : `${val / 1440} d`;
-  await addSprintLog(env, id, 'Tomas', `Uppdateringsschema ändrat till var ${lbl}.`);
+  const allowed = [5, 15, 30, 60, 120, 300, 600, 1440, 2880, 7200];
+  let nextInt = Number(s.interval_min) || 5;
+  let nextDays = Number(s.days) || 14;
+  let nextEnds = Number(s.ends_at) || (now() + nextDays * 86400000);
+  let nextStatus = s.status || 'active';
+  const notes = [];
+
+  if (b.intervalMin !== undefined && b.intervalMin !== null && b.intervalMin !== '') {
+    const val = Number(b.intervalMin);
+    if (!allowed.includes(val)) throw bad('Ogiltigt intervall', 'bad_interval');
+    nextInt = val;
+    const lbl = val < 60 ? `${val} min` : val < 1440 ? `${val / 60} h` : `${val / 1440} d`;
+    notes.push(`uppdatering var ${lbl}`);
+  }
+  if (b.days !== undefined && b.days !== null && b.days !== '') {
+    const d = Math.min(365, Math.max(1, Math.round(Number(b.days) || 14)));
+    nextDays = d;
+    nextEnds = now() + d * 86400000;
+    if (nextStatus === 'done') nextStatus = 'active';
+    notes.push(d >= 365 ? 'löptid: tills du pausar (1 år)' : `löptid: ${d} dagar från nu`);
+  }
+  if (b.status === 'paused' || b.status === 'active') {
+    nextStatus = b.status;
+    notes.push(nextStatus === 'paused' ? 'pausad' : 'aktiv');
+  }
+
+  await env.DB.prepare('UPDATE sprints SET interval_min=?, days=?, ends_at=?, status=? WHERE id=?')
+    .bind(nextInt, nextDays, nextEnds, nextStatus, id).run();
+  if (notes.length) {
+    await addSprintLog(env, id, 'Tomas', `📅 Schema uppdaterat: ${notes.join(' · ')}.`);
+  }
   return await getSprint(env, id, user);
 }
 

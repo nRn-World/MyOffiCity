@@ -1919,8 +1919,11 @@ Rules:
     if (!isTomasTask) {
       try {
         const preview = files.map(f => `FILE: ${f.path} (${f.content.length} B)\n${f.content.slice(0, 1200)}`).join('\n\n');
+        const revRule = hasAddons
+          ? 'Reply ONLY with "APPROVE: <short Swedish approval note>" if the code is valid, complete, and actually wired into the live site (e.g. market/public/agent-addons.js or market/public/agent-addons.css), OR "REJECT: <short Swedish reason>" if it is broken, truncated, creates disconnected standalone root .js/.css files not loaded by index.html, imports nonexistent files, or deletes existing code.'
+          : 'Reply ONLY with "APPROVE: <short Swedish approval note>" if the code is valid, complete, and fits the repository structure, OR "REJECT: <short Swedish reason>" if it is broken, truncated, empty, placeholder-only, or deletes existing code.';
         const rev = await callSprintAi(env, sprint.or_key, [
-          { role: 'system', content: 'You are Tomas, Chief Architect & Team Leader. Review your teammate\'s code before it is pushed to GitHub. Reply ONLY with "APPROVE: <short Swedish approval note>" if the code is valid, complete, and actually wired into the live site (e.g. market/public/agent-addons.js or market/public/agent-addons.css), OR "REJECT: <short Swedish reason>" if it is broken, truncated, creates disconnected standalone root .js/.css files not loaded by index.html, imports nonexistent files, or deletes existing code.' },
+          { role: 'system', content: 'You are Tomas, Chief Architect & Team Leader. Review your teammate\'s code before it is pushed to GitHub. ' + revRule },
           { role: 'user', content: `Task: ${task.title} (by ${task.assignee})\nGoal: ${sprint.goal}\n\nSubmitted files:\n${preview}` },
         ], 200, 'lead');
         const verdict = String(rev.text || '').trim();
@@ -1992,6 +1995,24 @@ Rules:
         } catch { /* */ }
       }
       if (prNum) await env.DB.prepare('UPDATE sprints SET pr_url=?, pr_number=? WHERE id=?').bind(prUrl, prNum, sprint.id).run();
+
+      // 5b. Auto-merge direkt till main för repos som inte har egen agent-verify.yml GitHub Action
+      const hasAgentWorkflow = treePaths.some(p => /^\.github\/workflows\/agent-verify\.ya?ml$/i.test(p));
+      if (prNum && !hasAgentWorkflow) {
+        try {
+          let merged = false;
+          for (const method of ['squash', 'merge']) {
+            try {
+              const mr = await ghApi(sprint.gh_token, `/repos/${sprint.repo}/pulls/${prNum}/merge`, 'PUT', {
+                commit_title: `[MyOffiCity] ${clip(task.title, 72)} (#${prNum})`,
+                merge_method: method,
+              });
+              if (mr && mr.merged) { merged = true; break; }
+            } catch { /* prova nästa metod */ }
+          }
+          if (merged) tomasNote = (tomasNote ? tomasNote + ' · ' : '') + `✅ Auto-mergad till ${sprint.base_branch}`;
+        } catch { /* PR ligger kvar öppen om GitHub branch protection kräver manuell merge */ }
+      }
     }
 
     const summary = clip((parsed.summary || `Klart: ${changed.join(', ')}`) + (tomasNote ? ` · Tomas: ${tomasNote}` : ''), 400);

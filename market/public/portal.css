@@ -3294,3 +3294,44 @@ button.item {
 .dsb-tog:hover{background:var(--gold);color:#0a0e18}
 .fs3d-exit{position:fixed;top:14px;left:14px;z-index:65;padding:9px 15px;border-radius:999px;border:1px solid var(--gold);background:rgba(10,15,29,.88);backdrop-filter:blur(10px);color:#f3ecdc;font:600 13px var(--sans);cursor:pointer;box-shadow:0 10px 30px rgba(0,0,0,.55)}
 .fs3d-exit:hover{background:var(--gold);color:#0a0e18}
+
+/* Läsbara dropdown-menyer (fixar ljus text på vit bakgrund i Windows Chrome/Edge) */
+select,
+.tchat select,
+#lang {
+    color-scheme: dark;
+}
+select option,
+select optgroup,
+.tchat select option,
+.tchat select optgroup,
+#lang option {
+    background-color: #10182b;
+    color: #f3ecdc;
+}
+select option:checked,
+.tchat select option:checked,
+#lang option:checked {
+    background-color: #2563eb;
+    color: #ffffff;
+}
+@media (prefers-color-scheme: light) {
+    main select {
+        color-scheme: light;
+    }
+    main select option,
+    main select optgroup {
+        background-color: #ffffff;
+        color: #141824;
+    }
+    .tchat select,
+    #lang {
+        color-scheme: dark;
+    }
+    .tchat select option,
+    .tchat select optgroup,
+    #lang option {
+        background-color: #10182b;
+        color: #f3ecdc;
+    }
+}

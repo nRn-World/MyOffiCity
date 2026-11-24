@@ -531,13 +531,13 @@ const Office = (() => {
         for (let i = 0; i < 3; i++) { const bx = sx * (2.2 + i * 2.6); cyl(.09, .09, .8, dark, bx, -.3, Z1 + 2.3, root, 8); cyl(.1, .1, .08, new T3.MeshBasicMaterial({ color: 0xfff3c8 }), bx, .14, Z1 + 2.3, root, 8); }
       }
     }
-    [-e + 1, e - 1, -e - AW - 1.5, e + AW + 1.5].forEach(x => lamp(x, 5.2));
+    [-e + 1, e - 1, -e - AW - 1.5, e + AW + 1.5].forEach(x => lamp(x, 5.45));
     for (const i of [-1, 1]) box(2.4, .4, .8, M(0x17400d), i * Math.min(5.5, e - 3), -.5, Z1 + 1, root);
     // stad: asfalt, trottoar, körfält och en riktig stadsbild bakom kontoret
     const road = box(520, .06, 200, M(0x3a3836, { roughness: .98 }), 0, -.685, -108, root); road.castShadow = road.receiveShadow = false;
     const walk = box(520, .08, 2.2, M(0x989083, { roughness: .95 }), 0, -.64, -8.4, root); walk.castShadow = walk.receiveShadow = false;
     for (let i = -59; i <= 59; i++) { const dash = box(2.6, .02, .12, M(0xcfc5b0), i * 4.4, -.62, -10.8, root); dash.castShadow = dash.receiveShadow = false; }
-    for (let x = -42; x <= 42; x += 14)lamp(x, -8.6);
+    for (let x = -42; x <= 42; x += 14)lamp(x, -9.35);
     cityLayout().forEach(cityBuilding);
     // två körfält: färre fordon, men taxibilar och motorcyklar blandas in
     [[8.0, 1], [10.4, -1]].forEach(([z, lane], i) => {
@@ -1192,11 +1192,11 @@ const Office = (() => {
   /* Fotgängare: realistiska CC BY-människor (ung kvinna, äldre dam, Nathan) + CC0-personer från CityAssets på trottoarerna. */
   let PEDS = [], pedTried = false;
   const PED_SPOTS = [
-    ['young', 4.1, -14, 1, 1.25, 130], ['old', 4.4, -2, 1, .95, 130], ['nathan', 4.8, 10, -1, 1.35, 130],
-    ['young', 4.6, 34, -1, 1.3, 130], ['nathan', 3.9, -44, 1, 1.3, 130], ['old', 4.9, 62, -1, .95, 130],
-    ['nathan', 4.3, -78, 1, 1.25, 130], ['young', 3.8, 92, -1, 1.35, 130],
-    ['young', -8.1, -26, 1, 1.3, 130], ['nathan', -8.6, 14, -1, 1.35, 130], ['old', -8.2, 52, 1, .95, 130], ['nathan', -8.5, -66, -1, 1.25, 130]
-  ];   // går hela trottoaren och fortsätter i andra änden
+    ['young', 4.0, -14, 1, 1.25, 130], ['old', 4.25, -2, 1, .95, 130], ['nathan', 4.5, 10, -1, 1.35, 130],
+    ['young', 4.45, 34, -1, 1.3, 130], ['nathan', 3.9, -44, 1, 1.3, 130], ['old', 4.55, 62, -1, .95, 130],
+    ['nathan', 4.2, -78, 1, 1.25, 130], ['young', 3.85, 92, -1, 1.35, 130],
+    ['young', -7.85, -26, 1, 1.3, 130], ['nathan', -8.35, 14, -1, 1.35, 130], ['old', -8.0, 52, 1, .95, 130], ['nathan', -8.45, -66, -1, 1.25, 130]
+  ];   // går hela trottoaren med fritt avstånd från gatlyktor (z=5.45 och z=-9.35)
   function loadPeds() {
     loadHumanModels();
     if (pedTried || !window.CityAssets || !T3.SkeletonUtils) return; pedTried = true;

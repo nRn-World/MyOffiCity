@@ -1170,10 +1170,22 @@ function activeRelaySpecs(env, mode, extraOrKey = '') {
     list.push({ name: 'cerebras', url: 'https://api.cerebras.ai/v1/chat/completions', key: env.CEREBRAS_API_KEY, models: ['qwen-3-32b', 'llama-3.3-70b'] });
   }
   if (env.SAMBANOVA_API_KEY) {
-    list.push({ name: 'sambanova', url: 'https://api.sambanova.ai/v1/chat/completions', key: env.SAMBANOVA_API_KEY, models: isLead ? ['Meta-Llama-3.3-70B-Instruct', 'Qwen2.5-Coder-32B-Instruct'] : ['Qwen2.5-Coder-32B-Instruct', 'Meta-Llama-3.3-70B-Instruct'] });
+    list.push({
+      name: 'sambanova',
+      url: 'https://api.sambanova.ai/v1/chat/completions',
+      key: env.SAMBANOVA_API_KEY,
+      models: isLead
+        ? ['DeepSeek-V3-0324', 'DeepSeek-R1-Distill-Llama-70B', 'Meta-Llama-3.3-70B-Instruct']
+        : ['Qwen2.5-Coder-32B-Instruct', 'DeepSeek-V3-0324', 'Meta-Llama-3.3-70B-Instruct'],
+    });
   }
   if (env.MISTRAL_API_KEY) {
-    list.push({ name: 'mistral', url: 'https://api.mistral.ai/v1/chat/completions', key: env.MISTRAL_API_KEY, models: isLead ? ['codestral-latest', 'mistral-small-latest'] : ['mistral-small-latest', 'codestral-latest'] });
+    list.push({
+      name: 'mistral',
+      url: 'https://api.mistral.ai/v1/chat/completions',
+      key: env.MISTRAL_API_KEY,
+      models: isLead ? ['codestral-latest', 'mistral-large-latest', 'mistral-small-latest'] : ['mistral-small-latest', 'codestral-latest'],
+    });
   }
   const orKey = (extraOrKey && extraOrKey.trim().length > 10 ? extraOrKey.trim() : '') || (env.OPENROUTER_API_KEY || '').trim();
   if (orKey) {
@@ -1281,7 +1293,7 @@ async function freeAiChat(req, env) {
   // För ren textchatt: prova först den externa gratis-stafetten (Gemini -> Groq -> Cerebras -> SambaNova -> Mistral -> OpenRouter)
   // så att användaren aldrig slår i Cloudflares kvot när stafett-nycklar finns konfigurerade!
   if (!hasImage && !hasAudio) {
-    const ext = await runExternalRelay(env, mode, messages, maxTokens, temp);
+    const ext = await runExternalRelay(env, mode === 'gemma' ? 'gemma' : 'lead', messages, maxTokens, temp);
     if (ext.text) {
       return {
         model: ext.model,
@@ -1518,7 +1530,7 @@ async function callSprintAi(env, orKey, messages, maxTokens = 1600, tier = 'work
     throw new HttpError(429, 'free_ai_neuron_cap_exceeded', 'Dagens gratisgräns på Cloudflare är nådd – nästa pass körs imorgon.');
   }
   const cfModels = tier === 'lead'
-    ? ['@cf/meta/llama-3.3-70b-instruct-fp8-fast', '@cf/qwen/qwen2.5-coder-32b-instruct']
+    ? ['@cf/meta/llama-3.3-70b-instruct-fp8-fast', '@cf/qwen/qwen2.5-coder-32b-instruct', '@cf/deepseek-ai/deepseek-r1-distill-qwen-32b']
     : ['@cf/qwen/qwen2.5-coder-32b-instruct', '@cf/meta/llama-3.1-8b-instruct-fast'];
   for (const mid of cfModels) {
     try {

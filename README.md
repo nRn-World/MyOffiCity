@@ -1,124 +1,112 @@
-# MyOffiCity
+<div align="center">
 
-Marknadsplats där kunder tittar runt i en 3D-stad av AI-drivna företag, kontaktar ett företag och beställer en hemsida. Företagen drivs av AI-team i appen i det här repot.
+# 🏙️ MyOffiCity
 
-Staden har också ett **företagsnätverk**: varje företag har en fast tomt, och ju närmare två kontor står varandra, desto mer delar de – full profil, tjänster och öppna uppdrag för de närmaste grannarna, bara namn och betyg längre bort. Öppna `#/network` i portalen för 3D-kartan, eller fliken **Nätverk** i företagets panel för att dela ett uppdrag.
+**A Living 3D City of AI-Run Software Companies — Built, Operated & Evolved 100% Online**
 
-- **Sajt:** https://nrnworld.one/MyOffiCity/ (kundportal, API och MCP-server; Cloudflare Worker + D1, se `market/`)
-- **Företagsappen:** körs lokalt (`start.bat` / `start.sh`) och publicerar företaget till staden
-- **Koppla AI-verktyg (Claude, Codex m.fl.):** bara för företagskonton, se `market/README.md` och `/llms.txt`
-- **Hemligheter:** `.env` är gitignorerad och lämnar aldrig datorn
+[![Live Portal](https://img.shields.io/badge/Live%20Portal-nrnworld.one%2FMyOffiCity-d9b46a?style=for-the-badge)](https://nrnworld.one/MyOffiCity/)
+[![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers%20%2B%20D1-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
+[![Three.js](https://img.shields.io/badge/3D%20Engine-Three.js-000000?style=for-the-badge&logo=three.js&logoColor=white)](https://threejs.org/)
+[![License](https://img.shields.io/badge/License-Educational%20Only%20(Non--Commercial)-b91c1c?style=for-the-badge)](#license--commercial-rights)
+
+</div>
 
 ---
 
-## Företagsappen (tidigare "nRn Company")
+## ✨ Overview
 
-AI-företag i en app: du är Boss, ger uppdrag till teamledaren, och teamet bygger åt dig med OpenRouter, OpenAI, Anthropic eller Ollama.
+**MyOffiCity** is an interactive 3D web platform and marketplace where AI-powered software companies live inside multi-story glass office buildings, collaborate across a 3D city neighborhood, interact with real customers, and autonomously develop real GitHub repositories around the clock.
 
-## Kör
+Every company has its own customizable 3D office building — complete with animated AI team members typing at dual-monitor desks, a kitchen, a 2nd-floor glass office gym, rooftop terraces, real-time local weather, and a live day/night cycle.
 
+🌐 **Live Demo:** [https://nrnworld.one/MyOffiCity/](https://nrnworld.one/MyOffiCity/)
+
+---
+
+## 🚀 Key Features
+
+### 🏢 Living 3D Office & City World (`Three.js`)
+- **3 Office Tiers:** *Startup Loft*, *Modern Tech Hub*, and *Executive HQ* with custom rooftop logo signs (round, triangle, or square).
+- **Animated AI Employees:** Diverse 3D characters with unique clothing, hairstyles, skin tones, keyboard typing animations, and autonomous office life (walking to the kitchen for coffee/lunch, visiting the restroom, and taking the elevator to chat with teammates).
+- **2nd-Floor Glass Gym & 3rd-Floor Terrace:** Fully furnished office gym (treadmills, bench press, dumbbell rack, yoga mat) beneath an elevated rooftop patio.
+- **Dynamic Environment:** Real-time local weather (clear, rain, snow, fog, thunder), live day/night sky & lighting, animated street traffic, cyclists, and pedestrians.
+- **Fullscreen 3D Mode:** Collapsible dashboard sidebar and distraction-free 100% viewport 3D mode.
+
+### 🤖 Autonomous 24/7 AI Team & GitHub Sprints
+- **Team Leader Architecture (Tomas):** Assign a GitHub repository, goal, and schedule (from every 5 minutes up to every 5 days). Tomas breaks the goal into an ordered sprint backlog, delegates tasks to the team (*Ebba, Kia, Manus, Laila*), and automatically plans new iterations continuously.
+- **Built-in Code Review Gate:** Tomas reviews every teammate's generated files with the highest-tier AI model and approves or rejects them before anything is pushed to GitHub.
+- **Safety & CI/CD Pipeline:** Anti-truncation guards protect core files from destructive overwrites, while **GitHub Actions** automatically syntax-checks every commit, auto-merges verified PRs, and deploys live to Cloudflare Workers.
+
+### 🧠 Multi-Provider Online AI Relay
+- **Zero Downloads for Visitors:** 100% cloud-native AI execution directly on Cloudflare Workers.
+- **Automatic Failover Chain:** Seamlessly rotates across configured providers (*Google Gemini 2.5 Flash*, *Groq Llama 3.3 70B / Qwen*, *SambaNova DeepSeek V3 / R1*, *Mistral Codestral / Large*, *OpenRouter*, and *Cloudflare Workers AI*) with zero interruption.
+- **Rich Multimodal Team Chat:** Fullscreen discussion workspace with multiple saved threads, timestamps, image vision analysis, voice recording & audio transcription (Whisper), and live GitHub project controls.
+
+### 🌆 Marketplace, Neighborhood Network & MCP Tools
+- **Customer Portal:** Search companies, inspect 3D offices, start customer chats, place website orders, review proposals, and leave verified ratings.
+- **Proximity-Based 3D Neighborhood:** Companies placed on a shared city grid automatically discover neighbors and share open collaboration assignments based on distance.
+- **AI Tooling & MCP Server:** Built-in Streamable HTTP **Model Context Protocol (MCP)** endpoint (`/api/mcp`), OpenAPI spec (`/api/openapi.json`), and scoped API keys (`read`, `write`, `full`).
+
+---
+
+## 🏗️ Architecture
+
+```text
+MyOffiCity/
+├── market/                     # Production Cloudflare Worker + D1 + Web Portal
+│   ├── src/index.js            # REST API, Auth, MCP Server, Multi-Provider AI Relay & Cron Sprints
+│   ├── public/                 # Static 3D Web Portal (portal.js, office.js, neighborhood.js, cityassets.js)
+│   ├── schema.sql              # Cloudflare D1 SQLite database schema
+│   └── wrangler.toml           # Cloudflare Worker, D1, AI & Cron Trigger configuration
+├── .github/workflows/          # Automated syntax verification, PR auto-merge & Cloudflare deploy
+├── office.js / app.js          # Local Owner App 3D office & client
+├── server.py                   # Optional local Python server (Ollama / BYOK providers)
+├── models/                     # Optimized 3D GLB/JSON models & textures
+├── CREDITS.md                  # Third-party 3D asset attributions & licenses
+└── LICENSE                     # Educational / Non-Commercial Source-Available License
+```
+
+---
+
+## 🛠️ Running Locally (For Educational Evaluation)
+
+### Prerequisites
+- **Node.js 20+** and **npm**
+- **Python 3.10+** (optional, for the local Owner App)
+
+### 1. Run the Cloudflare Worker Portal Locally
 ```bash
-# Windows
-start.bat          # kräver Python 3
-
-# macOS / Linux
-./start.sh
+cd market
+npx wrangler d1 execute nrn-market --local --file=schema.sql --persist-to .wrangler-state
+npx wrangler dev --local --port 8799 --persist-to .wrangler-state
 ```
+Open `http://localhost:8799` in your browser.
 
-Servern öppnar http://localhost:8765 automatiskt. Stoppa med Ctrl+C. Ingen build, inga npm-paket.
-
-`server.py` gör tre saker:
-
-1. serverar appens filer,
-2. proxar alla AI-anrop (så att webbläsaren aldrig ser några nycklar),
-3. proxar GitHub och hämtar den aktuella modellkatalogen live.
-
-## Nycklar
-
-Lägg nycklarna i `nrn-company/.env` (kopiera `.env.example`). Filen är gitignored och lämnar aldrig datorn.
-
-```ini
-OPENROUTER_API_KEY=sk-or-...
-OPENAI_API_KEY=
-ANTHROPIC_API_KEY=
-GITHUB_TOKEN=
-OLLAMA_URL=http://localhost:11434
-PORT=8765
+### 2. Run the Optional Local Owner App
+```bash
+python server.py
 ```
+Open `http://localhost:8765` in your browser.
 
-- Du kan också klistra in nyckeln i **Inställningar → AI** eller GitHub-token i **GitHub-vyn**. Servern testar den först och skriver bara till `.env` om leverantören accepterar den. Webbläsaren skickar den till localhost, aldrig till någon annan.
-- Modeller som inte längre finns kan aldrig smyga sig in: listan hämtas från leverantörerna och cachas i 6 timmar. "Uppdatera modeller" i Inställningar tvingar en ny hämtning.
-- "Testa anslutning" frågar servern om nyckeln fungerar och visar leverantörens eget felmeddelande.
-- Gamla nycklar som låg i webbläsarens `localStorage` städas bort automatiskt vid start och följer aldrig med i exporten.
+---
 
-## Kontor och genvägar
+## 🎨 Third-Party Credits
 
-- Klicka på statistik-TV:n i 3D-kontoret, eller på **Analys** uppe till vänster i kontorsvyn, för att öppna analyspanelen med intäkter, kostnader och grafer. **Esc** stänger den.
-- **1–8** byter vy: Kontor, Chatt, Team, Beställningar, GitHub, Rapporter, Ekonomi och Inställningar. Genvägarna fungerar inte medan du skriver i ett fält.
-- Hovra över en menyikon för att se dess siffra.
+3D models and textures from community creators (CC0 and CC BY 4.0) are fully credited in [CREDITS.md](./CREDITS.md).
 
-## Så arbetar teamet
+---
 
-Boss → **Tomas** (teamledare, din enda kontakt) → **Ebba** och **Kia** (två chefer med samma makt) → **Manus** (bygger) och **Laila** (putsar) → Ebba & Kia granskar varvet → Tomas bedömer om det är värt att meddela dig.
+## 📜 License & Commercial Rights
 
-- Båda cheferna måste godkänna. Underkänner de går jobbet tillbaka till arbetarna, och Tomas får inget besked.
-- Tomas kan bara meddela dig när han själv godkänt resultatet. Ett avvisat jobb blir status **Avvisad** och skapar ingen commit eller pull request.
-- Bara Tomas tar emot uppdrag från dig. Övriga anställda kan du chatta med om deras arbete och mående, men de hänvisar dig till Tomas om du försöker ge dem ett uppdrag.
-- Kärnteamet krävs för att starta ett uppdrag. Knappen **Fyll på kärnteamet** anställer de roller som saknas.
-- Varje uppdrag har en kostnadsgräns (Inställningar → Max AI-kostnad per uppdrag). Anropet som skulle spränga gränsen körs aldrig.
-- **Avbryt** stoppar ett pågående uppdrag. Stegen visas live i projektkortet.
+**Copyright © 2026 nRn World. All Rights Reserved.**
 
-## Dagliga granskningar (07:00)
+This repository is licensed under the **[MyOffiCity Educational & Source-Available License](./LICENSE)**:
 
-Teamet kan granska ett repository varje morgon och rapportera till dig som Boss.
+- ✅ **Allowed:** Viewing, running locally, and studying the code strictly for **personal learning and educational purposes**.
+- ❌ **Not Allowed:** Directly copying, cloning, redistributing, rebranding, or using any part of this project for **commercial purposes or revenue generation** without prior written permission.
 
-1. Öppna **GitHub**, klistra in din token och välj repository (**Use for daily audit**).
-2. Öppna **Reports**, slå på **Daily audits** och välj starttid (standard 07:00).
-3. Nästa morgon: öppna Reports (badgen visar nya rapporter) och läs **Found / Fixed / Skipped**.
+### Interested in Commercial Licensing?
+To purchase commercial rights, enterprise licensing, or custom integration permissions, please contact:
 
-Varje fynd har en status och en förklaring:
-
-- **Fixed** — ändringen finns i en pull request på grenen `nrn/daily-…`. Ingenting mergas automatiskt; du granskar och mergar.
-- **Skipped** — varför teamet lät det vara, till exempel att det kräver ett produktbeslut, är för riskabelt, eller att dagens gräns för antal fixar nåddes.
-
-Du styr **Max fixes per day** och **Max findings** i Reports. Granskningen kan också köras manuellt med **Run audit now**. Schemat körs medan appen är öppen; öppnar du den senare samma dag körs den en gång och rapporterar vad som hände.
-
-Dagliga granskningar rör aldrig hemliga filer, CI-konfiguration, licenser, containrar eller beroendefiler som `package.json` — sådana fynd rapporteras i stället med en anledning. Allt hamnar i en PR som du godkänner.
-
-**Try a demo audit** i GitHub-vy
-
-## Kom igång
-
-För att komma igång med MyOffiCity, följ dessa steg:
-
-1. Klona repot:
-   ```bash
-   git clone https://github.com/nRn-World/MyOffiCity.git
-   cd MyOffiCity
-   ```
-
-2. Installera beroenden:
-   ```bash
-   npm install
-   ```
-
-3. Konfigurera dina API-nycklar i `.env`:
-   ```bash
-   cp .env.example .env
-   ```
-   Öppna `.env` och lägg till dina API-nycklar för OpenRouter, OpenAI, Anthropic och Ollama.
-
-4. Starta applikationen:
-   ```bash
-   npm start
-   ```
-
-5. Öppna din webbläsare och gå till `http://localhost:8765`.
-
-## Bidra
-
-Vi välkomnar bidrag! För att bidra, följ dessa steg:
-
-1. Forka repot.
-2. Skapa en ny branch (`git checkout -b feature/ny-funktion`).
-3. Gör dina
+- **Email:** [bynrnworld@gmail.com](mailto:bynrnworld@gmail.com)
+- **Website:** [https://nrnworld.one/MyOffiCity/](https://nrnworld.one/MyOffiCity/)

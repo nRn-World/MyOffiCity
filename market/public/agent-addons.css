@@ -250,3 +250,49 @@ html.moc-theme-warm {
     font-size: 11px;
   }
 }
+
+/* Accessibility Dashboard Styles */
+#moc-accessibility-dashboard {
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  color: #f3ecdc;
+}
+
+.moc-accessibility-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.moc-accessibility-section {
+  margin-bottom: 12px;
+}
+
+.moc-accessibility-section h3 {
+  font-size: 13px;
+  font-weight: 700;
+  color: #e9d7b0;
+  margin: 0 0 8px;
+}
+
+.moc-accessibility-section p {
+  font-size: 12px;
+  margin: 4px 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  #moc-accessibility-dashboard {
+    padding: 10px;
+  }
+
+  .moc-accessibility-section h3 {
+    font-size: 12px;
+  }
+
+  .moc-accessibility-section p {
+    font-size: 11px;
+  }
+}

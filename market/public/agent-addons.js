@@ -299,3 +299,164 @@
   // Register analytics as a feature
   window.MyOffiCityAddons.register('Användaranalys');
 })();
+
+(() => {
+  const accessibility = {
+    init() {
+      this.setupScreenReaderSupport();
+      this.setupKeyboardNavigation();
+      this.setupVisualAdjustments();
+      this.setupAudioPreferences();
+      this.setupAccessibilityDashboard();
+    },
+    setupScreenReaderSupport() {
+      // Add ARIA attributes to important elements
+      document.body.setAttribute('aria-label', 'MyOffiCity 3D stad och kontorsmiljö');
+      const main = document.getElementById('app');
+      if (main) {
+        main.setAttribute('role', 'main');
+        main.setAttribute('aria-label', 'Huvudinnehåll');
+      }
+
+      // Add skip to content link
+      const skipLink = document.createElement('a');
+      skipLink.href = '#app';
+      skipLink.className = 'skip-link';
+      skipLink.textContent = 'Hoppa till innehåll';
+      document.body.insertBefore(skipLink, document.body.firstChild);
+
+      // Add CSS for skip link
+      const style = document.createElement('style');
+      style.textContent = `
+        .skip-link {
+          position: absolute;
+          left: -9999px;
+          top: 0;
+          background: #000;
+          color: #fff;
+          padding: 8px;
+          z-index: 1000;
+        }
+        .skip-link:focus {
+          left: 0;
+        }
+      `;
+      document.head.appendChild(style);
+    },
+    setupKeyboardNavigation() {
+      // Add keyboard shortcuts for common actions
+      document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.key === 'm') {
+          e.preventDefault();
+          window.MyOffiCityAddons.toggleDock();
+        }
+      });
+
+      // Make sure all interactive elements are keyboard accessible
+      const interactiveElements = document.querySelectorAll('button, [role="button"], a, input, select, textarea');
+      interactiveElements.forEach(el => {
+        if (!el.hasAttribute('tabindex')) {
+          el.setAttribute('tabindex', '0');
+        }
+      });
+    },
+    setupVisualAdjustments() {
+      // Add visual adjustment options
+      const visualWrap = document.createElement('div');
+      visualWrap.className = 'moc-chip-row';
+
+      // Font size adjustment
+      const fontSizes = [
+        { label: 'Standard', size: '16px' },
+        { label: 'Mindre', size: '14px' },
+        { label: 'Större', size: '18px' }
+      ];
+
+      fontSizes.forEach((size, index) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'moc-chip-btn' + (index === 0 ? ' on' : '');
+        b.textContent = size.label;
+        b.addEventListener('click', () => {
+          document.documentElement.style.fontSize = size.size;
+          visualWrap.querySelectorAll('button').forEach(btn => btn.classList.remove('on'));
+          b.classList.add('on');
+        });
+        visualWrap.appendChild(b);
+      });
+
+      window.MyOffiCityAddons.addTool('Visuella justeringar', '👁️', visualWrap);
+    },
+    setupAudioPreferences() {
+      // Add audio preference options
+      const audioWrap = document.createElement('div');
+      audioWrap.className = 'moc-chip-row';
+
+      // Mute/unmute audio
+      const muteBtn = document.createElement('button');
+      muteBtn.type = 'button';
+      muteBtn.className = 'moc-chip-btn';
+      muteBtn.textContent = 'Stäng av ljud';
+      muteBtn.addEventListener('click', () => {
+        const audioElements = document.querySelectorAll('audio, video');
+        audioElements.forEach(el => {
+          el.muted = !el.muted;
+          muteBtn.textContent = el.muted ? 'Slå på ljud' : 'Stäng av ljud';
+        });
+      });
+      audioWrap.appendChild(muteBtn);
+
+      // Volume control
+      const volumeControl = document.createElement('input');
+      volumeControl.type = 'range';
+      volumeControl.min = '0';
+      volumeControl.max = '100';
+      volumeControl.value = '50';
+      volumeControl.style.width = '100%';
+      volumeControl.addEventListener('input', () => {
+        const volume = volumeControl.value / 100;
+        const audioElements = document.querySelectorAll('audio, video');
+        audioElements.forEach(el => {
+          el.volume = volume;
+        });
+      });
+      audioWrap.appendChild(volumeControl);
+
+      window.MyOffiCityAddons.addTool('Ljudinställningar', '🔊', audioWrap);
+    },
+    setupAccessibilityDashboard() {
+      // Create accessibility dashboard
+      const dashboard = document.createElement('div');
+      dashboard.id = 'moc-accessibility-dashboard';
+      dashboard.className = 'moc-tool-card';
+      dashboard.innerHTML = `
+        <div class="moc-tool-title">🧠 Tillgänglighetsinställningar</div>
+        <div class="moc-accessibility-content">
+          <div class="moc-accessibility-section">
+            <h3>Skärmläsarstöd</h3>
+            <p>ARIA-attribut har lagts till viktiga element för bättre skärmläsarstöd.</p>
+          </div>
+          <div class="moc-accessibility-section">
+            <h3>Tangentbordsnavigering</h3>
+            <p>Tryck på Ctrl+M för att öppna tilläggspanelen.</p>
+          </div>
+          <div class="moc-accessibility-section">
+            <h3>Visuella justeringar</h3>
+            <p>Justera teckenstorlek och kontrast i tilläggspanelen.</p>
+          </div>
+          <div class="moc-accessibility-section">
+            <h3>Ljudinställningar</h3>
+            <p>Stäng av eller justera volymen för ljud och video.</p>
+          </div>
+        </div>
+      `;
+      window.MyOffiCityAddons.addTool('Tillgänglighetsinställningar', '🧠', dashboard);
+    }
+  };
+
+  // Initialize accessibility features
+  accessibility.init();
+
+  // Register accessibility as a feature
+  window.MyOffiCityAddons.register('Tillgänglighetsinställningar');
+})();

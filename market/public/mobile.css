@@ -1,11 +1,11 @@
-/* Mobilanpassade stilar för MyOffiCity */
+/* Mobile-specific styles for MyOffiCity */
 @media (max-width: 768px) {
-  /* Generella mobilstilar */
+  /* General mobile adjustments */
   body {
     font-size: 14px;
   }
 
-  /* Navigeringsmeny */
+  /* Navigation adjustments */
   .side {
     width: 60px;
     transition: width 0.3s ease;
@@ -30,60 +30,74 @@
     margin-top: 4px;
   }
 
-  /* 3D-vy */
-  .view {
-    height: calc(100vh - 50px);
-  }
-
-  /* Chattfönster */
-  .chat {
-    height: calc(100vh - 150px);
-  }
-
-  /* Teamfönster */
-  .team {
-    height: calc(100vh - 150px);
-  }
-
-  /* Mobilanpassade knappar */
-  .mobile-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: #14203d;
-    color: white;
-    border: none;
-    cursor: pointer;
-    margin: 5px;
-    transition: all 0.3s ease;
-  }
-
-  .mobile-btn:hover {
-    background-color: #d9b46a;
-    transform: scale(1.1);
-  }
-
-  /* Mobilanpassad header */
-  .mobile-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  /* Office view adjustments */
+  .office-view {
     padding: 10px;
-    background-color: #080b18;
-    color: white;
   }
 
-  /* Mobilanpassad footer */
-  .mobile-footer {
-    display: flex;
-    justify-content: space-around;
+  .office-controls {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* Chat view adjustments */
+  .chat-container {
     padding: 10px;
-    background-color: #080b18;
-    position: fixed;
-    bottom: 0;
-    width: 100%;
+  }
+
+  .chat-messages {
+    height: calc(100vh - 250px);
+  }
+
+  .chat-input {
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  /* Team view adjustments */
+  .team-container {
+    padding: 10px;
+  }
+
+  .team-member {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px;
+  }
+
+  .team-member img {
+    width: 50px;
+    height: 50px;
+  }
+
+  /* Responsive adjustments for different screen sizes */
+  @media (max-width: 480px) {
+    .side {
+      width: 50px;
+    }
+
+    .brand {
+      padding: 8px;
+    }
+
+    #nav button {
+      padding: 6px 4px;
+    }
+
+    #nav button span:not(.ni) {
+      font-size: 9px;
+    }
+
+    .office-controls {
+      gap: 8px;
+    }
+
+    .chat-messages {
+      height: calc(100vh - 230px);
+    }
+
+    .team-member {
+      padding: 8px;
+    }
   }
 }

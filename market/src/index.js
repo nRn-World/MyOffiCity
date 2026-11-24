@@ -1841,6 +1841,16 @@ async function runSprintStep(env, sprint) {
               }
             } catch { /* */ }
           }
+        } else if (runs.some(r => r.status === 'completed' && (r.conclusion === 'failure' || r.conclusion === 'timed_out'))) {
+          // Självläkning: stäng trasig PR och återställ arbetsbranchen till senaste gröna main så den inte blockerar nästa uppgift
+          try {
+            await ghApi(sprint.gh_token, `/repos/${sprint.repo}/pulls/${pr.number}`, 'PATCH', { state: 'closed' });
+            const baseRef = await ghApi(sprint.gh_token, `/repos/${sprint.repo}/git/ref/heads/${encodeURIComponent(sprint.base_branch)}`);
+            if (baseRef?.object?.sha) {
+              await ghApi(sprint.gh_token, `/repos/${sprint.repo}/git/refs/heads/${encodeURIComponent(sprint.work_branch)}`, 'PATCH', { sha: baseRef.object.sha, force: true });
+            }
+            await addSprintLog(env, sprint.id, 'Tomas', `♻️ PR #${pr.number} misslyckades i GitHub Actions – stängde PR:n och återställde branchen till gröna ${sprint.base_branch} så nästa uppgift startar rent.`);
+          } catch { /* */ }
         }
       }
     }

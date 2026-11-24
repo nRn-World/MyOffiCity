@@ -299,7 +299,7 @@
     ];
     if (token) items.push(navItem('#/chats', t('chatsNav'), r.startsWith('#/chat')), navItem('#/orders', t('orders'), r.startsWith('#/order')), navItem('#/account', t('account'), r === '#/account'));
     $('#nav').innerHTML = items.join('');
-    $('#who').innerHTML = me ? '<b>' + esc(me.user.username) + '</b><button class="btn ghost sm" id="out">' + esc(t('signout')) + '</button>' : '<a class="btn sm" href="#/login">' + esc(t('signin')) + '</a>';
+    $('#who').innerHTML = me ? '<b>' + esc(me.user.email || me.user.username) + '</b><button class="btn ghost sm" id="out">' + esc(t('signout')) + '</button>' : '<a class="btn sm" href="#/login">' + esc(t('signin')) + '</a>';
     const out = $('#out'); if (out) out.onclick = async () => { try { await api('POST', '/logout', {}); } catch { /* */ } token = null; me = null; lsSet(TOKEN_KEY, null); location.hash = '#/'; renderBar(); route(); };
     $('#lang').value = lang;
     const tag = $('#brandTag'); if (tag) tag.textContent = t('brandTag');
@@ -807,14 +807,62 @@
     activeId = threads[0].id;
     const curThread = () => threads.find((x) => x.id === activeId) || threads[0];
     const curSprint = () => sprints.find((s) => s.id === (curThread().sprintId || '')) || null;
-    const saveThreads = () => {
+    let cloudSyncTimer = null;
+    const slimThreads = () => threads.slice(0, 30).map((th) => ({
+      id: th.id, title: th.title || '', updated: th.updated || Date.now(), sprintId: th.sprintId || '', lastLogId: th.lastLogId || 0,
+      messages: (th.messages || []).slice(-40).map((m) => ({ role: m.role, content: m.content, transcript: m.transcript || '', ts: m.ts || 0 })),
+    }));
+    const saveThreads = (skipCloud = false) => {
       try {
-        const slim = threads.slice(0, 30).map((th) => ({
-          id: th.id, title: th.title || '', updated: th.updated || Date.now(), sprintId: th.sprintId || '', lastLogId: th.lastLogId || 0,
-          messages: (th.messages || []).slice(-30).map((m) => ({ role: m.role, content: m.content, transcript: m.transcript || '', ts: m.ts || 0 })),
-        }));
+        const slim = slimThreads();
         localStorage.setItem(storeKey, JSON.stringify(slim));
+        if (!skipCloud) {
+          clearTimeout(cloudSyncTimer);
+          cloudSyncTimer = setTimeout(() => {
+            api('PUT', '/tomas/threads', { threads: slim }).catch(() => { /* */ });
+          }, 500);
+        }
       } catch { /* */ }
+    };
+    const syncCloudThreads = () => {
+      api('GET', '/tomas/threads').then((j) => {
+        const cloud = (j && Array.isArray(j.threads)) ? j.threads : [];
+        const hasRealLocal = threads.some((th) => (th.messages && th.messages.length) || th.sprintId);
+        if (!cloud.length) {
+          if (hasRealLocal) api('PUT', '/tomas/threads', { threads: slimThreads() }).catch(() => { /* */ });
+          return;
+        }
+        if (!hasRealLocal) {
+          threads = cloud.slice(0, 30);
+          activeId = threads[0].id;
+          saveThreads(true);
+          renderThreads(); renderGhBar(); render();
+          return;
+        }
+        // Smart merge av lokala + molntrådar (behåll senaste version av varje tråd-ID)
+        const byId = new Map();
+        cloud.forEach((th) => { if (th && th.id) byId.set(th.id, th); });
+        let localNewer = false;
+        threads.forEach((th) => {
+          if (!th || !th.id) return;
+          if (!(th.messages && th.messages.length) && !th.sprintId && byId.size) return;
+          const prev = byId.get(th.id);
+          if (!prev || (th.updated || 0) > (prev.updated || 0) || (th.messages?.length || 0) > (prev.messages?.length || 0)) {
+            byId.set(th.id, th);
+            localNewer = true;
+          }
+        });
+        const merged = [...byId.values()].sort((a, b) => (b.updated || 0) - (a.updated || 0)).slice(0, 30);
+        if (merged.length) {
+          threads = merged;
+          if (!threads.some((x) => x.id === activeId)) activeId = threads[0].id;
+          saveThreads(true);
+          renderThreads(); renderGhBar(); render();
+          if (localNewer || merged.length > cloud.length) {
+            api('PUT', '/tomas/threads', { threads: slimThreads() }).catch(() => { /* */ });
+          }
+        }
+      }).catch(() => { /* */ });
     };
     const fmtTs = (ms) => {
       if (!ms) return '';
@@ -1244,7 +1292,7 @@
         }
       }).catch(() => { });
     };
-    renderThreads(); render(); refreshQuota(); loadSprintsForChat(true);
+    renderThreads(); render(); refreshQuota(); loadSprintsForChat(true); syncCloudThreads();
     if (opts.forceOpen) setTimeout(() => ta.focus(), 60);
 
     const setFull = (on) => {
@@ -1412,7 +1460,7 @@
     const myChats = chats.inquiries.filter((q) => q.role === 'owner');
     $('#app').innerHTML = '<div class="dash"><aside class="dsb"><div class="dbrand">' + document.querySelector('.brand').outerHTML.replace('href="#/"', 'href="#/"') + '</div><nav class="dnav">'
       + TABS.map(([id, k, ico]) => '<button class="dn' + (id === tab ? ' on' : '') + '" data-t="' + id + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + ico + '" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>' + esc(t(k)) + '</span></button>').join('')
-      + '</nav><div class="dfoot"><a href="#/">' + esc(t('dSite')) + '</a><div class="duser"><b>' + esc(me.user.username) + '</b><small>' + esc(t('dOwner')) + ' ' + esc(c.name) + '</small></div></div></aside>'
+      + '</nav><div class="dfoot"><a href="#/">' + esc(t('dSite')) + '</a><div class="duser"><b>' + esc(me.user.email || me.user.username) + '</b><small>' + esc(t('dOwner')) + ' ' + esc(c.name) + '</small></div></div></aside>'
       + '<section class="dmain"><header class="dtop"><button type="button" class="dsb-tog" id="dsbtog" title="' + esc(lang === 'sv' ? 'Visa / dölj sidomeny' : 'Toggle sidebar') + '">◀</button><h2>' + esc(c.name) + '</h2><span class="co-tier t' + c.building + '">' + esc(t('bTier' + c.building)) + '</span><div class="dchips">'
       + (tab === 'office' ? '<button type="button" class="dsb-tog fs" id="dfs3d" title="' + esc(lang === 'sv' ? 'Fullskärm 3D' : 'Fullscreen 3D') + '">⛶</button>' : '')
       + '<span class="dchip"><small>' + esc(t('dChipOrders')) + '</small><b>' + orders.orders.length + '</b></span><span class="dchip"><small>' + esc(t('dChipChats')) + '</small><b>' + myChats.length + '</b></span>'
@@ -2013,7 +2061,7 @@ for (let i = 0; i < 8; i++) {
     if (!token) return pageLogin();
     await loadMe();
     const u = me.user;
-    $('#app').innerHTML = '<h1>' + esc(t('accH')) + '</h1><p class="muted">' + esc(u.username) + '</p>'
+    $('#app').innerHTML = '<h1>' + esc(t('accH')) + '</h1><p class="muted">' + esc(u.email || u.username) + '</p>'
       + '<div class="card"><h2>' + esc(t('emailLabel')) + '</h2>' + (u.email ? '<p>' + esc(u.email) + ' <span class="pill ' + (u.emailVerified ? 'ok' : 'warn') + '">' + esc(u.emailVerified ? t('emailVerified') : t('emailUnverified')) + '</span></p>' : '') + (mailOn ? '' : '<p class="muted small">' + esc(t('emailNoMail')) + '</p>')
       + '<div class="two"><div><input id="ae" type="email" placeholder="you@example.com" value="' + esc(u.email) + '"></div><div><input id="aep" type="password" placeholder="' + esc(t('password')) + '" autocomplete="current-password"></div></div><div id="aem"></div><button class="btn" id="aes" style="margin-top:10px">' + esc(t('emailSave')) + '</button></div>'
       + '<div class="card"><h2>' + esc(t('pwH')) + '</h2><div class="two"><div><label>' + esc(t('pwOld')) + '</label><input id="po" type="password" autocomplete="current-password"></div><div><label>' + esc(t('pwNew')) + '</label><input id="pn2" type="password" autocomplete="new-password"></div></div><div id="pm"></div><button class="btn" id="ps" style="margin-top:10px">' + esc(t('pwSave')) + '</button></div>'

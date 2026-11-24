@@ -1105,6 +1105,8 @@ route('GET', new RegExp('^/api/companies/([a-z0-9]+)/team$'), (req, env, m) => p
 route('PUT', new RegExp('^/api/company/logo$'), (req, env, m, user) => saveLogo(req, env, user), true);
 route('DELETE', new RegExp('^/api/company/logo$'), (req, env, m, user) => deleteLogo(env, user), true);
 route('PUT', /^\/api\/company$/, (req, env, m, user) => saveCompany(req, env, user), true);
+route('GET', /^\/api\/tomas\/threads$/, (req, env, m, user) => getOwnerThreads(env, user), true, true);
+route('PUT', /^\/api\/tomas\/threads$/, (req, env, m, user) => saveOwnerThreads(req, env, user), true, true);
 route('GET', /^\/api\/github\/repos$/, (req, env, m, user) => listOwnerGithubRepos(env, user), true, true);
 route('POST', /^\/api\/github\/connect$/, (req, env, m, user) => connectOwnerGithub(req, env, user), true, true);
 route('DELETE', /^\/api\/github\/connect$/, (req, env, m, user) => disconnectOwnerGithub(env, user), true, true);
@@ -1467,6 +1469,11 @@ async function ensureSprintTables(env) {
       gh_login TEXT NOT NULL DEFAULT '',
       updated INTEGER NOT NULL
     )`),
+    env.DB.prepare(`CREATE TABLE IF NOT EXISTS owner_chats (
+      owner_id TEXT PRIMARY KEY,
+      threads_json TEXT NOT NULL DEFAULT '[]',
+      updated INTEGER NOT NULL
+    )`),
   ]);
   await env.DB.prepare('ALTER TABLE sprints ADD COLUMN interval_min INTEGER NOT NULL DEFAULT 5').run().catch(() => {});
 }
@@ -1603,6 +1610,39 @@ async function getSprint(env, id, user) {
     env.DB.prepare('SELECT * FROM sprint_logs WHERE sprint_id=? ORDER BY id DESC LIMIT 30').bind(s.id).all(),
   ]);
   return { sprint: sprintSummaryOut(s, tasks.results, logs.results) };
+}
+
+async function getOwnerThreads(env, user) {
+  await ensureSprintTables(env);
+  const row = await env.DB.prepare('SELECT threads_json, updated FROM owner_chats WHERE owner_id=?').bind(user.id).first();
+  if (!row || !row.threads_json) return { threads: [], updated: 0 };
+  let threads = [];
+  try { const p = JSON.parse(row.threads_json); if (Array.isArray(p)) threads = p; } catch { /* */ }
+  return { threads, updated: Number(row.updated) || 0 };
+}
+
+async function saveOwnerThreads(req, env, user) {
+  await ensureSprintTables(env);
+  const b = await readBody(req);
+  const raw = Array.isArray(b.threads) ? b.threads : [];
+  const slim = raw.slice(0, 30).map(th => ({
+    id: clip(th?.id || '', 40),
+    title: clip(th?.title || '', 80),
+    updated: Number(th?.updated) || now(),
+    sprintId: clip(th?.sprintId || '', 40),
+    lastLogId: Number(th?.lastLogId) || 0,
+    messages: (Array.isArray(th?.messages) ? th.messages : []).slice(-40).map(m => ({
+      role: m?.role === 'user' ? 'user' : 'assistant',
+      content: clip(m?.content || '', 6000),
+      transcript: clip(m?.transcript || '', 1500),
+      ts: Number(m?.ts) || 0,
+    })),
+  })).filter(th => th.id);
+  const json = JSON.stringify(slim).slice(0, 450000);
+  const ts = now();
+  await env.DB.prepare('INSERT OR REPLACE INTO owner_chats(owner_id, threads_json, updated) VALUES(?,?,?)')
+    .bind(user.id, json, ts).run();
+  return { ok: true, updated: ts, count: slim.length };
 }
 
 async function listOwnerGithubRepos(env, user) {

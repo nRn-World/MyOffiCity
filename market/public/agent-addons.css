@@ -235,3 +235,103 @@ html {
     font-size: 10px;
   }
 }
+
+/* Theme Switcher for 3D City View */
+.moc-theme-switcher {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  background: rgba(15, 23, 42, 0.9);
+  border-radius: 12px;
+  border: 1px solid rgba(217, 180, 106, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.32);
+  padding: 10px;
+}
+
+.moc-theme-switcher button {
+  background: rgba(217, 180, 106, 0.15);
+  color: #f3ecdc;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin: 5px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.2s ease;
+}
+
+.moc-theme-switcher button:hover {
+  background: rgba(217, 180, 106, 0.25);
+}
+
+/* Mobile responsiveness for theme switcher */
+@media (max-width: 768px) {
+  .moc-theme-switcher {
+    top: 10px;
+    right: 10px;
+    padding: 8px;
+  }
+
+  .moc-theme-switcher button {
+    padding: 6px 10px;
+    font-size: 10px;
+  }
+}
+
+/* Theme-specific styles */
+.theme-light .moc-city-map-widget {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(217, 180, 106, 0.3);
+}
+
+.theme-light .moc-map-container {
+  background: #f7fafc;
+}
+
+.theme-light .moc-map-controls {
+  background: rgba(247, 250, 252, 0.8);
+}
+
+.theme-light .moc-map-toggle, .theme-light .moc-map-nav {
+  color: #1a202c;
+}
+
+.theme-dark .moc-city-map-widget {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(217, 180, 106, 0.3);
+}
+
+.theme-dark .moc-map-container {
+  background: #1a202c;
+}
+
+.theme-dark .moc-map-controls {
+  background: rgba(26, 32, 44, 0.8);
+}
+
+.theme-dark .moc-map-toggle, .theme-dark .moc-map-nav {
+  color: #f3ecdc;
+}
+
+.theme-high-contrast .moc-city-map-widget {
+  background: #000;
+  border: 2px solid #ff0;
+}
+
+.theme-high-contrast .moc-map-container {
+  background: #000;
+}
+
+.theme-high-contrast .moc-map-controls {
+  background: #000;
+}
+
+.theme-high-contrast .moc-map-toggle, .theme-high-contrast .moc-map-nav {
+  color: #ff0;
+  border: 1px solid #ff0;
+}
+
+.theme-high-contrast .moc-map-placeholder {
+  color: #ff0;
+}

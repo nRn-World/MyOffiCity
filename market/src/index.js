@@ -1105,6 +1105,9 @@ route('GET', new RegExp('^/api/companies/([a-z0-9]+)/team$'), (req, env, m) => p
 route('PUT', new RegExp('^/api/company/logo$'), (req, env, m, user) => saveLogo(req, env, user), true);
 route('DELETE', new RegExp('^/api/company/logo$'), (req, env, m, user) => deleteLogo(env, user), true);
 route('PUT', /^\/api\/company$/, (req, env, m, user) => saveCompany(req, env, user), true);
+route('GET', /^\/api\/github\/repos$/, (req, env, m, user) => listOwnerGithubRepos(env, user), true, true);
+route('POST', /^\/api\/github\/connect$/, (req, env, m, user) => connectOwnerGithub(req, env, user), true, true);
+route('DELETE', /^\/api\/github\/connect$/, (req, env, m, user) => disconnectOwnerGithub(env, user), true, true);
 route('GET', /^\/api\/sprints$/, (req, env, m, user) => listSprints(env, user), true, true);
 route('POST', /^\/api\/sprints$/, (req, env, m, user) => createSprint(req, env, user), true, true);
 route('GET', /^\/api\/sprints\/([a-z0-9]+)$/, (req, env, m, user) => getSprint(env, m[1], user), true, true);
@@ -1459,6 +1462,12 @@ async function ensureSprintTables(env) {
       id INTEGER PRIMARY KEY AUTOINCREMENT, sprint_id TEXT NOT NULL,
       created INTEGER NOT NULL, agent TEXT NOT NULL, message TEXT NOT NULL
     )`),
+    env.DB.prepare(`CREATE TABLE IF NOT EXISTS owner_github (
+      owner_id TEXT PRIMARY KEY,
+      gh_token TEXT NOT NULL,
+      gh_login TEXT NOT NULL DEFAULT '',
+      updated INTEGER NOT NULL
+    )`),
   ]);
   await env.DB.prepare('ALTER TABLE sprints ADD COLUMN interval_min INTEGER NOT NULL DEFAULT 5').run().catch(() => {});
 }
@@ -1596,6 +1605,51 @@ async function getSprint(env, id, user) {
   return { sprint: sprintSummaryOut(s, tasks.results, logs.results) };
 }
 
+async function listOwnerGithubRepos(env, user) {
+  await ensureSprintTables(env);
+  const row = await env.DB.prepare('SELECT gh_token, gh_login FROM owner_github WHERE owner_id=?').bind(user.id).first();
+  if (!row || !row.gh_token) return { connected: false, login: '', repos: [] };
+  try {
+    const raw = await ghApi(row.gh_token, '/user/repos?per_page=100&sort=updated&affiliation=owner,collaborator,organization_member');
+    const repos = (Array.isArray(raw) ? raw : []).map(r => ({
+      full_name: r.full_name,
+      private: !!r.private,
+      default_branch: r.default_branch || 'main',
+      description: clip(r.description || '', 120),
+    }));
+    return { connected: true, login: row.gh_login || '', repos };
+  } catch (e) {
+    return { connected: true, login: row.gh_login || '', repos: [], error: String(e && e.message || e) };
+  }
+}
+
+async function connectOwnerGithub(req, env, user) {
+  await ensureSprintTables(env);
+  await limit(env, 'gh:conn:' + user.id, 20, 3600);
+  const b = await readBody(req);
+  const ghToken = String(b.ghToken || '').trim();
+  if (ghToken.length < 15) throw bad('Ange en giltig GitHub-token (ghp_... eller github_pat_...)', 'bad_token');
+  const me = await ghApi(ghToken, '/user');
+  const login = String(me && me.login || '');
+  if (!login) throw bad('Kunde inte verifiera GitHub-kontot med den token', 'bad_token');
+  await env.DB.prepare('INSERT OR REPLACE INTO owner_github(owner_id, gh_token, gh_login, updated) VALUES(?,?,?,?)')
+    .bind(user.id, ghToken, login, now()).run();
+  const raw = await ghApi(ghToken, '/user/repos?per_page=100&sort=updated&affiliation=owner,collaborator,organization_member');
+  const repos = (Array.isArray(raw) ? raw : []).map(r => ({
+    full_name: r.full_name,
+    private: !!r.private,
+    default_branch: r.default_branch || 'main',
+    description: clip(r.description || '', 120),
+  }));
+  return { ok: true, connected: true, login, repos };
+}
+
+async function disconnectOwnerGithub(env, user) {
+  await ensureSprintTables(env);
+  await env.DB.prepare('DELETE FROM owner_github WHERE owner_id=?').bind(user.id).run();
+  return { ok: true, connected: false };
+}
+
 async function createSprint(req, env, user) {
   await ensureSprintTables(env);
   await limit(env, 'sprint:new:' + user.id, 10, 3600);
@@ -1604,8 +1658,12 @@ async function createSprint(req, env, user) {
   const b = await readBody(req);
   const rawRepo = String(b.repo || '').trim().replace(/^https?:\/\/github\.com\//i, '').replace(/\.git$/i, '').replace(/^\/+|\/+$/g, '');
   if (!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(rawRepo)) throw bad('Ange repo som ägare/repo (t.ex. nRn-World/mitt-repo)', 'bad_repo');
-  const ghToken = String(b.ghToken || '').trim();
-  if (ghToken.length < 15) throw bad('GitHub-token krävs (Contents + Pull requests: Read & Write)', 'bad_token');
+  let ghToken = String(b.ghToken || '').trim();
+  if (!ghToken) {
+    const saved = await env.DB.prepare('SELECT gh_token FROM owner_github WHERE owner_id=?').bind(user.id).first();
+    if (saved && saved.gh_token) ghToken = saved.gh_token;
+  }
+  if (ghToken.length < 15) throw bad('GitHub-token krävs — koppla ditt GitHub-konto först eller ange en token', 'bad_token');
   const goal = clip(b.goal, 2000).trim();
   if (goal.length < 8) throw bad('Beskriv vad agenterna ska bygga/utveckla', 'bad_goal');
   const days = Math.min(30, Math.max(1, Number(b.days) || 14));

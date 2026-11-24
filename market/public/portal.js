@@ -903,8 +903,21 @@
       + '<button type="button" class="tchat-gh-btn gold" id="tcghadd">' + esc(t('tChatGhLink')) + '</button>'
       + '</div>'
       + '<form class="tchat-gh-form" id="tcghf" autocomplete="off" hidden>'
-      + '<div class="tchat-gh-row"><input id="tcgh-repo" name="gh_repo_slug" autocomplete="off" required placeholder="' + esc(t('dProjRepoPh')) + '"><select id="tcgh-days"><option value="3">' + esc(t('dProjD3')) + '</option><option value="7">' + esc(t('dProjD7')) + '</option><option value="14" selected>' + esc(t('dProjD14')) + '</option></select></div>'
-      + '<input id="tcgh-tok" name="gh_pat_token" type="password" autocomplete="new-password" required placeholder="' + esc(t('dProjTok')) + ' (github_pat_...)">'
+      + '<div id="tcgh-acct" style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:12px;margin-bottom:6px;padding:6px 8px;border-radius:8px;background:rgba(217,180,106,.08);border:1px solid rgba(217,180,106,.25)">'
+      + '<span id="tcgh-status">Koppla hela ditt GitHub-konto en gång för att välja bland alla dina repos.</span>'
+      + '<span style="display:flex;gap:6px;align-items:center">'
+      + '<a id="tcgh-newtok" href="https://github.com/settings/tokens/new?scopes=repo,workflow&description=MyOffiCity+All+Repos" target="_blank" rel="noopener" class="tchat-gh-btn gold" style="text-decoration:none">🔑 Skapa nyckel ↗</a>'
+      + '<button type="button" class="tchat-gh-btn" id="tcgh-ref" hidden title="Uppdatera repolista">↻</button>'
+      + '<button type="button" class="tchat-gh-btn" id="tcgh-disc" hidden>Byt konto</button>'
+      + '</span></div>'
+      + '<div class="tchat-gh-row" id="tcgh-conrow">'
+      + '<input id="tcgh-tok" name="gh_pat_token" type="password" autocomplete="new-password" placeholder="Klistra in GitHub-token (ghp_... eller github_pat_...)">'
+      + '<button type="button" class="btn sm" id="tcgh-save" style="flex:0 0 auto">Spara GitHub</button>'
+      + '</div>'
+      + '<div class="tchat-gh-row">'
+      + '<select id="tcgh-reposel" hidden style="flex:1"></select>'
+      + '<input id="tcgh-repo" name="gh_repo_slug" autocomplete="off" placeholder="' + esc(t('dProjRepoPh')) + '">'
+      + '<select id="tcgh-days" style="flex:0 0 auto"><option value="3">' + esc(t('dProjD3')) + '</option><option value="7">' + esc(t('dProjD7')) + '</option><option value="14" selected>' + esc(t('dProjD14')) + '</option></select></div>'
       + '<input id="tcgh-goal" name="gh_sprint_goal" autocomplete="off" required placeholder="' + esc(t('dProjGoal')) + '">'
       + '<div class="tchat-gh-row"><button type="submit" class="btn sm" id="tcgh-go">' + esc(t('tChatGhConn')) + '</button><button type="button" class="btn ghost sm" id="tcgh-x">' + esc(t('tChatGhCancel')) + '</button></div>'
       + '</form>'
@@ -985,16 +998,79 @@
       if (!document.body.contains(wrap)) { clearInterval(sprintPoll); return; }
       if (!document.hidden && curSprint()) loadSprintsForChat(false);
     }, 30000);
+    let ghAcct = { connected: false, login: '', repos: [] };
+    const ghStatus = wrap.querySelector('#tcgh-status'), ghNewTok = wrap.querySelector('#tcgh-newtok');
+    const ghRef = wrap.querySelector('#tcgh-ref'), ghDisc = wrap.querySelector('#tcgh-disc');
+    const ghConRow = wrap.querySelector('#tcgh-conrow'), ghRepoSel = wrap.querySelector('#tcgh-reposel');
+    const ghRepoIn = wrap.querySelector('#tcgh-repo'), ghTokIn = wrap.querySelector('#tcgh-tok');
+    const renderGhAccount = () => {
+      if (ghAcct.connected) {
+        ghStatus.innerHTML = '✅ <b>GitHub kopplad</b> (@' + esc(ghAcct.login || 'GitHub') + ' · ' + ghAcct.repos.length + ' repos)';
+        ghNewTok.hidden = true; ghRef.hidden = false; ghDisc.hidden = false;
+        ghConRow.style.display = 'none';
+        if (ghAcct.repos.length) {
+          ghRepoSel.hidden = false;
+          ghRepoIn.hidden = true;
+          ghRepoSel.innerHTML = '<option value="">— Välj ett GitHub-repo —</option>'
+            + ghAcct.repos.map((r) => '<option value="' + esc(r.full_name) + '">' + (r.private ? '🔒 ' : '🌐 ') + esc(r.full_name) + '</option>').join('');
+        } else {
+          ghRepoSel.hidden = true; ghRepoIn.hidden = false;
+        }
+      } else {
+        ghStatus.textContent = 'Koppla hela ditt GitHub-konto en gång så kan du välja bland alla dina repos.';
+        ghNewTok.hidden = false; ghRef.hidden = true; ghDisc.hidden = true;
+        ghConRow.style.display = '';
+        ghRepoSel.hidden = true; ghRepoIn.hidden = false;
+      }
+    };
+    const loadGhAccount = () => {
+      api('GET', '/github/repos').then((j) => {
+        if (j) ghAcct = { connected: !!j.connected, login: j.login || '', repos: j.repos || [] };
+        renderGhAccount();
+      }).catch(() => { renderGhAccount(); });
+    };
+    wrap.querySelector('#tcgh-save').onclick = async () => {
+      const tok = ghTokIn.value.trim();
+      if (tok.length < 15) { toast('Klistra in din GitHub-token först'); ghTokIn.focus(); return; }
+      const b = wrap.querySelector('#tcgh-save'); b.disabled = true; b.textContent = 'Verifierar…';
+      try {
+        const j = await api('POST', '/github/connect', { ghToken: tok });
+        ghAcct = { connected: !!j.connected, login: j.login || '', repos: j.repos || [] };
+        ghTokIn.value = '';
+        renderGhAccount();
+        toast('✅ GitHub kopplad (@' + ghAcct.login + ', ' + ghAcct.repos.length + ' repos)');
+      } catch (err) { toast(err.message); }
+      b.disabled = false; b.textContent = 'Spara GitHub';
+    };
+    ghRef.onclick = () => { loadGhAccount(); toast('↻ Uppdaterar repolista…'); };
+    ghDisc.onclick = async () => {
+      try {
+        await api('DELETE', '/github/connect');
+        ghAcct = { connected: false, login: '', repos: [] };
+        renderGhAccount();
+        toast('GitHub bortkopplad');
+      } catch (err) { toast(err.message); }
+    };
     ghSel.onchange = () => { curThread().sprintId = ghSel.value; saveThreads(); renderGhBar(); };
-    wrap.querySelector('#tcghadd').onclick = () => { ghForm.hidden = !ghForm.hidden; if (!ghForm.hidden) wrap.querySelector('#tcgh-repo').focus(); };
+    wrap.querySelector('#tcghadd').onclick = () => {
+      ghForm.hidden = !ghForm.hidden;
+      if (!ghForm.hidden) {
+        loadGhAccount();
+        setTimeout(() => { (ghAcct.connected && !ghRepoSel.hidden ? ghRepoSel : ghRepoIn).focus(); }, 50);
+      }
+    };
     wrap.querySelector('#tcgh-x').onclick = () => { ghForm.hidden = true; };
     ghForm.onsubmit = async (e) => {
       e.preventDefault();
+      const chosenRepo = (!ghRepoSel.hidden && ghRepoSel.value) ? ghRepoSel.value.trim() : ghRepoIn.value.trim();
+      if (!chosenRepo) { toast('Välj ett GitHub-repo först'); return; }
+      const tok = ghTokIn.value.trim();
+      if (!ghAcct.connected && tok.length < 15) { toast('Koppla ditt GitHub-konto eller klistra in din token först'); ghTokIn.focus(); return; }
       const bt = wrap.querySelector('#tcgh-go'); bt.disabled = true; bt.textContent = t('dProjStarting');
       try {
         const res = await api('POST', '/sprints', {
-          repo: wrap.querySelector('#tcgh-repo').value.trim(),
-          ghToken: wrap.querySelector('#tcgh-tok').value.trim(),
+          repo: chosenRepo,
+          ghToken: tok,
           goal: wrap.querySelector('#tcgh-goal').value.trim(),
           days: Number(wrap.querySelector('#tcgh-days').value) || 14,
         });

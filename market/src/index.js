@@ -1153,53 +1153,52 @@ const FREE_AI_IP_DAILY_CAP = 80;
 function activeRelaySpecs(env, mode, extraOrKey = '') {
   const list = [];
   const isLead = mode === 'lead';
-  if (env.GEMINI_API_KEY) {
-    const models = mode === 'gemma'
-      ? ['gemma-3-27b-it', 'gemini-2.5-flash', 'gemini-2.0-flash']
-      : isLead
-        ? ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemma-3-27b-it']
-        : ['gemini-2.0-flash', 'gemini-2.5-flash'];
-    list.push({ name: 'gemini', url: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', key: env.GEMINI_API_KEY, models });
-  }
-  if (env.GROQ_API_KEY) {
-    const models = isLead
-      ? ['llama-3.3-70b-versatile', 'qwen-qwq-32b']
-      : mode === 'worker'
-        ? ['llama-3.1-8b-instant', 'qwen-qwq-32b', 'llama-3.3-70b-versatile']
-        : ['llama-3.3-70b-versatile', 'qwen-qwq-32b', 'llama-3.1-8b-instant'];
-    list.push({ name: 'groq', url: 'https://api.groq.com/openai/v1/chat/completions', key: env.GROQ_API_KEY, models });
-  }
-  if (env.CEREBRAS_API_KEY) {
-    list.push({ name: 'cerebras', url: 'https://api.cerebras.ai/v1/chat/completions', key: env.CEREBRAS_API_KEY, models: ['qwen-3-32b', 'llama-3.3-70b'] });
-  }
-  if (env.SAMBANOVA_API_KEY) {
-    list.push({
-      name: 'sambanova',
-      url: 'https://api.sambanova.ai/v1/chat/completions',
-      key: env.SAMBANOVA_API_KEY,
-      models: isLead
-        ? ['DeepSeek-V3-0324', 'DeepSeek-R1-Distill-Llama-70B', 'Meta-Llama-3.3-70B-Instruct']
-        : ['Qwen2.5-Coder-32B-Instruct', 'DeepSeek-V3-0324', 'Meta-Llama-3.3-70B-Instruct'],
-    });
-  }
-  if (env.MISTRAL_API_KEY) {
-    list.push({
-      name: 'mistral',
-      url: 'https://api.mistral.ai/v1/chat/completions',
-      key: env.MISTRAL_API_KEY,
-      models: isLead ? ['codestral-latest', 'mistral-large-latest', 'mistral-small-latest'] : ['mistral-small-latest', 'codestral-latest'],
-    });
-  }
+  const isDesign = mode === 'design';
+  const isCoder = mode === 'coder' || mode === 'worker';
+  const gemini = env.GEMINI_API_KEY ? {
+    name: 'gemini',
+    url: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+    key: env.GEMINI_API_KEY,
+    models: mode === 'gemma' ? ['gemma-3-27b-it', 'gemini-2.5-flash', 'gemini-2.0-flash'] : ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemma-3-27b-it'],
+  } : null;
+  const sambanova = env.SAMBANOVA_API_KEY ? {
+    name: 'sambanova',
+    url: 'https://api.sambanova.ai/v1/chat/completions',
+    key: env.SAMBANOVA_API_KEY,
+    models: isCoder ? ['Qwen2.5-Coder-32B-Instruct', 'DeepSeek-V3-0324', 'Meta-Llama-3.3-70B-Instruct'] : ['DeepSeek-V3-0324', 'DeepSeek-R1-Distill-Llama-70B', 'Meta-Llama-3.3-70B-Instruct'],
+  } : null;
+  const groq = env.GROQ_API_KEY ? {
+    name: 'groq',
+    url: 'https://api.groq.com/openai/v1/chat/completions',
+    key: env.GROQ_API_KEY,
+    models: ['qwen/qwen3-32b', 'llama-3.3-70b-versatile', 'llama-3.1-8b-instant'],
+  } : null;
+  const mistral = env.MISTRAL_API_KEY ? {
+    name: 'mistral',
+    url: 'https://api.mistral.ai/v1/chat/completions',
+    key: env.MISTRAL_API_KEY,
+    models: isCoder ? ['codestral-latest', 'mistral-large-latest', 'mistral-small-latest'] : ['mistral-large-latest', 'codestral-latest', 'mistral-small-latest'],
+  } : null;
+  const cerebras = env.CEREBRAS_API_KEY ? {
+    name: 'cerebras',
+    url: 'https://api.cerebras.ai/v1/chat/completions',
+    key: env.CEREBRAS_API_KEY,
+    models: ['qwen-3-32b', 'llama-3.3-70b'],
+  } : null;
   const orKey = (extraOrKey && extraOrKey.trim().length > 10 ? extraOrKey.trim() : '') || (env.OPENROUTER_API_KEY || '').trim();
-  if (orKey) {
-    list.push({
-      name: 'openrouter',
-      url: 'https://openrouter.ai/api/v1/chat/completions',
-      key: orKey,
-      models: OR_FREE_MODELS,
-      headers: { 'HTTP-Referer': 'https://nrnworld.one/MyOffiCity/', 'X-Title': 'MyOffiCity' },
-    });
-  }
+  const openrouter = orKey ? {
+    name: 'openrouter',
+    url: 'https://openrouter.ai/v1/chat/completions',
+    key: orKey,
+    models: OR_FREE_MODELS,
+    headers: { 'HTTP-Referer': 'https://nrnworld.one/MyOffiCity/', 'X-Title': 'MyOffiCity' },
+  } : null;
+  const order = isLead
+    ? [gemini, sambanova, groq, mistral, cerebras, openrouter]
+    : isDesign
+      ? [gemini, mistral, sambanova, groq, cerebras, openrouter]
+      : [mistral, groq, sambanova, gemini, cerebras, openrouter];
+  for (const p of order) if (p) list.push(p);
   return list;
 }
 
@@ -1524,8 +1523,9 @@ function extractJson(txt) {
 }
 
 async function callSprintAi(env, orKey, messages, maxTokens = 1600, tier = 'worker') {
-  // Tomas ('lead') får alltid högsta AI-nivån (70B/Gemini 2.5/Codestral); övriga agenter ('worker') använder snabbare byggmodeller
-  const ext = await runExternalRelay(env, tier === 'lead' ? 'lead' : 'worker', messages, maxTokens, 0.25, orKey);
+  // Rollbaserad AI-nivå: 'lead' (Tomas), 'design' (UI/UX/CSS/grafik), 'coder'/'worker' (kod & logik)
+  const relayMode = tier === 'lead' ? 'lead' : tier === 'design' ? 'design' : 'coder';
+  const ext = await runExternalRelay(env, relayMode, messages, maxTokens, 0.25, orKey);
   if (ext.text) return { text: ext.text, model: ext.model };
   let lastErr = ext.lastErr || '';
   if (!env.AI || !env.DB) throw new HttpError(503, 'ai_unavailable', lastErr || 'AI not configured');
@@ -1886,8 +1886,10 @@ async function runSprintStep(env, sprint) {
       } catch { /* */ }
     }
 
-    // 3. Låt agenten (worker-modell, eller lead-modell om Tomas själv kodar eller tar över efter 2 nekade försök) producera konkreta filändringar
+    // 3. Låt agenten (rollbaserad AI-hjärna: Tomas='lead', design/UI/CSS='design', kod='coder') producera konkreta filändringar
     const isTomasTask = /^tomas\b/i.test(task.assignee || '') || (task.tries || 0) >= 2;
+    const isDesignTask = !isTomasTask && (/^manus\b/i.test(task.assignee || '') || /\b(design|ui|ux|css|tema|färg|grafik|layout|animat|läsbarhet|ikon)\b/i.test((task.title || '') + ' ' + (task.details || '')));
+    const workerTier = isTomasTask ? 'lead' : (isDesignTask ? 'design' : 'coder');
     const addonRules = hasAddons
       ? `\n- LIVE WEBSITE CHANNEL: market/public/agent-addons.js and market/public/agent-addons.css are ALWAYS loaded live on nrnworld.one/MyOffiCity/. Put ALL visible UI/UX features, interactive widgets, animations, or visual enhancements into them using ===APPEND: market/public/agent-addons.js=== and/or ===APPEND: market/public/agent-addons.css===!\n- Using ===APPEND: ...=== automatically preserves ALL existing code — ONLY output your new self-contained (() => { ... })(); IIFE module (calling window.MyOffiCityAddons.register('Your Feature Name')) and its CSS rules!\n- FORBIDDEN: NEVER create disconnected root-level .js/.css files, NEVER invent fake "/meeting/" pages, and NEVER invent fake database tables.`
       : `\n- EDITING EXISTING FILES: For any existing medium/large file (> 60 lines), ALWAYS use ===PATCH: path=== with exact <<<FIND / ===REPLACE / >>>END blocks instead of rewriting the whole file! This preserves 100% of existing code and never triggers truncation.\n- NEVER create orphan .css files unless you also import/wire them into the corresponding .tsx/.jsx/.html file in the SAME response!`;
@@ -1930,7 +1932,7 @@ Rules:
         role: 'user',
         content: `Sprint goal: ${sprint.goal}\nTask #${task.seq}: ${task.title}\nDetails: ${task.details}\n\nRepo files:\n${treePaths.join('\n') || '(empty)'}\n\nRelevant existing files:\n${fileCtx.join('\n\n') || '(none)'}`,
       },
-    ], 3200, isTomasTask ? 'lead' : 'worker');
+    ], 3200, workerTier);
 
     const parseAgentFiles = (raw) => {
       const txt = String(raw || '');

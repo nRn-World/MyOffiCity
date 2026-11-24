@@ -1109,3 +1109,432 @@
         performance: 85,
         reliability: 88,
         cost: 7
+
+(() => {
+  // 8. Advanced Search Function for AI Agent Market
+  function initAdvancedSearch() {
+    if (document.getElementById('mocAdvancedSearch')) return;
+
+    const searchContainer = document.createElement('div');
+    searchContainer.id = 'mocAdvancedSearch';
+    searchContainer.className = 'moc-advanced-search';
+
+    // Create search input
+    const searchInput = document.createElement('input');
+    searchInput.type = 'search';
+    searchInput.placeholder = 'Sök AI-agenter...';
+    searchInput.addEventListener('input', handleSearchInput);
+
+    // Create filter buttons
+    const filterButtons = document.createElement('div');
+    filterButtons.className = 'moc-filter-buttons';
+
+    const priceButton = document.createElement('button');
+    priceButton.textContent = 'Pris';
+    priceButton.addEventListener('click', () => handleFilter('price'));
+
+    const functionButton = document.createElement('button');
+    functionButton.textContent = 'Funktion';
+    functionButton.addEventListener('click', () => handleFilter('function'));
+
+    const reviewButton = document.createElement('button');
+    reviewButton.textContent = 'Recensioner';
+    reviewButton.addEventListener('click', () => handleFilter('reviews'));
+
+    filterButtons.appendChild(priceButton);
+    filterButtons.appendChild(functionButton);
+    filterButtons.appendChild(reviewButton);
+
+    searchContainer.appendChild(searchInput);
+    searchContainer.appendChild(filterButtons);
+
+    // Add search container to the agent market widget
+    const agentMarketWidget = document.getElementById('mocAgentMarketWidget');
+    if (agentMarketWidget) {
+      agentMarketWidget.appendChild(searchContainer);
+      window.MyOffiCityAddons.register('Advanced Search for AI Agent Market');
+    }
+
+    // Handle search input
+    function handleSearchInput(e) {
+      const searchQuery = e.target.value.toLowerCase();
+      const agentCards = document.querySelectorAll('.moc-agent-card');
+
+      agentCards.forEach(card => {
+        const agentName = card.querySelector('.moc-agent-name').textContent.toLowerCase();
+        if (agentName.includes(searchQuery)) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    // Handle filter buttons
+    function handleFilter(filterType) {
+      const agentCards = document.querySelectorAll('.moc-agent-card');
+
+      agentCards.forEach(card => {
+        const agentData = card.agentData;
+
+        if (filterType === 'price') {
+          if (agentData.price <= 100) {
+            card.style.display = 'block';
+          } else {
+            card.style.display = 'none';
+          }
+        } else if (filterType === 'function') {
+          if (agentData.function === 'Machine Learning') {
+            card.style.display = 'block';
+          } else {
+            card.style.display = 'none';
+          }
+        } else if (filterType === 'reviews') {
+          if (agentData.reviews >= 4) {
+            card.style.display = 'block';
+          } else {
+            card.style.display = 'none';
+          }
+        }
+      });
+    }
+  }
+
+  // Add the advanced search to the initialization
+  function boot() {
+    initAdvancedSearch();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();
+
+(() => {
+  // 5. 3D Navigation Keyboard Shortcuts
+  function init3DNavigation() {
+    if (!window.MyOffiCity || !window.MyOffiCity.city) return;
+
+    const city = window.MyOffiCity.city;
+    const moveSpeed = 0.5;
+    const zoomSpeed = 0.1;
+
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+      switch(e.key) {
+        case 'ArrowUp':
+          city.controls.moveForward(moveSpeed);
+          break;
+        case 'ArrowDown':
+          city.controls.moveForward(-moveSpeed);
+          break;
+        case 'ArrowLeft':
+          city.controls.moveRight(-moveSpeed);
+          break;
+        case 'ArrowRight':
+          city.controls.moveRight(moveSpeed);
+          break;
+        case '+':
+          city.controls.zoomIn(zoomSpeed);
+          break;
+        case '-':
+          city.controls.zoomOut(zoomSpeed);
+          break;
+      }
+    });
+
+    window.MyOffiCityAddons.register('3D Navigation Keyboard Shortcuts');
+  }
+
+  // Enhanced 3D City Map Widget with real navigation and zoom
+  function initEnhancedCityMapWidget() {
+    const existingWidget = document.getElementById('mocCityMapWidget');
+    if (existingWidget) existingWidget.remove();
+
+    const widget = document.createElement('div');
+    widget.id = 'mocCityMapWidget';
+    widget.className = 'moc-city-map-widget';
+
+    // Create map container
+    const mapContainer = document.createElement('div');
+    mapContainer.className = 'moc-map-container';
+
+    // Create controls container
+    const controls = document.createElement('div');
+    controls.className = 'moc-map-controls';
+
+    // Add layers toggle
+    const layersToggle = document.createElement('button');
+    layersToggle.className = 'moc-map-toggle';
+    layersToggle.textContent = 'Växla lager';
+    layersToggle.addEventListener('click', toggleMapLayers);
+
+    // Add navigation button
+    const navButton = document.createElement('button');
+    navButton.className = 'moc-map-nav';
+    navButton.textContent = 'Navigera';
+    navButton.addEventListener('click', showNavigationOptions);
+
+    // Add zoom controls
+    const zoomIn = document.createElement('button');
+    zoomIn.className = 'moc-map-nav';
+    zoomIn.textContent = '+';
+    zoomIn.addEventListener('click', () => zoomMap(0.1));
+
+    const zoomOut = document.createElement('button');
+    zoomOut.className = 'moc-map-nav';
+    zoomOut.textContent = '-';
+    zoomOut.addEventListener('click', () => zoomMap(-0.1));
+
+    controls.appendChild(layersToggle);
+    controls.appendChild(navButton);
+    controls.appendChild(zoomIn);
+    controls.appendChild(zoomOut);
+
+    widget.appendChild(mapContainer);
+    widget.appendChild(controls);
+
+    // Add widget to the office view
+    const officeView = document.querySelector('.office-view');
+    if (officeView) {
+      officeView.appendChild(widget);
+      window.MyOffiCityAddons.register('Enhanced 3D City Map Widget');
+    }
+
+    // Initialize the map
+    initMap(mapContainer);
+  }
+
+  function initMap(container) {
+    if (!window.MyOffiCity || !window.MyOffiCity.city) {
+      container.innerHTML = '<div class="moc-map-placeholder">3D-karta inte tillgänglig</div>';
+      return;
+    }
+
+    // Create a mini version of the main 3D scene
+    const scene = new window.THREE.Scene();
+    const camera = new window.THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+    const renderer = new window.THREE.WebGLRenderer({ antialias: true });
+
+    renderer.setSize(300, 200);
+    container.innerHTML = '';
+    container.appendChild(renderer.domElement);
+
+    // Add a simple cube to represent the city
+    const geometry = new window.THREE.BoxGeometry();
+    const material = new window.THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    const cube = new window.THREE.Mesh(geometry, material);
+    scene.add(cube);
+
+    camera.position.z = 5;
+
+    function animate() {
+      requestAnimationFrame(animate);
+      cube.rotation.x += 0.01;
+      cube.rotation.y += 0.01;
+      renderer.render(scene, camera);
+    }
+
+    animate();
+
+    // Store the map reference for later use
+    container.map = {
+      scene,
+      camera,
+      renderer,
+      cube
+    };
+  }
+
+  function toggleMapLayers() {
+    // Toggle between different map layers
+    console.log('Toggling map layers');
+  }
+
+  function showNavigationOptions() {
+    // Show navigation options for the user
+    console.log('Showing navigation options');
+  }
+
+  function zoomMap(amount) {
+    const container = document.querySelector('.moc-map-container');
+    if (container && container.map) {
+      container.map.camera.position.z -= amount;
+    }
+  }
+
+  // Add the widget to the initialization
+  function boot() {
+    init3DNavigation();
+    initEnhancedCityMapWidget();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();
+
+(() => {
+  // 6. Theme Switcher for 3D City View
+  function initThemeSwitcher() {
+    if (document.getElementById('mocThemeSwitcher')) return;
+
+    const switcher = document.createElement('div');
+    switcher.id = 'mocThemeSwitcher';
+    switcher.className = 'moc-theme-switcher';
+
+    // Create theme buttons
+    const themes = [
+      { name: 'Light', class: 'theme-light' },
+      { name: 'Dark', class: 'theme-dark' },
+      { name: 'High Contrast', class: 'theme-high-contrast' }
+    ];
+
+    themes.forEach(theme => {
+      const button = document.createElement('button');
+      button.textContent = theme.name;
+      button.addEventListener('click', () => applyTheme(theme.class));
+      switcher.appendChild(button);
+    });
+
+    // Add switcher to the office view
+    const officeView = document.querySelector('.office-view');
+    if (officeView) {
+      officeView.appendChild(switcher);
+      window.MyOffiCityAddons.register('Theme Switcher for 3D City View');
+    }
+
+    // Apply default theme
+    applyTheme('theme-dark');
+  }
+
+  function applyTheme(themeClass) {
+    // Remove all theme classes
+    document.body.classList.remove('theme-light', 'theme-dark', 'theme-high-contrast');
+
+    // Add the selected theme class
+    document.body.classList.add(themeClass);
+
+    // Store the selected theme in localStorage
+    localStorage.setItem('mocTheme', themeClass);
+  }
+
+  // Check for saved theme on page load
+  function loadSavedTheme() {
+    const savedTheme = localStorage.getItem('mocTheme');
+    if (savedTheme) {
+      applyTheme(savedTheme);
+    }
+  }
+
+  // Add the theme switcher to the initialization
+  function boot() {
+    initThemeSwitcher();
+    loadSavedTheme();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();
+
+(() => {
+  window.MyOffiCityAddons.register('3D City Customization', {
+    init: function() {
+      // Create customization panel
+      const customizationPanel = document.createElement('div');
+      customizationPanel.className = 'moc-city-customization-panel';
+      customizationPanel.innerHTML = `
+        <div class="moc-customization-header">
+          <h3>3D City Customization</h3>
+          <button class="moc-close-btn">&times;</button>
+        </div>
+        <div class="moc-customization-content">
+          <div class="moc-customization-section">
+            <h4>Buildings</h4>
+            <button class="moc-add-building-btn">Add Building</button>
+            <button class="moc-remove-building-btn">Remove Building</button>
+          </div>
+          <div class="moc-customization-section">
+            <h4>Colors</h4>
+            <input type="color" class="moc-color-picker" value="#d9b46a">
+          </div>
+          <div class="moc-customization-section">
+            <h4>Textures</h4>
+            <select class="moc-texture-selector">
+              <option value="default">Default</option>
+              <option value="brick">Brick</option>
+              <option value="wood">Wood</option>
+              <option value="metal">Metal</option>
+            </select>
+          </div>
+        </div>
+      `;
+
+      // Add panel to the document
+      document.body.appendChild(customizationPanel);
+
+      // Add event listeners
+      document.querySelector('.moc-close-btn').addEventListener('click', () => {
+        customizationPanel.style.display = 'none';
+      });
+
+      document.querySelector('.moc-add-building-btn').addEventListener('click', () => {
+        this.addBuilding();
+      });
+
+      document.querySelector('.moc-remove-building-btn').addEventListener('click', () => {
+        this.removeBuilding();
+      });
+
+      document.querySelector('.moc-color-picker').addEventListener('input', (e) => {
+        this.changeColor(e.target.value);
+      });
+
+      document.querySelector('.moc-texture-selector').addEventListener('change', (e) => {
+        this.changeTexture(e.target.value);
+      });
+
+      // Add button to open customization panel
+      const customizationBtn = document.createElement('button');
+      customizationBtn.className = 'moc-customization-btn';
+      customizationBtn.innerHTML = '🏙️ Customize City';
+      customizationBtn.addEventListener('click', () => {
+        customizationPanel.style.display = 'block';
+      });
+
+      document.querySelector('.moc-agent-market-widget').appendChild(customizationBtn);
+    },
+
+    addBuilding: function() {
+      // Logic to add a new building to the 3D city
+      console.log('Adding a new building...');
+      // This would interact with the Three.js scene to add a new building
+    },
+
+    removeBuilding: function() {
+      // Logic to remove a building from the 3D city
+      console.log('Removing a building...');
+      // This would interact with the Three.js scene to remove a building
+    },
+
+    changeColor: function(color) {
+      // Logic to change the color of buildings in the 3D city
+      console.log(`Changing color to ${color}...`);
+      // This would update the materials of buildings in the Three.js scene
+    },
+
+    changeTexture: function(texture) {
+      // Logic to change the texture of buildings in the 3D city
+      console.log(`Changing texture to ${texture}...`);
+      // This would update the textures of buildings in the Three.js scene
+    }
+  });
+})();

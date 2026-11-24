@@ -1,0 +1,89 @@
+/* Mobilanpassade stilar för MyOffiCity */
+@media (max-width: 768px) {
+  /* Generella mobilstilar */
+  body {
+    font-size: 14px;
+  }
+
+  /* Navigeringsmeny */
+  .side {
+    width: 60px;
+    transition: width 0.3s ease;
+  }
+
+  .side:hover {
+    width: 200px;
+  }
+
+  .brand {
+    padding: 10px;
+  }
+
+  #nav button {
+    flex-direction: column;
+    padding: 8px 5px;
+    height: auto;
+  }
+
+  #nav button span:not(.ni) {
+    font-size: 10px;
+    margin-top: 4px;
+  }
+
+  /* 3D-vy */
+  .view {
+    height: calc(100vh - 50px);
+  }
+
+  /* Chattfönster */
+  .chat {
+    height: calc(100vh - 150px);
+  }
+
+  /* Teamfönster */
+  .team {
+    height: calc(100vh - 150px);
+  }
+
+  /* Mobilanpassade knappar */
+  .mobile-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #14203d;
+    color: white;
+    border: none;
+    cursor: pointer;
+    margin: 5px;
+    transition: all 0.3s ease;
+  }
+
+  .mobile-btn:hover {
+    background-color: #d9b46a;
+    transform: scale(1.1);
+  }
+
+  /* Mobilanpassad header */
+  .mobile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #080b18;
+    color: white;
+  }
+
+  /* Mobilanpassad footer */
+  .mobile-footer {
+    display: flex;
+    justify-content: space-around;
+    padding: 10px;
+    background-color: #080b18;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+  }
+}

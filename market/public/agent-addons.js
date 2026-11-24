@@ -344,3 +344,69 @@
     boot();
   }
 })();
+
+(() => {
+  // 6. Theme Switcher for 3D City View
+  function initThemeSwitcher() {
+    if (document.getElementById('mocThemeSwitcher')) return;
+
+    const switcher = document.createElement('div');
+    switcher.id = 'mocThemeSwitcher';
+    switcher.className = 'moc-theme-switcher';
+
+    // Create theme buttons
+    const themes = [
+      { name: 'Light', class: 'theme-light' },
+      { name: 'Dark', class: 'theme-dark' },
+      { name: 'High Contrast', class: 'theme-high-contrast' }
+    ];
+
+    themes.forEach(theme => {
+      const button = document.createElement('button');
+      button.textContent = theme.name;
+      button.addEventListener('click', () => applyTheme(theme.class));
+      switcher.appendChild(button);
+    });
+
+    // Add switcher to the office view
+    const officeView = document.querySelector('.office-view');
+    if (officeView) {
+      officeView.appendChild(switcher);
+      window.MyOffiCityAddons.register('Theme Switcher for 3D City View');
+    }
+
+    // Apply default theme
+    applyTheme('theme-dark');
+  }
+
+  function applyTheme(themeClass) {
+    // Remove all theme classes
+    document.body.classList.remove('theme-light', 'theme-dark', 'theme-high-contrast');
+
+    // Add the selected theme class
+    document.body.classList.add(themeClass);
+
+    // Store the selected theme in localStorage
+    localStorage.setItem('mocTheme', themeClass);
+  }
+
+  // Check for saved theme on page load
+  function loadSavedTheme() {
+    const savedTheme = localStorage.getItem('mocTheme');
+    if (savedTheme) {
+      applyTheme(savedTheme);
+    }
+  }
+
+  // Add the theme switcher to the initialization
+  function boot() {
+    initThemeSwitcher();
+    loadSavedTheme();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();

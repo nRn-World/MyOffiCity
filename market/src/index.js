@@ -1768,11 +1768,11 @@ async function runSprintStep(env, sprint) {
       } catch { /* */ }
       const hasAddons = treePaths.includes('market/public/agent-addons.js');
       const addonHint = hasAddons
-        ? ' IMPORTANT LIVE ARCHITECTURE: The live website (nrnworld.one/MyOffiCity/) is served from market/public/ and ALWAYS loads market/public/agent-addons.css and market/public/agent-addons.js. Plan concrete, VISIBLY NOTICEABLE website UI/UX improvements, interactive widgets, micro-interactions, status indicators, quick tools, or visual polish that work directly in those two live addon files (real DOM: #topbar, #nav, #app, #foot, .dash, .dsb, .dmain, .cards, .tc-box). NEVER plan disconnected root files or fake backend/SQL files.'
-        : '';
+        ? ' IMPORTANT LIVE ARCHITECTURE: The live website (nrnworld.one/MyOffiCity/) is an AI company marketplace & 3D office portal served from market/public/ that ALWAYS loads market/public/agent-addons.css and market/public/agent-addons.js. Real pages & DOM: #topbar, #nav, #app, #foot, .dash, .dsb, .dmain, .cards, .tc-box, #/ (marketplace), #/city (3D city), #/dash (3D office + Tomas chat). Plan 5 DIVERSE, VISIBLY NOTICEABLE UI/UX upgrades, interactive widgets, keyboard tools, theme/readability polish, or marketplace/dashboard helpers built in market/public/agent-addons.js + market/public/agent-addons.css. STRICTLY FORBIDDEN: NEVER invent nonexistent features like "virtuella möten" / "/meeting/", NEVER repeat the same theme twice, and NEVER plan disconnected root files or fake SQL.'
+        : ' Plan 5 DIVERSE, high-impact improvements that genuinely improve the real app/game in this repository. NEVER repeat the same theme over and over, NEVER invent pages that do not exist, and NEVER plan useless orphan CSS files.';
       const ai = await callSprintAi(env, sprint.or_key, [
-        { role: 'system', content: 'You are Tomas, Chief Architect & AI Team Leader (top-tier brain). Return ONLY valid JSON: {"tasks":[{"title":"...","details":"...","assignee":"..."}]}. Create 5 NEW concrete improvement, bugfix, UI/UX or feature tasks that visibly improve the live website and have NOT been done yet. Write in Swedish.' + addonHint },
-        { role: 'user', content: `Repo: ${sprint.repo}\nGoal: ${sprint.goal}\nTeam: ${agents.join(', ')}\nFiles:\n${treePaths.join('\n') || '(empty)'}\n\nAlready done:\n${prevTasks.map(x => `- ${x.title}: ${x.summary || x.status}`).join('\n')}\n\nPlan 5 new next-iteration tasks as JSON.` },
+        { role: 'system', content: 'You are Tomas, Chief Architect & AI Team Leader (top-tier brain). Return ONLY valid JSON: {"tasks":[{"title":"...","details":"...","assignee":"..."}]}. Create 5 NEW concrete, diverse, visibly valuable improvement, bugfix, UI/UX or feature tasks that have NOT been done yet. Write in Swedish.' + addonHint },
+        { role: 'user', content: `Repo: ${sprint.repo}\nGoal: ${sprint.goal}\nTeam: ${agents.join(', ')}\nFiles:\n${treePaths.join('\n') || '(empty)'}\n\nAlready done (do NOT repeat these themes):\n${prevTasks.map(x => `- ${x.title}`).join('\n')}\n\nPlan 5 new diverse high-value tasks as JSON.` },
       ], 900, 'lead');
       const parsed = extractJson(ai.text);
       const arr = Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.tasks) ? parsed.tasks : []);
@@ -1887,8 +1887,8 @@ async function runSprintStep(env, sprint) {
     // 3. Låt agenten (worker-modell, eller lead-modell om Tomas själv kodar eller tar över efter 2 nekade försök) producera konkreta filändringar
     const isTomasTask = /^tomas\b/i.test(task.assignee || '') || (task.tries || 0) >= 2;
     const addonRules = hasAddons
-      ? `\n- LIVE WEBSITE CHANNEL: market/public/agent-addons.js and market/public/agent-addons.css are ALWAYS loaded live on nrnworld.one/MyOffiCity/. Put ALL visible UI/UX features, interactive widgets, animations, or visual enhancements into market/public/agent-addons.js and/or market/public/agent-addons.css!\n- When editing market/public/agent-addons.js or market/public/agent-addons.css, ALWAYS include ALL existing code from the file and APPEND your new self-contained IIFE module at the bottom (calling window.MyOffiCityAddons.register('Your Feature Name')).\n- FORBIDDEN: NEVER create disconnected root-level .js/.css files (they are NOT served by the website!), NEVER import nonexistent files, and NEVER invent fake database tables.`
-      : '';
+      ? `\n- LIVE WEBSITE CHANNEL: market/public/agent-addons.js and market/public/agent-addons.css are ALWAYS loaded live on nrnworld.one/MyOffiCity/. Put ALL visible UI/UX features, interactive widgets, animations, or visual enhancements into them using ===APPEND: market/public/agent-addons.js=== and/or ===APPEND: market/public/agent-addons.css===!\n- Using ===APPEND: ...=== automatically preserves ALL existing code — ONLY output your new self-contained (() => { ... })(); IIFE module (calling window.MyOffiCityAddons.register('Your Feature Name')) and its CSS rules!\n- FORBIDDEN: NEVER create disconnected root-level .js/.css files, NEVER invent fake "/meeting/" pages, and NEVER invent fake database tables.`
+      : `\n- EDITING EXISTING FILES: For any existing medium/large file (> 60 lines), ALWAYS use ===PATCH: path=== with exact <<<FIND / ===REPLACE / >>>END blocks instead of rewriting the whole file! This preserves 100% of existing code and never triggers truncation.\n- NEVER create orphan .css files unless you also import/wire them into the corresponding .tsx/.jsx/.html file in the SAME response!`;
     const ai = await callSprintAi(env, sprint.or_key, [
       {
         role: 'system',
@@ -1897,13 +1897,30 @@ Output your work using THIS EXACT plain-text format (do NOT wrap the whole respo
 
 SUMMARY: Kort sammanfattning på svenska av vad du byggde
 COMMIT: Kort commit-meddelande
+
+You have 3 file operations (use the best one for each file):
+1) Append to the end of an existing file (best for agent-addons.js / agent-addons.css):
+===APPEND: relative/path/to/file.ext===
+(new code/CSS to append cleanly at the end)
+===END===
+
+2) Surgical edit inside an existing file (best for large existing .tsx/.ts/.js/.css files):
+===PATCH: relative/path/to/file.ext===
+<<<FIND
+exact existing lines copied verbatim from the file
+===REPLACE
+replacement lines
+>>>END
+===END===
+
+3) Create a brand-new file or replace a small file (< 80 lines):
 ===FILE: relative/path/to/file.ext===
-(complete raw file content here)
+(complete raw file content)
 ===END===
 
 Rules:
-- Output 1 or 2 real, clean, working files using ===FILE: path=== and ===END===.
-- Never overwrite/truncate large core files (like design.css, portal.js, office.js, index.html, core.js) with shorter code.${addonRules}
+- Output 1 or 2 real, clean, working changes that make the project genuinely better right away.
+- Never overwrite/truncate large core files with shorter code.${addonRules}
 - Never use paths starting with / or containing ..
 - Never use placeholder comments like "// rest of code" or leave code incomplete/truncated.`,
       },
@@ -1918,13 +1935,14 @@ Rules:
       const sumM = txt.match(/^\s*SUMMARY:\s*(.+)$/im);
       const comM = txt.match(/^\s*COMMIT:\s*(.+)$/im);
       const outFiles = [];
-      const re = /===FILE:\s*([^\r\n=]+?)\s*===\r?\n([\s\S]*?)(?:===END===|(?====FILE:)|$)/g;
+      const re = /===(FILE|APPEND|PATCH):\s*([^\r\n=]+?)\s*===\r?\n([\s\S]*?)(?:===END===|(?====(?:FILE|APPEND|PATCH):)|$)/g;
       let m;
       while ((m = re.exec(txt)) !== null) {
-        let p = m[1].trim().replace(/^["'`]+|["'`]+$/g, '');
-        let c = m[2].replace(/^\s*```[a-zA-Z0-9_-]*\r?\n/, '').replace(/\r?\n```\s*$/, '').trimEnd() + '\n';
+        const mode = m[1].toLowerCase();
+        const p = m[2].trim().replace(/^["'`]+|["'`]+$/g, '');
+        const c = m[3].replace(/^\s*```[a-zA-Z0-9_-]*\r?\n/, '').replace(/\r?\n```\s*$/, '').trimEnd() + '\n';
         if (p && !p.startsWith('/') && !p.includes('..') && c.trim().length > 5 && c.length < 120000) {
-          outFiles.push({ path: p, content: c });
+          outFiles.push({ mode, path: p, content: c });
         }
       }
       if (outFiles.length) return { summary: sumM ? sumM[1].trim() : '', commit_message: comM ? comM[1].trim() : '', files: outFiles.slice(0, 4) };
@@ -1932,7 +1950,7 @@ Rules:
       const jFiles = (parsed && Array.isArray(parsed.files) ? parsed.files : []).filter(f =>
         f && typeof f.path === 'string' && typeof f.content === 'string'
         && f.path.trim() && !f.path.startsWith('/') && !f.path.includes('..') && f.content.length < 120000
-      ).slice(0, 4);
+      ).slice(0, 4).map(f => ({ mode: 'file', path: f.path, content: f.content }));
       return { summary: parsed?.summary || '', commit_message: parsed?.commit_message || '', files: jFiles };
     };
 
@@ -1981,36 +1999,89 @@ Rules:
       } catch { /* om granskningsanropet tillfälligt misslyckas, låt skyddsspärren & GitHub Actions verifiera */ }
     }
 
-    // 4. Committa filerna direkt till arbetsbranchen via GitHub Contents API
+    // 4. Bygg och verifiera slutgiltigt filinnehåll (FILE / APPEND / PATCH) innan något committas
     const commitMsg = clip((isTomasTask ? '' : '[Godkänd av Tomas] ') + (parsed.commit_message || `${task.assignee}: ${task.title}`), 120);
-    const changed = [];
-    let lastSha = '';
+    const ready = [];
+    let blockedCodeFile = false;
     for (const f of files) {
       const cleanPath = f.path.trim().replace(/^\/+/, '');
       const encPath = cleanPath.split('/').map(encodeURIComponent).join('/');
-      let existingSha = undefined, existingLen = 0;
+      let existingSha = undefined, existingLen = 0, existingText = '';
       try {
         const ex = await ghApi(sprint.gh_token, `/repos/${sprint.repo}/contents/${encPath}?ref=${encodeURIComponent(sprint.work_branch)}`);
-        if (ex && ex.sha) { existingSha = ex.sha; existingLen = ex.size || 0; }
+        if (ex && ex.sha) {
+          existingSha = ex.sha;
+          existingLen = ex.size || 0;
+          if (ex.content) existingText = b64DecodeUtf8(ex.content);
+        }
       } catch { /* ny fil */ }
       // Skyddsspärr 1: stoppa fristående rotfiler (.js/.css) som inte laddas av hemsidan när live addon-kanalen finns
       if (hasAddons && !existingSha && !cleanPath.includes('/') && /\.(js|css)$/i.test(cleanPath)) {
         await addSprintLog(env, sprint.id, task.assignee, `Skyddsspärr stoppade okopplad rotfil ${cleanPath} – använd market/public/agent-addons.js/css i stället.`);
+        if (!/\.css$/i.test(cleanPath)) blockedCodeFile = true;
         continue;
       }
-      // Skyddsspärr 2: låt aldrig en agent radera/trunkera en befintlig fil med >20 % (skyddar design.css, index.html, app.js m.fl.)
-      if (existingLen > 400 && f.content.length < existingLen * 0.8) {
-        await addSprintLog(env, sprint.id, task.assignee, `Skyddsspärr stoppade överskrivning av ${cleanPath} (${f.content.length} B < ${existingLen} B).`);
-        continue;
+      let finalContent = f.content;
+      if (f.mode === 'append') {
+        finalContent = (existingText ? existingText.trimEnd() + '\n\n' : '') + f.content.trimStart();
+      } else if (f.mode === 'patch') {
+        if (!existingText) {
+          await addSprintLog(env, sprint.id, task.assignee, `Patch misslyckades – filen ${cleanPath} hittades inte.`);
+          if (!/\.css$/i.test(cleanPath)) blockedCodeFile = true;
+          continue;
+        }
+        let patched = existingText;
+        let applied = 0;
+        const pRe = /<<<FIND\r?\n([\s\S]*?)\r?\n===REPLACE\r?\n([\s\S]*?)\r?\n>>>END/g;
+        let pm;
+        while ((pm = pRe.exec(f.content)) !== null) {
+          const findStr = pm[1], replStr = pm[2];
+          if (findStr && patched.includes(findStr)) {
+            patched = patched.replace(findStr, replStr);
+            applied++;
+          }
+        }
+        if (!applied) {
+          await addSprintLog(env, sprint.id, task.assignee, `Patch på ${cleanPath} matchade inte befintlig kod – hoppar över trasig redigering.`);
+          if (!/\.css$/i.test(cleanPath)) blockedCodeFile = true;
+          continue;
+        }
+        finalContent = patched;
+      } else {
+        // Skyddsspärr 2: låt aldrig en agent radera/trunkera en befintlig fil med >20 %
+        if (existingLen > 400 && finalContent.length < existingLen * 0.8) {
+          await addSprintLog(env, sprint.id, task.assignee, `Skyddsspärr stoppade överskrivning av ${cleanPath} (${finalContent.length} B < ${existingLen} B).`);
+          if (!/\.css$/i.test(cleanPath)) blockedCodeFile = true;
+          continue;
+        }
       }
-      const putRes = await ghApi(sprint.gh_token, `/repos/${sprint.repo}/contents/${encPath}`, 'PUT', {
+      ready.push({ cleanPath, encPath, existingSha, content: finalContent });
+    }
+
+    // Slösa inga PR:ar på halvgjort arbete (t.ex. om JS/TS-filen stoppades och bara en lös .css-fil blev kvar)
+    if (!ready.length || (blockedCodeFile && ready.every(r => /\.css$/i.test(r.cleanPath)))) {
+      const tries = (task.tries || 0) + 1;
+      if (tries >= 3) {
+        await env.DB.prepare("UPDATE sprint_tasks SET status='skipped', tries=?, summary=?, updated=? WHERE id=?")
+          .bind(tries, 'Hoppades över eftersom komplett ändring inte kunde appliceras säkert.', ts, task.id).run();
+      } else {
+        await env.DB.prepare('UPDATE sprint_tasks SET tries=?, updated=? WHERE id=?').bind(tries, ts, task.id).run();
+      }
+      await addSprintLog(env, sprint.id, 'Tomas', `Stoppade ofullständig commit på "${task.title}" (inga halvgjorda CSS-only PR:ar) – ${tries >= 3 ? 'går vidare till nästa uppgift' : 'provar igen nästa pass'}.`);
+      return { ok: true, retried: true, task: task.title };
+    }
+
+    const changed = [];
+    let lastSha = '';
+    for (const r of ready) {
+      const putRes = await ghApi(sprint.gh_token, `/repos/${sprint.repo}/contents/${r.encPath}`, 'PUT', {
         message: commitMsg,
-        content: b64EncodeUtf8(f.content),
+        content: b64EncodeUtf8(r.content),
         branch: sprint.work_branch,
-        ...(existingSha ? { sha: existingSha } : {}),
+        ...(r.existingSha ? { sha: r.existingSha } : {}),
       });
       if (putRes?.commit?.sha) lastSha = putRes.commit.sha;
-      changed.push(cleanPath);
+      changed.push(r.cleanPath);
     }
 
     // 5. Öppna Pull Request om ingen öppen PR redan finns för arbetsbranchen (t.ex. efter auto-merge)

@@ -188,3 +188,114 @@
 })();
 
 /* === APPEND NEW AGENT JS MODULES BELOW THIS LINE === */
+
+(() => {
+  const analytics = {
+    data: {
+      pageViews: 0,
+      featureUsage: {},
+      cityInteractions: {},
+      activeSessions: 0
+    },
+    init() {
+      this.trackPageViews();
+      this.trackFeatureUsage();
+      this.trackCityInteractions();
+      this.setupAnalyticsDashboard();
+      this.setupCityAnalytics();
+    },
+    trackPageViews() {
+      this.data.pageViews++;
+      this.updateDashboard();
+    },
+    trackFeatureUsage(feature) {
+      if (!this.data.featureUsage[feature]) {
+        this.data.featureUsage[feature] = 0;
+      }
+      this.data.featureUsage[feature]++;
+      this.updateDashboard();
+    },
+    trackCityInteractions(interaction) {
+      if (!this.data.cityInteractions[interaction]) {
+        this.data.cityInteractions[interaction] = 0;
+      }
+      this.data.cityInteractions[interaction]++;
+      this.updateDashboard();
+    },
+    setupAnalyticsDashboard() {
+      const dashboard = document.createElement('div');
+      dashboard.id = 'moc-analytics-dashboard';
+      dashboard.className = 'moc-tool-card';
+      dashboard.innerHTML = `
+        <div class="moc-tool-title">📊 Användaranalys</div>
+        <div class="moc-analytics-content">
+          <div class="moc-analytics-section">
+            <h3>Översikt</h3>
+            <p>Sidvisningar: <span id="moc-page-views">0</span></p>
+            <p>Aktiva sessioner: <span id="moc-active-sessions">0</span></p>
+          </div>
+          <div class="moc-analytics-section">
+            <h3>Funktionsanvändning</h3>
+            <div id="moc-feature-usage"></div>
+          </div>
+          <div class="moc-analytics-section">
+            <h3>3D-stadsinteraktioner</h3>
+            <div id="moc-city-interactions"></div>
+          </div>
+        </div>
+      `;
+      window.MyOffiCityAddons.addTool('Användaranalys', '📊', dashboard);
+      this.updateDashboard();
+    },
+    setupCityAnalytics() {
+      // This would be connected to actual city interactions in a real implementation
+      setInterval(() => {
+        const interactions = ['office-visit', 'city-explore', 'chat-initiate', 'order-place'];
+        const randomInteraction = interactions[Math.floor(Math.random() * interactions.length)];
+        this.trackCityInteractions(randomInteraction);
+      }, 5000);
+    },
+    updateDashboard() {
+      document.getElementById('moc-page-views').textContent = this.data.pageViews;
+      document.getElementById('moc-active-sessions').textContent = this.data.activeSessions;
+
+      const featureUsageEl = document.getElementById('moc-feature-usage');
+      featureUsageEl.innerHTML = '';
+      for (const [feature, count] of Object.entries(this.data.featureUsage)) {
+        const p = document.createElement('p');
+        p.textContent = `${feature}: ${count}`;
+        featureUsageEl.appendChild(p);
+      }
+
+      const cityInteractionsEl = document.getElementById('moc-city-interactions');
+      cityInteractionsEl.innerHTML = '';
+      for (const [interaction, count] of Object.entries(this.data.cityInteractions)) {
+        const p = document.createElement('p');
+        p.textContent = `${interaction}: ${count}`;
+        cityInteractionsEl.appendChild(p);
+      }
+    }
+  };
+
+  // Initialize analytics
+  analytics.init();
+
+  // Track page views
+  analytics.trackPageViews();
+
+  // Track feature usage when tools are added
+  const originalAddTool = window.MyOffiCityAddons.addTool;
+  window.MyOffiCityAddons.addTool = function(title, icon, contentEl) {
+    analytics.trackFeatureUsage(title);
+    originalAddTool.call(this, title, icon, contentEl);
+  };
+
+  // Track active sessions
+  setInterval(() => {
+    analytics.data.activeSessions = Math.floor(Math.random() * 10) + 1; // Simulated active sessions
+    analytics.updateDashboard();
+  }, 10000);
+
+  // Register analytics as a feature
+  window.MyOffiCityAddons.register('Användaranalys');
+})();

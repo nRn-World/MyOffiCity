@@ -166,3 +166,72 @@ html {
     font-size: 10px;
   }
 }
+
+/* Enhanced 3D City Map Widget with real navigation and zoom */
+.moc-city-map-widget {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  width: 300px;
+  height: 200px;
+  background: rgba(15, 23, 42, 0.9);
+  border-radius: 12px;
+  border: 1px solid rgba(217, 180, 106, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.32);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.moc-map-container {
+  flex: 1;
+  background: #1a202c;
+}
+
+.moc-map-controls {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px;
+  background: rgba(26, 32, 44, 0.8);
+  border-top: 1px solid rgba(217, 180, 106, 0.2);
+}
+
+.moc-map-toggle, .moc-map-nav {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: rgba(217, 180, 106, 0.15);
+  color: #f3ecdc;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.2s ease;
+}
+
+.moc-map-toggle:hover, .moc-map-nav:hover {
+  background: rgba(217, 180, 106, 0.25);
+}
+
+.moc-map-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #a0aec0;
+  font-size: 14px;
+}
+
+/* Mobile responsiveness for the map widget */
+@media (max-width: 768px) {
+  .moc-city-map-widget {
+    width: 240px;
+    height: 160px;
+    bottom: 70px;
+    right: 10px;
+  }
+
+  .moc-map-toggle, .moc-map-nav {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+}

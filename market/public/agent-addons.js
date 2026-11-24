@@ -1444,3 +1444,97 @@
     boot();
   }
 })();
+
+(() => {
+  window.MyOffiCityAddons.register('3D City Customization', {
+    init: function() {
+      // Create customization panel
+      const customizationPanel = document.createElement('div');
+      customizationPanel.className = 'moc-city-customization-panel';
+      customizationPanel.innerHTML = `
+        <div class="moc-customization-header">
+          <h3>3D City Customization</h3>
+          <button class="moc-close-btn">&times;</button>
+        </div>
+        <div class="moc-customization-content">
+          <div class="moc-customization-section">
+            <h4>Buildings</h4>
+            <button class="moc-add-building-btn">Add Building</button>
+            <button class="moc-remove-building-btn">Remove Building</button>
+          </div>
+          <div class="moc-customization-section">
+            <h4>Colors</h4>
+            <input type="color" class="moc-color-picker" value="#d9b46a">
+          </div>
+          <div class="moc-customization-section">
+            <h4>Textures</h4>
+            <select class="moc-texture-selector">
+              <option value="default">Default</option>
+              <option value="brick">Brick</option>
+              <option value="wood">Wood</option>
+              <option value="metal">Metal</option>
+            </select>
+          </div>
+        </div>
+      `;
+
+      // Add panel to the document
+      document.body.appendChild(customizationPanel);
+
+      // Add event listeners
+      document.querySelector('.moc-close-btn').addEventListener('click', () => {
+        customizationPanel.style.display = 'none';
+      });
+
+      document.querySelector('.moc-add-building-btn').addEventListener('click', () => {
+        this.addBuilding();
+      });
+
+      document.querySelector('.moc-remove-building-btn').addEventListener('click', () => {
+        this.removeBuilding();
+      });
+
+      document.querySelector('.moc-color-picker').addEventListener('input', (e) => {
+        this.changeColor(e.target.value);
+      });
+
+      document.querySelector('.moc-texture-selector').addEventListener('change', (e) => {
+        this.changeTexture(e.target.value);
+      });
+
+      // Add button to open customization panel
+      const customizationBtn = document.createElement('button');
+      customizationBtn.className = 'moc-customization-btn';
+      customizationBtn.innerHTML = '🏙️ Customize City';
+      customizationBtn.addEventListener('click', () => {
+        customizationPanel.style.display = 'block';
+      });
+
+      document.querySelector('.moc-agent-market-widget').appendChild(customizationBtn);
+    },
+
+    addBuilding: function() {
+      // Logic to add a new building to the 3D city
+      console.log('Adding a new building...');
+      // This would interact with the Three.js scene to add a new building
+    },
+
+    removeBuilding: function() {
+      // Logic to remove a building from the 3D city
+      console.log('Removing a building...');
+      // This would interact with the Three.js scene to remove a building
+    },
+
+    changeColor: function(color) {
+      // Logic to change the color of buildings in the 3D city
+      console.log(`Changing color to ${color}...`);
+      // This would update the materials of buildings in the Three.js scene
+    },
+
+    changeTexture: function(texture) {
+      // Logic to change the texture of buildings in the 3D city
+      console.log(`Changing texture to ${texture}...`);
+      // This would update the textures of buildings in the Three.js scene
+    }
+  });
+})();

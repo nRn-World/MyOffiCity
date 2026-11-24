@@ -665,3 +665,187 @@
     boot();
   }
 })();
+
+(() => {
+  // 7. AI Agent Market Widget
+  function initAgentMarketWidget() {
+    if (document.getElementById('mocAgentMarketWidget')) return;
+
+    const widget = document.createElement('div');
+    widget.id = 'mocAgentMarketWidget';
+    widget.className = 'moc-agent-market-widget';
+
+    // Create header
+    const header = document.createElement('div');
+    header.className = 'moc-agent-market-header';
+    header.textContent = 'AI Agent Market';
+
+    // Create content container
+    const content = document.createElement('div');
+    content.className = 'moc-agent-market-content';
+
+    // Create footer
+    const footer = document.createElement('div');
+    footer.className = 'moc-agent-market-footer';
+
+    // Add refresh button
+    const refreshBtn = document.createElement('button');
+    refreshBtn.className = 'moc-agent-market-button';
+    refreshBtn.textContent = 'Refresh';
+    refreshBtn.addEventListener('click', refreshAgentData);
+
+    // Add close button
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'moc-agent-market-button';
+    closeBtn.textContent = 'Close';
+    closeBtn.addEventListener('click', () => widget.remove());
+
+    footer.appendChild(refreshBtn);
+    footer.appendChild(closeBtn);
+
+    widget.appendChild(header);
+    widget.appendChild(content);
+    widget.appendChild(footer);
+
+    // Add widget to the office view
+    const officeView = document.querySelector('.office-view');
+    if (officeView) {
+      officeView.appendChild(widget);
+      window.MyOffiCityAddons.register('AI Agent Market Widget');
+    }
+
+    // Load agent data
+    loadAgentData(content);
+  }
+
+  function loadAgentData(container) {
+    // In a real implementation, this would fetch data from an API
+    // For now, we'll use mock data
+    const mockAgents = [
+      {
+        name: 'Gemini 2.5 Flash',
+        performance: 92,
+        reliability: 95,
+        cost: 75,
+        speed: 88
+      },
+      {
+        name: 'Groq Llama 3.3 70B',
+        performance: 88,
+        reliability: 90,
+        cost: 65,
+        speed: 92
+      },
+      {
+        name: 'SambaNova DeepSeek V3',
+        performance: 85,
+        reliability: 88,
+        cost: 70,
+        speed: 85
+      },
+      {
+        name: 'Mistral Codestral',
+        performance: 82,
+        reliability: 85,
+        cost: 60,
+        speed: 80
+      },
+      {
+        name: 'OpenRouter',
+        performance: 78,
+        reliability: 82,
+        cost: 55,
+        speed: 75
+      }
+    ];
+
+    // Clear container
+    container.innerHTML = '';
+
+    // Add agent cards
+    mockAgents.forEach(agent => {
+      const card = document.createElement('div');
+      card.className = 'moc-agent-card';
+
+      const name = document.createElement('div');
+      name.className = 'moc-agent-name';
+      name.textContent = agent.name;
+
+      const stats = document.createElement('div');
+      stats.className = 'moc-agent-stats';
+
+      const performance = document.createElement('div');
+      performance.className = 'moc-agent-stat';
+      performance.textContent = `Performance: ${agent.performance}%`;
+
+      const reliability = document.createElement('div');
+      reliability.className = 'moc-agent-stat';
+      reliability.textContent = `Reliability: ${agent.reliability}%`;
+
+      const cost = document.createElement('div');
+      cost.className = 'moc-agent-stat';
+      cost.textContent = `Cost: ${agent.cost}%`;
+
+      const speed = document.createElement('div');
+      speed.className = 'moc-agent-stat';
+      speed.textContent = `Speed: ${agent.speed}%`;
+
+      stats.appendChild(performance);
+      stats.appendChild(reliability);
+      stats.appendChild(cost);
+      stats.appendChild(speed);
+
+      const actions = document.createElement('div');
+      actions.className = 'moc-agent-actions';
+
+      const deployBtn = document.createElement('button');
+      deployBtn.className = 'moc-agent-action';
+      deployBtn.textContent = 'Deploy';
+      deployBtn.addEventListener('click', () => deployAgent(agent.name));
+
+      const compareBtn = document.createElement('button');
+      compareBtn.className = 'moc-agent-action';
+      compareBtn.textContent = 'Compare';
+      compareBtn.addEventListener('click', () => compareAgents(agent.name));
+
+      actions.appendChild(deployBtn);
+      actions.appendChild(compareBtn);
+
+      card.appendChild(name);
+      card.appendChild(stats);
+      card.appendChild(actions);
+
+      container.appendChild(card);
+    });
+  }
+
+  function refreshAgentData() {
+    const content = document.querySelector('.moc-agent-market-content');
+    if (content) {
+      loadAgentData(content);
+    }
+  }
+
+  function deployAgent(agentName) {
+    // Deploy the selected agent
+    console.log(`Deploying agent: ${agentName}`);
+    // In a real implementation, this would make an API call to deploy the agent
+  }
+
+  function compareAgents(agentName) {
+    // Compare the selected agent with others
+    console.log(`Comparing agent: ${agentName}`);
+    // In a real implementation, this would show a comparison modal
+  }
+
+  // Enhanced 3D City Map Widget with real navigation and zoom
+  function initEnhancedCityMapWidget() {
+    const existingWidget = document.getElementById('mocCityMapWidget');
+    if (existingWidget) existingWidget.remove();
+
+    const widget = document.createElement('div');
+    widget.id = 'mocCityMapWidget';
+    widget.className = 'moc-city-map-widget';
+
+    // Create map container
+    const

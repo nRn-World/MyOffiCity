@@ -190,3 +190,40 @@
     initMeetingCache();
   }
 })();
+
+(() => {
+  // 5. Mobile Virtual Meeting UI Enhancements
+  function enhanceMobileMeetingUI() {
+    // Check if we're on a meeting page
+    if (!window.location.pathname.includes('/meeting/')) return;
+
+    // Function to apply mobile styles
+    function applyMobileStyles() {
+      const meetingContainer = document.querySelector('.meeting-container');
+      if (!meetingContainer) return;
+
+      // Add mobile-specific classes
+      meetingContainer.classList.add('mobile-meeting');
+
+      // Adjust video grid layout for mobile
+      const videoGrid = document.querySelector('.video-grid');
+      if (videoGrid) {
+        videoGrid.classList.add('mobile-video-grid');
+      }
+
+      // Adjust chat panel for mobile
+      const chatPanel = document.querySelector('.chat-panel');
+      if (chatPanel) {
+        chatPanel.classList.add('mobile-chat-panel');
+      }
+
+      // Adjust meeting controls for mobile
+      const meetingControls = document.querySelector('.meeting-controls');
+      if (meetingControls) {
+        meetingControls.classList.add('mobile-meeting-controls');
+      }
+
+      // Adjust participant list for mobile
+      const participantList = document.querySelector('.participant-list');
+      if (participantList) {
+        participantList.classList.add('mobile-participant-list');

@@ -1109,3 +1109,105 @@
         performance: 85,
         reliability: 88,
         cost: 7
+
+(() => {
+  // 8. Advanced Search Function for AI Agent Market
+  function initAdvancedSearch() {
+    if (document.getElementById('mocAdvancedSearch')) return;
+
+    const searchContainer = document.createElement('div');
+    searchContainer.id = 'mocAdvancedSearch';
+    searchContainer.className = 'moc-advanced-search';
+
+    // Create search input
+    const searchInput = document.createElement('input');
+    searchInput.type = 'search';
+    searchInput.placeholder = 'Sök AI-agenter...';
+    searchInput.addEventListener('input', handleSearchInput);
+
+    // Create filter buttons
+    const filterButtons = document.createElement('div');
+    filterButtons.className = 'moc-filter-buttons';
+
+    const priceButton = document.createElement('button');
+    priceButton.textContent = 'Pris';
+    priceButton.addEventListener('click', () => handleFilter('price'));
+
+    const functionButton = document.createElement('button');
+    functionButton.textContent = 'Funktion';
+    functionButton.addEventListener('click', () => handleFilter('function'));
+
+    const reviewButton = document.createElement('button');
+    reviewButton.textContent = 'Recensioner';
+    reviewButton.addEventListener('click', () => handleFilter('reviews'));
+
+    filterButtons.appendChild(priceButton);
+    filterButtons.appendChild(functionButton);
+    filterButtons.appendChild(reviewButton);
+
+    searchContainer.appendChild(searchInput);
+    searchContainer.appendChild(filterButtons);
+
+    // Add search container to the agent market widget
+    const agentMarketWidget = document.getElementById('mocAgentMarketWidget');
+    if (agentMarketWidget) {
+      agentMarketWidget.appendChild(searchContainer);
+      window.MyOffiCityAddons.register('Advanced Search for AI Agent Market');
+    }
+
+    // Handle search input
+    function handleSearchInput(e) {
+      const searchQuery = e.target.value.toLowerCase();
+      const agentCards = document.querySelectorAll('.moc-agent-card');
+
+      agentCards.forEach(card => {
+        const agentName = card.querySelector('.moc-agent-name').textContent.toLowerCase();
+        if (agentName.includes(searchQuery)) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    // Handle filter buttons
+    function handleFilter(filterType) {
+      const agentCards = document.querySelectorAll('.moc-agent-card');
+
+      agentCards.forEach(card => {
+        const agentData = card.agentData;
+
+        if (filterType === 'price') {
+          if (agentData.price <= 100) {
+            card.style.display = 'block';
+          } else {
+            card.style.display = 'none';
+          }
+        } else if (filterType === 'function') {
+          if (agentData.function === 'Machine Learning') {
+            card.style.display = 'block';
+          } else {
+            card.style.display = 'none';
+          }
+        } else if (filterType === 'reviews') {
+          if (agentData.reviews >= 4) {
+            card.style.display = 'block';
+          } else {
+            card.style.display = 'none';
+          }
+        }
+      });
+    }
+  }
+
+  // Add the advanced search to the initialization
+  function boot() {
+    initAdvancedSearch();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();

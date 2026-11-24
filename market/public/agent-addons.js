@@ -100,3 +100,80 @@
 })();
 
 /* === APPEND NEW AGENT JS MODULES BELOW THIS LINE === */
+
+(() => {
+  // 4. Interactive 3D City Map Widget
+  function initCityMapWidget() {
+    if (document.getElementById('mocCityMapWidget')) return;
+
+    const widget = document.createElement('div');
+    widget.id = 'mocCityMapWidget';
+    widget.className = 'moc-city-map-widget';
+
+    // Create map container
+    const mapContainer = document.createElement('div');
+    mapContainer.className = 'moc-map-container';
+
+    // Create controls container
+    const controls = document.createElement('div');
+    controls.className = 'moc-map-controls';
+
+    // Add layers toggle
+    const layersToggle = document.createElement('button');
+    layersToggle.className = 'moc-map-toggle';
+    layersToggle.textContent = 'Växla lager';
+    layersToggle.addEventListener('click', toggleMapLayers);
+
+    // Add navigation button
+    const navButton = document.createElement('button');
+    navButton.className = 'moc-map-nav';
+    navButton.textContent = 'Navigera';
+    navButton.addEventListener('click', showNavigationOptions);
+
+    controls.appendChild(layersToggle);
+    controls.appendChild(navButton);
+
+    widget.appendChild(mapContainer);
+    widget.appendChild(controls);
+
+    // Add widget to the office view
+    const officeView = document.querySelector('.office-view');
+    if (officeView) {
+      officeView.appendChild(widget);
+      window.MyOffiCityAddons.register('3D City Map Widget');
+    }
+
+    // Initialize the map
+    initMap(mapContainer);
+  }
+
+  function initMap(container) {
+    // This would be replaced with actual map initialization code
+    // For now, we'll just add a placeholder
+    container.innerHTML = '<div class="moc-map-placeholder">Interaktiv karta laddas...</div>';
+
+    // In a real implementation, you would use a mapping library like Leaflet or Mapbox
+    // to initialize the map and add it to the container
+  }
+
+  function toggleMapLayers() {
+    // Toggle between different map layers
+    console.log('Toggling map layers');
+  }
+
+  function showNavigationOptions() {
+    // Show navigation options for the user
+    console.log('Showing navigation options');
+  }
+
+  // Add the widget to the initialization
+  function boot() {
+    initCityMapWidget();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();

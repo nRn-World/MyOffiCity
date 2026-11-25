@@ -526,3 +526,62 @@ html.moc-theme-warm {
     font-size: 11px;
   }
 }
+
+/* Dashboard Theme Styles */
+:root {
+  --bg-color: #ffffff;
+  --text-color: #333333;
+  --card-bg: #f9f9f9;
+  --card-border: #e0e0e0;
+  --header-color: #444444;
+  --button-bg: #e0e0e0;
+  --button-hover: #d0d0d0;
+  --button-text: #333333;
+  --button-active: #c0c0c0;
+  --font-family: Arial, sans-serif;
+  --font-size: 14px;
+  --line-height: 1.5;
+  --border-radius: 4px;
+  --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: var(--font-family);
+  font-size: var(--font-size);
+  line-height: var(--line-height);
+}
+
+.moc-tool-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+}
+
+.moc-tool-title {
+  color: var(--header-color);
+}
+
+.moc-chip-btn {
+  background-color: var(--button-bg);
+  color: var(--button-text);
+}
+
+.moc-chip-btn:hover {
+  background-color: var(--button-hover);
+}
+
+.moc-chip-btn.on {
+  background-color: var(--button-active);
+  color: var(--button-text);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  :root {
+    --font-size: 13px;
+    --line-height: 1.4;
+  }
+}

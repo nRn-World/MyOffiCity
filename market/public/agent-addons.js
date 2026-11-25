@@ -1475,3 +1475,72 @@
     window.MyOffiCityAddons.register('AI Agent Market Widget');
   }
 })();
+
+(() => {
+  // Theme and readability toggles for dashboard
+  const createThemeControls = () => {
+    const themePanel = document.createElement('div');
+    themePanel.className = 'moc-tool-card';
+    themePanel.innerHTML = `
+      <h3 class="moc-tool-title">Teman & Läsbarhet</h3>
+      <div class="moc-chip-row">
+        <button class="moc-chip-btn" data-theme="default">Standard</button>
+        <button class="moc-chip-btn" data-theme="contrast">Kontrast</button>
+        <button class="moc-chip-btn" data-theme="warm">Varm</button>
+      </div>
+      <div class="moc-chip-row">
+        <button class="moc-chip-btn" data-font="default">Standard</button>
+        <button class="moc-chip-btn" data-font="large">Stor</button>
+        <button class="moc-chip-btn" data-font="dyslexic">Dyslexi</button>
+      </div>
+    `;
+
+    // Apply theme
+    themePanel.querySelectorAll('[data-theme]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.documentElement.className = '';
+        if (btn.dataset.theme !== 'default') {
+          document.documentElement.classList.add(`moc-theme-${btn.dataset.theme}`);
+        }
+        themePanel.querySelectorAll('[data-theme]').forEach(b => b.classList.remove('on'));
+        btn.classList.add('on');
+      });
+    });
+
+    // Apply font size
+    themePanel.querySelectorAll('[data-font]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.body.className = '';
+        if (btn.dataset.font !== 'default') {
+          document.body.classList.add(`moc-font-${btn.dataset.font}`);
+        }
+        themePanel.querySelectorAll('[data-font]').forEach(b => b.classList.remove('on'));
+        btn.classList.add('on');
+      });
+    });
+
+    return themePanel;
+  };
+
+  // Add theme controls to dashboard
+  const addThemeControlsToDashboard = () => {
+    const dashboard = document.querySelector('#moc-analytics-dashboard, #moc-accessibility-dashboard, #moc-office-dashboard');
+    if (dashboard) {
+      const themeControls = createThemeControls();
+      dashboard.prepend(themeControls);
+    }
+  };
+
+  // Initialize theme controls when dashboard is ready
+  const initThemeControls = () => {
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      addThemeControlsToDashboard();
+    } else {
+      document.addEventListener('DOMContentLoaded', addThemeControlsToDashboard);
+    }
+  };
+
+  // Register the feature
+  window.MyOffiCityAddons.register('Theme Controls');
+  initThemeControls();
+})();

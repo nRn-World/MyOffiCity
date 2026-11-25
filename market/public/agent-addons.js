@@ -2107,3 +2107,117 @@
   window.MyOffiCityAddons.addTool('Sök', '🔍', searchContainer);
   window.MyOffiCityAddons.register('Förbättrad Sökfunktion');
 })();
+
+(() => {
+  const profileContainer = document.createElement('div');
+  profileContainer.id = 'moc-profile-settings';
+  profileContainer.style.position = 'fixed';
+  profileContainer.style.top = '10px';
+  profileContainer.style.right = '10px';
+  profileContainer.style.zIndex = '1000';
+  profileContainer.style.backgroundColor = 'rgba(12, 18, 34, 0.92)';
+  profileContainer.style.color = '#f3ecdc';
+  profileContainer.style.padding = '10px';
+  profileContainer.style.borderRadius = '5px';
+  profileContainer.style.boxShadow = '0 10px 28px rgba(0, 0, 0, 0.42)';
+  profileContainer.style.backdropFilter = 'blur(10px)';
+  profileContainer.style.display = 'none';
+  profileContainer.innerHTML = `
+    <h3>Profilinställningar</h3>
+    <label for="profile-picture">Profilbild:</label>
+    <input type="file" id="profile-picture" accept="image/*">
+    <br><br>
+    <label for="background-image">Bakgrundsbild:</label>
+    <input type="file" id="background-image" accept="image/*">
+    <br><br>
+    <label for="profile-color">Färg:</label>
+    <input type="color" id="profile-color">
+    <br><br>
+    <label for="profile-icon">Ikon:</label>
+    <select id="profile-icon">
+      <option value="👨‍💻">👨‍💻</option>
+      <option value="👩‍💼">👩‍💼</option>
+      <option value="👨‍💼">👨‍💼</option>
+      <option value="👩‍🔬">👩‍🔬</option>
+      <option value="👨‍🔬">👨‍🔬</option>
+    </select>
+    <br><br>
+    <button id="save-profile">Spara</button>
+  `;
+
+  document.body.appendChild(profileContainer);
+
+  const toggleProfileSettings = () => {
+    profileContainer.style.display = profileContainer.style.display === 'none' ? 'block' : 'none';
+  };
+
+  const saveProfile = () => {
+    const profilePicture = document.getElementById('profile-picture').files[0];
+    const backgroundImage = document.getElementById('background-image').files[0];
+    const profileColor = document.getElementById('profile-color').value;
+    const profileIcon = document.getElementById('profile-icon').value;
+
+    if (profilePicture) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        localStorage.setItem('profilePicture', e.target.result);
+        document.getElementById('profile-icon-display').innerText = '';
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        img.style.width = '50px';
+        img.style.height = '50px';
+        img.style.borderRadius = '50%';
+        document.getElementById('profile-icon-display').appendChild(img);
+      };
+      reader.readAsDataURL(profilePicture);
+    }
+
+    if (backgroundImage) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        localStorage.setItem('backgroundImage', e.target.result);
+        document.body.style.backgroundImage = `url(${e.target.result})`;
+      };
+      reader.readAsDataURL(backgroundImage);
+    }
+
+    localStorage.setItem('profileColor', profileColor);
+    localStorage.setItem('profileIcon', profileIcon);
+
+    document.getElementById('profile-icon-display').innerText = profileIcon;
+    document.getElementById('profile-icon-display').style.color = profileColor;
+  };
+
+  document.getElementById('save-profile').addEventListener('click', saveProfile);
+
+  window.MyOffiCityAddons.addTool('Profil', '👤', profileContainer);
+  window.MyOffiCityAddons.register('Anpassningsbara Profiler');
+
+  // Load saved settings
+  const savedProfilePicture = localStorage.getItem('profilePicture');
+  const savedBackgroundImage = localStorage.getItem('backgroundImage');
+  const savedProfileColor = localStorage.getItem('profileColor');
+  const savedProfileIcon = localStorage.getItem('profileIcon');
+
+  if (savedProfilePicture) {
+    document.getElementById('profile-icon-display').innerText = '';
+    const img = document.createElement('img');
+    img.src = savedProfilePicture;
+    img.style.width = '50px';
+    img.style.height = '50px';
+    img.style.borderRadius = '50%';
+    document.getElementById('profile-icon-display').appendChild(img);
+  }
+
+  if (savedBackgroundImage) {
+    document.body.style.backgroundImage = `url(${savedBackgroundImage})`;
+  }
+
+  if (savedProfileColor) {
+    document.getElementById('profile-icon-display').style.color = savedProfileColor;
+  }
+
+  if (savedProfileIcon) {
+    document.getElementById('profile-icon-display').innerText = savedProfileIcon;
+  }
+})();

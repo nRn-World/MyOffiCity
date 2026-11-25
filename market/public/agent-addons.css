@@ -1435,3 +1435,33 @@ body.moc-font-dyslexic {
 .moc-search-container button:hover {
   background: rgba(217, 180, 106, 0.7);
 }
+
+#moc-profile-settings {
+  display: none;
+}
+
+#moc-profile-settings h3 {
+  margin-top: 0;
+}
+
+#moc-profile-settings label {
+  display: block;
+  margin-top: 10px;
+}
+
+#moc-profile-settings input[type="file"],
+#moc-profile-settings input[type="color"],
+#moc-profile-settings select,
+#moc-profile-settings button {
+  margin-top: 5px;
+  padding: 5px;
+  border: 1px solid rgba(217, 180, 106, 0.48);
+  background: rgba(20, 32, 61, 0.98);
+  color: #f3ecdc;
+  border-radius: 3px;
+  outline: none;
+}
+
+#moc-profile-settings button:hover {
+  background: rgba(217, 180, 106, 0.7);
+}

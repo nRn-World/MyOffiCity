@@ -1605,3 +1605,113 @@
   window.MyOffiCityAddons.addTool('Kontorshantering', '🏢', officeManagementWidget());
   window.MyOffiCityAddons.register('Office Management Widget');
 })();
+
+(() => {
+  // AI Agent Market Widget
+  const createAgentMarketWidget = () => {
+    const widget = document.createElement('div');
+    widget.id = 'moc-agent-market';
+    widget.innerHTML = `
+      <div class="moc-agent-market-content">
+        <h2>AI Agent Market</h2>
+        <div class="moc-agent-filters">
+          <div class="moc-filter-group">
+            <label for="category-filter">Category:</label>
+            <select id="category-filter">
+              <option value="all">All Categories</option>
+              <option value="customer-support">Customer Support</option>
+              <option value="sales">Sales</option>
+              <option value="marketing">Marketing</option>
+              <option value="development">Development</option>
+              <option value="design">Design</option>
+            </select>
+          </div>
+          <div class="moc-filter-group">
+            <label for="popularity-filter">Popularity:</label>
+            <select id="popularity-filter">
+              <option value="all">All Popularity</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+          <div class="moc-filter-group">
+            <label for="price-filter">Price:</label>
+            <select id="price-filter">
+              <option value="all">All Prices</option>
+              <option value="free">Free</option>
+              <option value="paid">Paid</option>
+            </select>
+          </div>
+        </div>
+        <div class="moc-agent-list"></div>
+      </div>
+    `;
+
+    // Sample agent data
+    const agents = [
+      { id: 1, name: 'SupportBot', category: 'customer-support', popularity: 'high', price: 'free', rating: 4.8, users: 1250, responses: 8500 },
+      { id: 2, name: 'SalesPro', category: 'sales', popularity: 'medium', price: 'paid', rating: 4.5, users: 890, responses: 6200 },
+      { id: 3, name: 'MarketingGenius', category: 'marketing', popularity: 'high', price: 'paid', rating: 4.7, users: 1100, responses: 7800 },
+      { id: 4, name: 'CodeMaster', category: 'development', popularity: 'high', price: 'paid', rating: 4.9, users: 1500, responses: 9200 },
+      { id: 5, name: 'DesignArtist', category: 'design', popularity: 'medium', price: 'free', rating: 4.3, users: 750, responses: 5100 },
+      { id: 6, name: 'TechHelper', category: 'customer-support', popularity: 'low', price: 'free', rating: 4.1, users: 500, responses: 3200 }
+    ];
+
+    // Filter and display agents
+    const filterAndDisplayAgents = () => {
+      const categoryFilter = document.getElementById('category-filter').value;
+      const popularityFilter = document.getElementById('popularity-filter').value;
+      const priceFilter = document.getElementById('price-filter').value;
+
+      const filteredAgents = agents.filter(agent => {
+        return (categoryFilter === 'all' || agent.category === categoryFilter) &&
+               (popularityFilter === 'all' || agent.popularity === popularityFilter) &&
+               (priceFilter === 'all' || (priceFilter === 'free' && agent.price === 'free') || (priceFilter === 'paid' && agent.price === 'paid'));
+      });
+
+      const agentList = widget.querySelector('.moc-agent-list');
+      agentList.innerHTML = '';
+
+      filteredAgents.forEach(agent => {
+        const agentItem = document.createElement('div');
+        agentItem.className = 'moc-agent-item';
+        agentItem.innerHTML = `
+          <div class="moc-agent-name">${agent.name}</div>
+          <div class="moc-agent-metrics">
+            <div class="moc-agent-stats">
+              <div class="moc-stat-item">
+                <span class="moc-stat-label">Rating:</span>
+                <span class="moc-stat-value">${agent.rating}</span>
+              </div>
+              <div class="moc-stat-item">
+                <span class="moc-stat-label">Users:</span>
+                <span class="moc-stat-value">${agent.users}</span>
+              </div>
+              <div class="moc-stat-item">
+                <span class="moc-stat-label">Responses:</span>
+                <span class="moc-stat-value">${agent.responses}</span>
+              </div>
+            </div>
+          </div>
+        `;
+        agentList.appendChild(agentItem);
+      });
+    };
+
+    // Set up event listeners for filters
+    widget.querySelectorAll('select').forEach(select => {
+      select.addEventListener('change', filterAndDisplayAgents);
+    });
+
+    // Initial display
+    filterAndDisplayAgents();
+
+    return widget;
+  };
+
+  // Add the widget to the MyOffiCity addons system
+  const agentMarketWidget = createAgentMarketWidget();
+  window.MyOffiCityAddons.addTool('AI Agent Market', '🤖', agentMarketWidget);
+  window.MyOffiCityAddons.register('AI Agent Market Widget');
+})();

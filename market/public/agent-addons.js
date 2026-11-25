@@ -2048,3 +2048,62 @@
   window.MyOffiCityAddons.addTool('3D-karta', '', mapContainer);
   window.MyOffiCityAddons.register('3D-karta');
 })();
+
+(() => {
+  // Skapa sökfältet och lägg till det i sidan
+  const searchContainer = document.createElement('div');
+  searchContainer.className = 'moc-search-container';
+  searchContainer.innerHTML = `
+    <input type="text" id="moc-search-input" placeholder="Sök...">
+    <select id="moc-sort-select">
+      <option value="name">Namn</option>
+      <option value="type">Typ</option>
+    </select>
+    <button id="moc-search-button">Sök</button>
+  `;
+  document.body.appendChild(searchContainer);
+
+  // Funktion för att filtrera och sortera resurser
+  function filterAndSortResources(query, sortBy) {
+    const resources = document.querySelectorAll('.moc-resource-item');
+    resources.forEach(resource => {
+      const name = resource.querySelector('h4').textContent.toLowerCase();
+      const type = resource.querySelector('.moc-resource-type').textContent.toLowerCase();
+      if (name.includes(query) || type.includes(query)) {
+        resource.style.display = '';
+      } else {
+        resource.style.display = 'none';
+      }
+    });
+
+    // Sortera resurser baserat på vald kategori
+    const sortedResources = Array.from(resources).filter(resource => resource.style.display !== 'none');
+    sortedResources.sort((a, b) => {
+      const aValue = a.querySelector(`.${sortBy}`).textContent.toLowerCase();
+      const bValue = b.querySelector(`.${sortBy}`).textContent.toLowerCase();
+      return aValue.localeCompare(bValue);
+    });
+
+    const parent = resources[0].parentNode;
+    sortedResources.forEach(resource => parent.appendChild(resource));
+  }
+
+  // Eventlyssnare för sökknappen
+  document.getElementById('moc-search-button').addEventListener('click', () => {
+    const query = document.getElementById('moc-search-input').value.toLowerCase();
+    const sortBy = document.getElementById('moc-sort-select').value;
+    filterAndSortResources(query, sortBy);
+  });
+
+  // Eventlyssnare för tangentbordsgenvägar (Ctrl + F för att fokusera på sökfältet)
+  document.addEventListener('keydown', (event) => {
+    if (event.ctrlKey && event.key === 'f') {
+      event.preventDefault();
+      document.getElementById('moc-search-input').focus();
+    }
+  });
+
+  // Registrera verktyget i MyOffiCityAddons
+  window.MyOffiCityAddons.addTool('Sök', '🔍', searchContainer);
+  window.MyOffiCityAddons.register('Förbättrad Sökfunktion');
+})();

@@ -598,3 +598,195 @@
   // Register city map as a feature
   window.MyOffiCityAddons.register('3D-karta');
 })();
+
+(() => {
+  const cityControls = {
+    camera: null,
+    controls: null,
+    init() {
+      this.setupKeyboardShortcuts();
+      this.setupCityMap();
+      this.setupCityInteractionTracking();
+    },
+    setupKeyboardShortcuts() {
+      document.addEventListener('keydown', (e) => {
+        if (!this.camera || !this.controls) return;
+
+        // Rotation controls
+        if (e.key === 'ArrowLeft') {
+          this.camera.rotation.y += 0.1;
+        } else if (e.key === 'ArrowRight') {
+          this.camera.rotation.y -= 0.1;
+        } else if (e.key === 'ArrowUp') {
+          this.camera.rotation.x += 0.1;
+        } else if (e.key === 'ArrowDown') {
+          this.camera.rotation.x -= 0.1;
+        }
+
+        // Zoom controls
+        if (e.key === '+' || e.key === '=') {
+          this.camera.position.z -= 10;
+        } else if (e.key === '-') {
+          this.camera.position.z += 10;
+        }
+
+        // Movement controls
+        if (e.key === 'w' || e.key === 'W') {
+          this.camera.position.z -= 10;
+        } else if (e.key === 's' || e.key === 'S') {
+          this.camera.position.z += 10;
+        } else if (e.key === 'a' || e.key === 'A') {
+          this.camera.position.x -= 10;
+        } else if (e.key === 'd' || e.key === 'D') {
+          this.camera.position.x += 10;
+        }
+
+        // Reset view
+        if (e.key === 'r' || e.key === 'R') {
+          this.camera.position.set(0, 0, 100);
+          this.camera.rotation.set(0, 0, 0);
+        }
+      });
+
+      // Add keyboard shortcuts help
+      const helpWrap = document.createElement('div');
+      helpWrap.className = 'moc-chip-row';
+      const shortcuts = [
+        ['Piltangenter', 'Rotera'],
+        ['+ / -', 'Zooma'],
+        ['WASD', 'Flytta'],
+        ['R', 'Återställ vy']
+      ];
+
+      shortcuts.forEach(([keys, action]) => {
+        const p = document.createElement('p');
+        p.textContent = `${keys}: ${action}`;
+        helpWrap.appendChild(p);
+      });
+
+      window.MyOffiCityAddons.addTool('3D-stadsgenvägar', '🎮', helpWrap);
+    },
+    setupCityMap() {
+      const mapContainer = document.createElement('div');
+      mapContainer.id = 'moc-city-map';
+      mapContainer.style.height = '300px';
+      mapContainer.style.width = '100%';
+      mapContainer.style.position = 'relative';
+
+      const mapContent = document.createElement('div');
+      mapContent.className = 'moc-map-content';
+
+      // Add map controls
+      const mapControls = document.createElement('div');
+      mapControls.className = 'moc-map-controls';
+
+      const zoomInBtn = document.createElement('button');
+      zoomInBtn.type = 'button';
+      zoomInBtn.className = 'moc-chip-btn';
+      zoomInBtn.textContent = '+';
+      zoomInBtn.addEventListener('click', () => {
+        if (this.camera) this.camera.position.z -= 10;
+      });
+
+      const zoomOutBtn = document.createElement('button');
+      zoomOutBtn.type = 'button';
+      zoomOutBtn.className = 'moc-chip-btn';
+      zoomOutBtn.textContent = '-';
+      zoomOutBtn.addEventListener('click', () => {
+        if (this.camera) this.camera.position.z += 10;
+      });
+
+      const resetBtn = document.createElement('button');
+      resetBtn.type = 'button';
+      resetBtn.className = 'moc-chip-btn';
+      resetBtn.textContent = 'Återställ';
+      resetBtn.addEventListener('click', () => {
+        if (this.camera) {
+          this.camera.position.set(0, 0, 100);
+          this.camera.rotation.set(0, 0, 0);
+        }
+      });
+
+      mapControls.appendChild(zoomInBtn);
+      mapControls.appendChild(zoomOutBtn);
+      mapControls.appendChild(resetBtn);
+
+      mapContent.appendChild(mapControls);
+      mapContainer.appendChild(mapContent);
+
+      // Add markers for companies (simulated data)
+      const companies = [
+        { name: 'TechCorp', lat: 59.3293, lon: 18.0686 },
+        { name: 'InnovateX', lat: 59.3326, lon: 18.0649 },
+        { name: 'FutureWorks', lat: 59.3356, lon: 18.0612 },
+        { name: 'DigitalSolutions', lat: 59.3386, lon: 18.0575 }
+      ];
+
+      companies.forEach(company => {
+        const marker = document.createElement('div');
+        marker.className = 'moc-map-marker';
+        marker.title = company.name;
+        marker.style.left = `${(company.lon - 18.05) * 1000}px`;
+        marker.style.top = `${(59.34 - company.lat) * 1000}px`;
+        mapContainer.appendChild(marker);
+      });
+
+      window.MyOffiCityAddons.addTool('3D-stadskarta', '🗺️', mapContainer);
+
+      // Initialize Three.js camera and controls if available
+      if (window.THREE) {
+        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        this.camera.position.z = 100;
+
+        // Simulate controls (in a real implementation, this would be connected to your actual 3D scene)
+        this.controls = {
+          enabled: true,
+          update: () => {}
+        };
+      }
+    },
+    setupCityInteractionTracking() {
+      // Track city interactions
+      const trackInteraction = (interaction) => {
+        if (window.MyOffiCityAddons && window.MyOffiCityAddons.trackCityInteractions) {
+          window.MyOffiCityAddons.trackCityInteractions(interaction);
+        }
+      };
+
+      // Track camera movements
+      if (this.camera) {
+        let lastPosition = this.camera.position.clone();
+        let lastRotation = this.camera.rotation.clone();
+
+        setInterval(() => {
+          if (!this.camera) return;
+
+          // Check if camera has moved
+          if (!this.camera.position.equals(lastPosition)) {
+            trackInteraction('camera-move');
+            lastPosition.copy(this.camera.position);
+          }
+
+          // Check if camera has rotated
+          if (!this.camera.rotation.equals(lastRotation)) {
+            trackInteraction('camera-rotate');
+            lastRotation.copy(this.camera.rotation);
+          }
+        }, 1000);
+      }
+
+      // Track keyboard interactions
+      document.addEventListener('keydown', (e) => {
+        if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', '+', '-', '=', 'w', 'W', 'a', 'A', 's', 'S', 'd', 'D', 'r', 'R'].includes(e.key)) {
+          trackInteraction('keyboard-interaction');
+        }
+      });
+    }
+  };
+
+  // Initialize city controls
+  cityControls.init();
+
+  // Register city controls as a feature
+  window.MyOffiCityAddons.register('3D-stadsinteraktion');
+})();

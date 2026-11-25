@@ -957,3 +957,88 @@
   // Register agent market as a feature
   window.MyOffiCityAddons.register('AI-agentmarknad');
 })();
+
+(() => {
+  const themeManager = {
+    themes: {
+      light: {
+        '--bg-color': '#ffffff',
+        '--text-color': '#333333',
+        '--card-bg': '#f9f9f9',
+        '--card-border': '#e0e0e0',
+        '--header-color': '#444444',
+        '--button-bg': '#e0e0e0',
+        '--button-hover': '#d0d0d0',
+        '--button-text': '#333333',
+        '--button-active': '#c0c0c0',
+        '--font-family': 'Arial, sans-serif',
+        '--font-size': '14px',
+        '--line-height': '1.5',
+        '--border-radius': '4px',
+        '--box-shadow': '0 2px 4px rgba(0, 0, 0, 0.1)'
+      },
+      dark: {
+        '--bg-color': '#121212',
+        '--text-color': '#e0e0e0',
+        '--card-bg': '#1e1e1e',
+        '--card-border': '#333333',
+        '--header-color': '#b0b0b0',
+        '--button-bg': '#333333',
+        '--button-hover': '#444444',
+        '--button-text': '#e0e0e0',
+        '--button-active': '#222222',
+        '--font-family': 'Georgia, serif',
+        '--font-size': '14px',
+        '--line-height': '1.6',
+        '--border-radius': '4px',
+        '--box-shadow': '0 2px 4px rgba(0, 0, 0, 0.3)'
+      }
+    },
+    currentTheme: 'light',
+    init() {
+      this.loadTheme();
+      this.setupThemeControls();
+    },
+    loadTheme() {
+      const savedTheme = localStorage.getItem('moc.theme') || 'light';
+      this.applyTheme(savedTheme);
+    },
+    applyTheme(themeName) {
+      if (!this.themes[themeName]) return;
+
+      this.currentTheme = themeName;
+      const theme = this.themes[themeName];
+
+      Object.entries(theme).forEach(([property, value]) => {
+        document.documentElement.style.setProperty(property, value);
+      });
+
+      localStorage.setItem('moc.theme', themeName);
+    },
+    setupThemeControls() {
+      const themeWrap = document.createElement('div');
+      themeWrap.className = 'moc-chip-row';
+
+      Object.keys(this.themes).forEach(themeName => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'moc-chip-btn' + (this.currentTheme === themeName ? ' on' : '');
+        b.textContent = themeName.charAt(0).toUpperCase() + themeName.slice(1);
+        b.addEventListener('click', () => {
+          this.applyTheme(themeName);
+          themeWrap.querySelectorAll('button').forEach(btn => btn.classList.remove('on'));
+          b.classList.add('on');
+        });
+        themeWrap.appendChild(b);
+      });
+
+      window.MyOffiCityAddons.addTool('Teman', '🎨', themeWrap);
+    }
+  };
+
+  // Initialize theme manager
+  themeManager.init();
+
+  // Register theme manager as a feature
+  window.MyOffiCityAddons.register('Teman');
+})();

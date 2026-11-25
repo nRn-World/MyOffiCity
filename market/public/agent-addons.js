@@ -1766,3 +1766,71 @@
   // Register the feature
   window.MyOffiCityAddons.register('Tema och Läsbarhet');
 })();
+
+(() => {
+  const createOfficeManagementWidget = () => {
+    const widgetContainer = document.createElement('div');
+    widgetContainer.id = 'moc-office-management-widget';
+
+    const content = `
+      <div class="moc-office-management-content">
+        <div class="moc-office-management-section">
+          <h3>Kontorshantering</h3>
+          <form id="moc-booking-form" class="moc-booking-form">
+            <div class="moc-form-group">
+              <label for="resource-type">Resurstyp:</label>
+              <select id="resource-type">
+                <option value="mötesrum">Mötesrum</option>
+                <option value="möbler">Möbler</option>
+                <option value="utrustning">Utrustning</option>
+              </select>
+            </div>
+            <div class="moc-form-group">
+              <label for="start-time">Starttid:</label>
+              <input type="datetime-local" id="start-time" required>
+            </div>
+            <div class="moc-form-group">
+              <label for="end-time">Sluttid:</label>
+              <input type="datetime-local" id="end-time" required>
+            </div>
+            <button type="submit" id="book-resource">Boka Resurs</button>
+          </form>
+        </div>
+        <div class="moc-office-management-section">
+          <h3>Bokningar</h3>
+          <div id="moc-bookings-list"></div>
+        </div>
+      </div>
+    `;
+
+    widgetContainer.innerHTML = content;
+
+    const form = widgetContainer.querySelector('#moc-booking-form');
+    const bookingsList = widgetContainer.querySelector('#moc-bookings-list');
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const resourceType = form.querySelector('#resource-type').value;
+      const startTime = form.querySelector('#start-time').value;
+      const endTime = form.querySelector('#end-time').value;
+
+      // Simulate booking
+      const bookingItem = document.createElement('div');
+      bookingItem.className = 'moc-resource-item';
+      bookingItem.innerHTML = `
+        <h4>${resourceType}</h4>
+        <p>Starttid: ${startTime}</p>
+        <p>Sluttid: ${endTime}</p>
+      `;
+      bookingsList.appendChild(bookingItem);
+
+      form.reset();
+    });
+
+    return widgetContainer;
+  };
+
+  const officeManagementWidget = createOfficeManagementWidget();
+  window.MyOffiCityAddons.addTool('Kontorshantering', '🏢', officeManagementWidget);
+  window.MyOffiCityAddons.register('Kontorshantering');
+})();

@@ -1715,3 +1715,54 @@
   window.MyOffiCityAddons.addTool('AI Agent Market', '🤖', agentMarketWidget);
   window.MyOffiCityAddons.register('AI Agent Market Widget');
 })();
+
+(() => {
+  // Function to toggle theme
+  function toggleTheme() {
+    const currentTheme = document.body.classList.contains('dark-theme') ? 'dark-theme' : 'light-theme';
+    const newTheme = currentTheme === 'dark-theme' ? 'light-theme' : 'dark-theme';
+    document.body.classList.remove(currentTheme);
+    document.body.classList.add(newTheme);
+    localStorage.setItem('theme', newTheme);
+  }
+
+  // Create theme toggle button
+  const themeToggleButton = document.createElement('button');
+  themeToggleButton.className = 'moc-theme-toggle';
+  themeToggleButton.textContent = 'Toggle Theme';
+  themeToggleButton.addEventListener('click', toggleTheme);
+
+  // Append theme toggle button to the document
+  document.body.appendChild(themeToggleButton);
+
+  // Load saved theme from local storage
+  const savedTheme = localStorage.getItem('theme') || 'dark-theme';
+  document.body.classList.add(savedTheme);
+
+  // Function to adjust font size
+  function adjustFontSize(size) {
+    document.documentElement.style.setProperty('--theme-font-size', `${size}px`);
+    localStorage.setItem('fontSize', size);
+  }
+
+  // Create font size control
+  const fontSizeControl = document.createElement('div');
+  fontSizeControl.className = 'moc-font-size-control';
+  fontSizeControl.innerHTML = `
+    <label for="fontSize">Font Size:</label>
+    <input type="range" id="fontSize" name="fontSize" min="12" max="20" value="${localStorage.getItem('fontSize') || 14}">
+  `;
+  fontSizeControl.querySelector('#fontSize').addEventListener('input', (event) => {
+    adjustFontSize(event.target.value);
+  });
+
+  // Append font size control to the document
+  document.body.appendChild(fontSizeControl);
+
+  // Load saved font size from local storage
+  const savedFontSize = localStorage.getItem('fontSize') || 14;
+  adjustFontSize(savedFontSize);
+
+  // Register the feature
+  window.MyOffiCityAddons.register('Tema och Läsbarhet');
+})();

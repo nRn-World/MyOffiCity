@@ -1158,3 +1158,69 @@ body.moc-font-dyslexic {
     font-size: 11px;
   }
 }
+
+(() => {
+  // Define theme variables
+  :root {
+    --theme-light-bg-color: #ffffff;
+    --theme-light-text-color: #333333;
+    --theme-dark-bg-color: #121212;
+    --theme-dark-text-color: #e0e0e0;
+    --theme-accent-color: #d9b46a;
+    --theme-accent-hover-color: #bca350;
+    --theme-font-size: 14px;
+  }
+
+  // Light theme
+  body.light-theme {
+    background-color: var(--theme-light-bg-color);
+    color: var(--theme-light-text-color);
+  }
+
+  // Dark theme
+  body.dark-theme {
+    background-color: var(--theme-dark-bg-color);
+    color: var(--theme-dark-text-color);
+  }
+
+  // Accent colors
+  .moc-tool-card,
+  .moc-chip-btn {
+    background-color: var(--theme-accent-color);
+    color: var(--theme-dark-bg-color);
+  }
+
+  .moc-tool-card:hover,
+  .moc-chip-btn:hover {
+    background-color: var(--theme-accent-hover-color);
+  }
+
+  // Font size adjustment
+  body {
+    font-size: var(--theme-font-size);
+  }
+
+  // Theme toggle button styles
+  .moc-theme-toggle {
+    position: fixed;
+    top: 18px;
+    right: 18px;
+    z-index: 950;
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--theme-accent-color);
+    background: rgba(12, 18, 34, 0.92);
+    color: var(--theme-accent-color);
+    font: 600 13px/1 system-ui, -apple-system, sans-serif;
+    cursor: pointer;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.42);
+    backdrop-filter: blur(10px);
+    transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+  }
+
+  .moc-theme-toggle:hover {
+    border-color: var(--theme-accent-hover-color);
+    background: rgba(20, 32, 61, 0.98);
+    transform: translateY(-2px);
+  }
+})();

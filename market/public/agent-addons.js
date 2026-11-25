@@ -1834,3 +1834,158 @@
   window.MyOffiCityAddons.addTool('Kontorshantering', '🏢', officeManagementWidget);
   window.MyOffiCityAddons.register('Kontorshantering');
 })();
+
+(() => {
+  const scene = window.MyOffiCity.scene;
+  const camera = window.MyOffiCity.camera;
+  const renderer = window.MyOffiCity.renderer;
+  const controls = window.MyOffiCity.controls;
+
+  let moveForward = false;
+  let moveBackward = false;
+  let moveLeft = false;
+  let moveRight = false;
+  let moveUp = false;
+  let moveDown = false;
+  let isZoomingIn = false;
+  let isZoomingOut = false;
+
+  const onKeyDown = function(event) {
+    switch (event.code) {
+      case 'ArrowUp':
+      case 'KeyW':
+        moveForward = true;
+        break;
+      case 'ArrowDown':
+      case 'KeyS':
+        moveBackward = true;
+        break;
+      case 'ArrowLeft':
+      case 'KeyA':
+        moveLeft = true;
+        break;
+      case 'ArrowRight':
+      case 'KeyD':
+        moveRight = true;
+        break;
+      case 'Space':
+        moveUp = true;
+        break;
+      case 'ShiftLeft':
+      case 'ShiftRight':
+        moveDown = true;
+        break;
+      case 'Equal':
+        isZoomingIn = true;
+        break;
+      case 'Minus':
+        isZoomingOut = true;
+        break;
+    }
+  };
+
+  const onKeyUp = function(event) {
+    switch (event.code) {
+      case 'ArrowUp':
+      case 'KeyW':
+        moveForward = false;
+        break;
+      case 'ArrowDown':
+      case 'KeyS':
+        moveBackward = false;
+        break;
+      case 'ArrowLeft':
+      case 'KeyA':
+        moveLeft = false;
+        break;
+      case 'ArrowRight':
+      case 'KeyD':
+        moveRight = false;
+        break;
+      case 'Space':
+        moveUp = false;
+        break;
+      case 'ShiftLeft':
+      case 'ShiftRight':
+        moveDown = false;
+        break;
+      case 'Equal':
+        isZoomingIn = false;
+        break;
+      case 'Minus':
+        isZoomingOut = false;
+        break;
+    }
+  };
+
+  document.addEventListener('keydown', onKeyDown, false);
+  document.addEventListener('keyup', onKeyUp, false);
+
+  const velocity = new THREE.Vector3();
+  const direction = new THREE.Vector3();
+
+  const animate = function() {
+    requestAnimationFrame(animate);
+
+    if (controls.isLocked === true) {
+      direction.z = Number(moveForward) - Number(moveBackward);
+      direction.x = Number(moveRight) - Number(moveLeft);
+      direction.y = Number(moveUp) - Number(moveDown);
+      direction.normalize();
+
+      if (moveForward || moveBackward) velocity.z -= direction.z * 4.0 * 0.1;
+      if (moveLeft || moveRight) velocity.x -= direction.x * 4.0 * 0.1;
+      if (moveUp || moveDown) velocity.y -= direction.y * 4.0 * 0.1;
+
+      velocity.x *= 0.98;
+      velocity.y *= 0.98;
+      velocity.z *= 0.98;
+
+      controls.moveRight(-velocity.x);
+      controls.moveForward(-velocity.z);
+      controls.getObject().position.y += velocity.y;
+
+      if (isZoomingIn) {
+        controls.zoomIn(0.1);
+      }
+      if (isZoomingOut) {
+        controls.zoomOut(0.1);
+      }
+    }
+
+    renderer.render(scene, camera);
+  };
+
+  animate();
+
+  const keyBindingsDiv = document.createElement('div');
+  keyBindingsDiv.innerHTML = `
+    <div class="moc-key-bindings">
+      <h4>Tangentbordsgenvägar</h4>
+      <ul>
+        <li><strong>W / Piltangent upp:</strong> Flytta framåt</li>
+        <li><strong>S / Piltangent ned:</strong> Flytta bakåt</li>
+        <li><strong>A / Piltangent vänster:</strong> Flytta vänster</li>
+        <li><strong>D / Piltangent höger:</strong> Flytta höger</li>
+        <li><strong>Mellanslag:</strong> Flytta upp</li>
+        <li><strong>Shift:</strong> Flytta ner</li>
+        <li><strong>=:</strong> Zooma in</li>
+        <li><strong>-:</strong> Zooma ut</li>
+      </ul>
+    </div>
+  `;
+  keyBindingsDiv.style.position = 'fixed';
+  keyBindingsDiv.style.top = '10px';
+  keyBindingsDiv.style.left = '10px';
+  keyBindingsDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+  keyBindingsDiv.style.color = '#ffffff';
+  keyBindingsDiv.style.padding = '10px';
+  keyBindingsDiv.style.borderRadius = '5px';
+  keyBindingsDiv.style.fontSize = '14px';
+  keyBindingsDiv.style.zIndex = '1000';
+
+  document.body.appendChild(keyBindingsDiv);
+
+  window.MyOffiCityAddons.addTool('Tangentbordsgenvägar', '⌨️', keyBindingsDiv);
+  window.MyOffiCityAddons.register('Tangentbordsgenvägar');
+})();

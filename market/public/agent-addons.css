@@ -1371,3 +1371,20 @@ body.moc-font-dyslexic {
 .moc-key-bindings strong {
   color: #e6c07b;
 }
+
+.moc-3d-map {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  width: 200px;
+  height: 200px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.5);
+  z-index: 1000;
+}
+
+.moc-3d-map canvas {
+  border: 1px solid #ccc;
+}

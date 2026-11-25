@@ -857,3 +857,49 @@ body {
     font-size: 11px;
   }
 }
+
+/* Theme Controls Styles */
+.moc-theme-controls {
+  margin-bottom: 16px;
+}
+
+.moc-theme-controls h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: #e9d7b0;
+  margin: 0 0 8px;
+}
+
+.moc-theme-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.moc-font-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Font size adjustments */
+body.moc-font-large {
+  font-size: 16px;
+}
+
+body.moc-font-dyslexic {
+  font-family: 'OpenDyslexic', sans-serif;
+  line-height: 1.8;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .moc-theme-controls h3 {
+    font-size: 13px;
+  }
+
+  body.moc-font-large {
+    font-size: 15px;
+  }
+}

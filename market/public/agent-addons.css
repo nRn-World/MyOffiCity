@@ -768,3 +768,92 @@ body {
     height: 16px;
   }
 }
+
+/* AI Agent Market Styles */
+#moc-agent-market {
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  color: #f3ecdc;
+}
+
+.moc-agent-market-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.moc-agent-market-content h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #e9d7b0;
+  margin: 0 0 8px;
+}
+
+.moc-agent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.moc-agent-item {
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.moc-agent-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #e9d7b0;
+  margin-bottom: 4px;
+}
+
+.moc-agent-metrics {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+}
+
+.moc-agent-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.moc-stat-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.moc-stat-label {
+  color: #b8a68a;
+}
+
+.moc-stat-value {
+  font-weight: 700;
+  color: #e9d7b0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  #moc-agent-market {
+    padding: 10px;
+  }
+
+  .moc-agent-market-content h2 {
+    font-size: 14px;
+  }
+
+  .moc-agent-name {
+    font-size: 12px;
+  }
+
+  .moc-agent-metrics,
+  .moc-stat-item {
+    font-size: 11px;
+  }
+}

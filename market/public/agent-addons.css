@@ -296,3 +296,50 @@ html.moc-theme-warm {
     font-size: 11px;
   }
 }
+
+/* City Map Styles */
+#moc-city-map {
+  position: relative;
+  overflow: hidden;
+}
+
+.moc-map-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.moc-map-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.moc-map-marker {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background-color: #4285f4;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px #4285f4;
+  transition: transform 0.2s ease;
+}
+
+.moc-map-marker:hover {
+  transform: scale(1.2);
+  z-index: 10;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  #moc-city-map {
+    height: 200px;
+  }
+
+  .moc-map-marker {
+    width: 16px;
+    height: 16px;
+  }
+}

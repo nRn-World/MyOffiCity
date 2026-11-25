@@ -460,3 +460,141 @@
   // Register accessibility as a feature
   window.MyOffiCityAddons.register('Tillgänglighetsinställningar');
 })();
+
+(() => {
+  const cityMap = {
+    map: null,
+    markers: [],
+    init() {
+      this.setupMap();
+      this.setupMapDashboard();
+      this.setupCityNavigation();
+    },
+    setupMap() {
+      // Create a simple 3D map representation
+      const mapContainer = document.createElement('div');
+      mapContainer.id = 'moc-city-map';
+      mapContainer.style.width = '100%';
+      mapContainer.style.height = '300px';
+      mapContainer.style.backgroundColor = '#1a1a1a';
+      mapContainer.style.borderRadius = '8px';
+      mapContainer.style.position = 'relative';
+
+      // Add some basic map features
+      const mapFeatures = document.createElement('div');
+      mapFeatures.style.position = 'absolute';
+      mapFeatures.style.top = '10px';
+      mapFeatures.style.left = '10px';
+      mapFeatures.style.color = '#fff';
+      mapFeatures.style.fontSize = '12px';
+      mapFeatures.innerHTML = `
+        <div>🏠 Marknadsplats</div>
+        <div>🏙 3D-stad</div>
+        <div>🏢 Kontor</div>
+        <div>📦 Beställningar</div>
+      `;
+
+      mapContainer.appendChild(mapFeatures);
+      this.map = mapContainer;
+    },
+    setupMapDashboard() {
+      const dashboard = document.createElement('div');
+      dashboard.id = 'moc-city-map-dashboard';
+      dashboard.className = 'moc-tool-card';
+      dashboard.innerHTML = `
+        <div class="moc-tool-title">🗺️ 3D-karta</div>
+        <div class="moc-map-content">
+          <div class="moc-map-controls">
+            <button id="moc-map-zoom-in" class="moc-chip-btn">+</button>
+            <button id="moc-map-zoom-out" class="moc-chip-btn">-</button>
+            <button id="moc-map-center" class="moc-chip-btn">Centrera</button>
+          </div>
+          <div id="moc-map-container"></div>
+        </div>
+      `;
+
+      // Add map to container
+      const mapContainer = dashboard.querySelector('#moc-map-container');
+      if (this.map) {
+        mapContainer.appendChild(this.map);
+      }
+
+      // Add event listeners for map controls
+      dashboard.querySelector('#moc-map-zoom-in').addEventListener('click', () => this.zoomIn());
+      dashboard.querySelector('#moc-map-zoom-out').addEventListener('click', () => this.zoomOut());
+      dashboard.querySelector('#moc-map-center').addEventListener('click', () => this.centerMap());
+
+      window.MyOffiCityAddons.addTool('3D-karta', '🗺️', dashboard);
+    },
+    setupCityNavigation() {
+      // This would be connected to actual city navigation in a real implementation
+      // For now, we'll simulate some navigation points
+      const navigationPoints = [
+        { name: 'Marknadsplats', position: { x: 0, y: 0 }, icon: '🏠' },
+        { name: '3D-stad', position: { x: 100, y: 50 }, icon: '🏙' },
+        { name: 'Kontor', position: { x: 200, y: 100 }, icon: '🏢' },
+        { name: 'Beställningar', position: { x: 300, y: 150 }, icon: '📦' }
+      ];
+
+      // Add markers for each navigation point
+      navigationPoints.forEach(point => {
+        this.addMarker(point);
+      });
+    },
+    addMarker(point) {
+      const marker = document.createElement('div');
+      marker.className = 'moc-map-marker';
+      marker.style.position = 'absolute';
+      marker.style.left = `${point.position.x}px`;
+      marker.style.top = `${point.position.y}px`;
+      marker.style.color = '#fff';
+      marker.style.fontSize = '14px';
+      marker.style.cursor = 'pointer';
+      marker.innerHTML = point.icon;
+      marker.title = point.name;
+
+      // Add click event to navigate to the point
+      marker.addEventListener('click', () => {
+        this.navigateToPoint(point);
+      });
+
+      if (this.map) {
+        this.map.appendChild(marker);
+        this.markers.push(marker);
+      }
+    },
+    navigateToPoint(point) {
+      // In a real implementation, this would navigate to the actual 3D location
+      console.log(`Navigating to ${point.name}`);
+      alert(`Navigerar till ${point.name}`);
+    },
+    zoomIn() {
+      // Simple zoom in simulation
+      if (this.map) {
+        const currentScale = parseFloat(this.map.style.transform.replace('scale(', '').replace(')', '')) || 1;
+        this.map.style.transform = `scale(${currentScale + 0.1})`;
+      }
+    },
+    zoomOut() {
+      // Simple zoom out simulation
+      if (this.map) {
+        const currentScale = parseFloat(this.map.style.transform.replace('scale(', '').replace(')', '')) || 1;
+        if (currentScale > 0.5) {
+          this.map.style.transform = `scale(${currentScale - 0.1})`;
+        }
+      }
+    },
+    centerMap() {
+      // Reset map to center
+      if (this.map) {
+        this.map.style.transform = 'scale(1)';
+      }
+    }
+  };
+
+  // Initialize city map
+  cityMap.init();
+
+  // Register city map as a feature
+  window.MyOffiCityAddons.register('3D-karta');
+})();

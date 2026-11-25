@@ -1032,3 +1032,129 @@ body.moc-font-dyslexic {
     font-size: 11px;
   }
 }
+
+/* AI Agent Market Styles */
+#moc-agent-market {
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  color: #f3ecdc;
+}
+
+.moc-agent-market-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.moc-agent-market-content h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #e9d7b0;
+  margin: 0 0 8px;
+}
+
+.moc-agent-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.moc-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.moc-filter-group label {
+  font-size: 12px;
+  color: #b8a68a;
+}
+
+.moc-filter-group select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: #f3ecdc;
+  font-size: 12px;
+}
+
+.moc-filter-group select:focus {
+  outline: none;
+  border-color: #d9b46a;
+}
+
+.moc-agent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.moc-agent-item {
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.moc-agent-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #e9d7b0;
+  margin-bottom: 4px;
+}
+
+.moc-agent-metrics {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+}
+
+.moc-agent-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.moc-stat-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.moc-stat-label {
+  color: #b8a68a;
+}
+
+.moc-stat-value {
+  font-weight: 700;
+  color: #e9d7b0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  #moc-agent-market {
+    padding: 10px;
+  }
+
+  .moc-agent-market-content h2 {
+    font-size: 14px;
+  }
+
+  .moc-agent-name {
+    font-size: 12px;
+  }
+
+  .moc-agent-metrics,
+  .moc-stat-item {
+    font-size: 11px;
+  }
+
+  .moc-filter-group select {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+}

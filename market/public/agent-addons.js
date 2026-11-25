@@ -1989,3 +1989,62 @@
   window.MyOffiCityAddons.addTool('Tangentbordsgenvägar', '⌨️', keyBindingsDiv);
   window.MyOffiCityAddons.register('Tangentbordsgenvägar');
 })();
+
+(() => {
+  // Skapa en interaktiv 3D-karta
+  const mapContainer = document.createElement('div');
+  mapContainer.style.position = 'fixed';
+  mapContainer.style.top = '10px';
+  mapContainer.style.right = '10px';
+  mapContainer.style.width = '200px';
+  mapContainer.style.height = '200px';
+  mapContainer.style.border = '1px solid #ccc';
+  mapContainer.style.borderRadius = '10px';
+  mapContainer.style.padding = '10px';
+  mapContainer.style.background = 'rgba(255, 255, 255, 0.5)';
+  mapContainer.style.zIndex = '1000';
+
+  const map = document.createElement('canvas');
+  map.width = 200;
+  map.height = 200;
+  map.style.border = '1px solid #ccc';
+  mapContainer.appendChild(map);
+
+  const ctx = map.getContext('2d');
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+  ctx.fillRect(0, 0, map.width, map.height);
+
+  // Lägg till platser på kartan
+  const places = [
+    { x: 50, y: 50, name: 'Receptionen' },
+    { x: 100, y: 100, name: 'Mötesrummet' },
+    { x: 150, y: 150, name: 'Kafeterian' },
+  ];
+
+  places.forEach((place) => {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.font = '12px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(place.name, place.x, place.y);
+  });
+
+  // Lägg till klickhändelse för navigering
+  map.addEventListener('click', (e) => {
+    const x = e.clientX - map.offsetLeft;
+    const y = e.clientY - map.offsetTop;
+    const place = places.find((p) => Math.hypot(p.x - x, p.y - y) < 20);
+    if (place) {
+      // Navigera till platsen
+      console.log(`Navigerar till ${place.name}`);
+      // Anropa funktion för att navigera till platsen
+    }
+  });
+
+  // Lägg till kartan till sidan
+  document.body.appendChild(mapContainer);
+
+  // Registrera kartan som ett verktyg
+  window.MyOffiCityAddons.addTool('3D-karta', '', mapContainer);
+  window.MyOffiCityAddons.register('3D-karta');
+})();

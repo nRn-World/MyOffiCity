@@ -1257,3 +1257,110 @@
   window.MyOffiCityAddons.addTool('3D-karta', '🗺️', cityMap);
   window.MyOffiCityAddons.register('Interaktiv 3D-karta');
 })();
+
+(() => {
+  // 3D Keyboard Navigation for City View
+  const setup3DKeyboardControls = () => {
+    if (!window.threeScene || !window.threeCamera) return;
+
+    const moveSpeed = 0.5;
+    const rotationSpeed = 0.02;
+
+    const keys = {
+      w: false,
+      a: false,
+      s: false,
+      d: false,
+      q: false,
+      e: false,
+      ArrowUp: false,
+      ArrowDown: false,
+      ArrowLeft: false,
+      ArrowRight: false
+    };
+
+    const handleKeyDown = (event) => {
+      if (keys.hasOwnProperty(event.key)) {
+        keys[event.key] = true;
+      }
+    };
+
+    const handleKeyUp = (event) => {
+      if (keys.hasOwnProperty(event.key)) {
+        keys[event.key] = false;
+      }
+    };
+
+    const updateCameraPosition = () => {
+      if (keys.w || keys.ArrowUp) {
+        window.threeCamera.position.z -= moveSpeed;
+      }
+      if (keys.s || keys.ArrowDown) {
+        window.threeCamera.position.z += moveSpeed;
+      }
+      if (keys.a || keys.ArrowLeft) {
+        window.threeCamera.position.x -= moveSpeed;
+      }
+      if (keys.d || keys.ArrowRight) {
+        window.threeCamera.position.x += moveSpeed;
+      }
+      if (keys.q) {
+        window.threeCamera.rotation.y += rotationSpeed;
+      }
+      if (keys.e) {
+        window.threeCamera.rotation.y -= rotationSpeed;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keyup', handleKeyUp);
+
+    // Create a tool card for the keyboard controls
+    const toolCard = document.createElement('div');
+    toolCard.className = 'moc-tool-card';
+
+    const toolTitle = document.createElement('h3');
+    toolTitle.className = 'moc-tool-title';
+    toolTitle.innerHTML = '⌨️ 3D Tangentbordsgenvägar';
+
+    const controlsInfo = document.createElement('div');
+    controlsInfo.innerHTML = `
+      <p><strong>Flytta:</strong> W/A/S/D eller Piltangenter</p>
+      <p><strong>Rotera:</strong> Q (vänster) / E (höger)</p>
+    `;
+
+    toolCard.appendChild(toolTitle);
+    toolCard.appendChild(controlsInfo);
+
+    // Add the tool card to the dock
+    if (window.MyOffiCityAddons) {
+      window.MyOffiCityAddons.addTool('3D Tangentbordsgenvägar', '⌨️', toolCard);
+      window.MyOffiCityAddons.register('3D Keyboard Controls');
+    }
+
+    // Animation loop for camera movement
+    const animate = () => {
+      requestAnimationFrame(animate);
+      updateCameraPosition();
+    };
+
+    animate();
+  };
+
+  // Initialize when the city view is ready
+  const init3DControls = () => {
+    const checkCityView = setInterval(() => {
+      if (window.threeScene && window.threeCamera) {
+        clearInterval(checkCityView);
+        setup3DKeyboardControls();
+      }
+    }, 500);
+  };
+
+  // Wait for the page to load
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    init3DControls();
+  } else {
+    document.addEventListener('DOMContentLoaded', init3DControls);
+  }
+})();

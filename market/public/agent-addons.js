@@ -790,3 +790,170 @@
   // Register city controls as a feature
   window.MyOffiCityAddons.register('3D-stadsinteraktion');
 })();
+
+(() => {
+  const agentMarket = {
+    data: {
+      popularAgents: [],
+      agentTrends: {},
+      agentStats: {}
+    },
+    init() {
+      this.fetchAgentData();
+      this.setupAgentMarketWidget();
+      this.setupAgentTrendsWidget();
+      this.setupAgentStatsWidget();
+      this.startDataRefresh();
+    },
+    fetchAgentData() {
+      // Simulate fetching agent data from an API
+      this.data.popularAgents = [
+        { name: 'Tomas', usage: 1200, rating: 4.9 },
+        { name: 'Ebba', usage: 950, rating: 4.8 },
+        { name: 'Kia', usage: 870, rating: 4.7 },
+        { name: 'Manus', usage: 780, rating: 4.6 },
+        { name: 'Laila', usage: 690, rating: 4.5 }
+      ];
+
+      this.data.agentTrends = {
+        daily: { Tomas: 120, Ebba: 95, Kia: 87, Manus: 78, Laila: 69 },
+        weekly: { Tomas: 840, Ebba: 665, Kia: 609, Manus: 546, Laila: 483 },
+        monthly: { Tomas: 3360, Ebba: 2660, Kia: 2430, Manus: 2184, Laila: 1932 }
+      };
+
+      this.data.agentStats = {
+        active: 5,
+        total: 25,
+        avgRating: 4.75,
+        avgUsage: 840
+      };
+
+      this.updateWidgets();
+    },
+    setupAgentMarketWidget() {
+      const marketWidget = document.createElement('div');
+      marketWidget.id = 'moc-agent-market';
+      marketWidget.className = 'moc-tool-card';
+      marketWidget.innerHTML = `
+        <div class="moc-tool-title">🤖 Populära AI-agenter</div>
+        <div class="moc-agent-market-content">
+          <div class="moc-agent-list" id="moc-agent-list"></div>
+          <div class="moc-agent-stats" id="moc-agent-stats"></div>
+        </div>
+      `;
+      window.MyOffiCityAddons.addTool('AI-agentmarknad', '🤖', marketWidget);
+    },
+    setupAgentTrendsWidget() {
+      const trendsWidget = document.createElement('div');
+      trendsWidget.id = 'moc-agent-trends';
+      trendsWidget.className = 'moc-tool-card';
+      trendsWidget.innerHTML = `
+        <div class="moc-tool-title">📈 Agenttrender</div>
+        <div class="moc-agent-trends-content">
+          <div class="moc-trend-periods">
+            <button class="moc-chip-btn on" data-period="daily">Daglig</button>
+            <button class="moc-chip-btn" data-period="weekly">Veckovis</button>
+            <button class="moc-chip-btn" data-period="monthly">Månatlig</button>
+          </div>
+          <div class="moc-trend-chart" id="moc-trend-chart"></div>
+        </div>
+      `;
+
+      trendsWidget.querySelectorAll('.moc-trend-periods button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          trendsWidget.querySelectorAll('.moc-trend-periods button').forEach(b => b.classList.remove('on'));
+          btn.classList.add('on');
+          this.updateTrendChart(btn.dataset.period);
+        });
+      });
+
+      window.MyOffiCityAddons.addTool('Agenttrender', '📈', trendsWidget);
+      this.updateTrendChart('daily');
+    },
+    setupAgentStatsWidget() {
+      const statsWidget = document.createElement('div');
+      statsWidget.id = 'moc-agent-stats';
+      statsWidget.className = 'moc-tool-card';
+      statsWidget.innerHTML = `
+        <div class="moc-tool-title">📊 Agentstatistik</div>
+        <div class="moc-agent-stats-content" id="moc-agent-stats-content"></div>
+      `;
+      window.MyOffiCityAddons.addTool('Agentstatistik', '📊', statsWidget);
+    },
+    updateWidgets() {
+      this.updateAgentList();
+      this.updateAgentStats();
+      this.updateTrendChart(document.querySelector('#moc-agent-trends .moc-chip-btn.on')?.dataset.period || 'daily');
+    },
+    updateAgentList() {
+      const listEl = document.getElementById('moc-agent-list');
+      if (!listEl) return;
+
+      listEl.innerHTML = '';
+      this.data.popularAgents.forEach(agent => {
+        const agentEl = document.createElement('div');
+        agentEl.className = 'moc-agent-item';
+        agentEl.innerHTML = `
+          <div class="moc-agent-name">${agent.name}</div>
+          <div class="moc-agent-metrics">
+            <span class="moc-agent-usage">Användning: ${agent.usage}</span>
+            <span class="moc-agent-rating">Betyg: ${agent.rating}</span>
+          </div>
+        `;
+        listEl.appendChild(agentEl);
+      });
+    },
+    updateAgentStats() {
+      const statsEl = document.getElementById('moc-agent-stats-content');
+      if (!statsEl) return;
+
+      statsEl.innerHTML = `
+        <div class="moc-stat-item">
+          <span class="moc-stat-label">Aktiva agenter:</span>
+          <span class="moc-stat-value">${this.data.agentStats.active}</span>
+        </div>
+        <div class="moc-stat-item">
+          <span class="moc-stat-label">Totala agenter:</span>
+          <span class="moc-stat-value">${this.data.agentStats.total}</span>
+        </div>
+        <div class="moc-stat-item">
+          <span class="moc-stat-label">Genomsnittligt betyg:</span>
+          <span class="moc-stat-value">${this.data.agentStats.avgRating}</span>
+        </div>
+        <div class="moc-stat-item">
+          <span class="moc-stat-label">Genomsnittlig användning:</span>
+          <span class="moc-stat-value">${this.data.agentStats.avgUsage}</span>
+        </div>
+      `;
+    },
+    updateTrendChart(period) {
+      const chartEl = document.getElementById('moc-trend-chart');
+      if (!chartEl) return;
+
+      chartEl.innerHTML = '';
+      const trends = this.data.agentTrends[period] || {};
+
+      Object.entries(trends).forEach(([agent, value]) => {
+        const bar = document.createElement('div');
+        bar.className = 'moc-trend-bar';
+        bar.style.width = `${(value / Math.max(...Object.values(trends))) * 100}%`;
+        bar.innerHTML = `
+          <span class="moc-trend-agent">${agent}</span>
+          <span class="moc-trend-value">${value}</span>
+        `;
+        chartEl.appendChild(bar);
+      });
+    },
+    startDataRefresh() {
+      setInterval(() => {
+        this.fetchAgentData();
+      }, 30000); // Refresh data every 30 seconds
+    }
+  };
+
+  // Initialize agent market
+  agentMarket.init();
+
+  // Register agent market as a feature
+  window.MyOffiCityAddons.register('AI-agentmarknad');
+})();

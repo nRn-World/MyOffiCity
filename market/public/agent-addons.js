@@ -1364,3 +1364,114 @@
     document.addEventListener('DOMContentLoaded', init3DControls);
   }
 })();
+
+(() => {
+  // AI Agent Market Widget
+  const createAgentMarketWidget = () => {
+    const widget = document.createElement('div');
+    widget.id = 'moc-agent-market';
+    widget.innerHTML = `
+      <div class="moc-agent-market-content">
+        <h2>AI Agent Market</h2>
+        <div class="moc-agent-list">
+          <!-- Agent items will be added here dynamically -->
+        </div>
+      </div>
+    `;
+
+    // Fetch and display popular agents
+    const fetchPopularAgents = async () => {
+      try {
+        // In a real implementation, this would fetch from your API
+        const mockAgents = [
+          { id: 1, name: 'DesignGuru', category: 'Design', rating: 4.8, users: 1245, active: 98 },
+          { id: 2, name: 'CodeMaster', category: 'Development', rating: 4.7, users: 1123, active: 87 },
+          { id: 3, name: 'ContentPro', category: 'Content', rating: 4.6, users: 987, active: 76 },
+          { id: 4, name: 'SEOExpert', category: 'Marketing', rating: 4.5, users: 876, active: 65 },
+          { id: 5, name: 'TechSupport', category: 'Support', rating: 4.4, users: 765, active: 54 }
+        ];
+
+        const agentList = widget.querySelector('.moc-agent-list');
+        agentList.innerHTML = '';
+
+        mockAgents.forEach(agent => {
+          const agentItem = document.createElement('div');
+          agentItem.className = 'moc-agent-item';
+          agentItem.innerHTML = `
+            <div class="moc-agent-name">${agent.name}</div>
+            <div class="moc-agent-metrics">
+              <div class="moc-agent-stats">
+                <div class="moc-stat-item">
+                  <span class="moc-stat-label">Category:</span>
+                  <span class="moc-stat-value">${agent.category}</span>
+                </div>
+                <div class="moc-stat-item">
+                  <span class="moc-stat-label">Rating:</span>
+                  <span class="moc-stat-value">${agent.rating} ★</span>
+                </div>
+              </div>
+              <div class="moc-agent-stats">
+                <div class="moc-stat-item">
+                  <span class="moc-stat-label">Users:</span>
+                  <span class="moc-stat-value">${agent.users}</span>
+                </div>
+                <div class="moc-stat-item">
+                  <span class="moc-stat-label">Active:</span>
+                  <span class="moc-stat-value">${agent.active}</span>
+                </div>
+              </div>
+            </div>
+            <div class="moc-chip-row">
+              <button class="moc-chip-btn" data-action="chat">Chat</button>
+              <button class="moc-chip-btn" data-action="hire">Hire</button>
+              <button class="moc-chip-btn" data-action="review">Review</button>
+            </div>
+          `;
+
+          // Add event listeners for quick actions
+          const chatBtn = agentItem.querySelector('[data-action="chat"]');
+          const hireBtn = agentItem.querySelector('[data-action="hire"]');
+          const reviewBtn = agentItem.querySelector('[data-action="review"]');
+
+          chatBtn.addEventListener('click', () => {
+            console.log(`Starting chat with ${agent.name}`);
+            // Implement chat functionality
+          });
+
+          hireBtn.addEventListener('click', () => {
+            console.log(`Hiring ${agent.name}`);
+            // Implement hiring functionality
+          });
+
+          reviewBtn.addEventListener('click', () => {
+            console.log(`Reviewing ${agent.name}`);
+            // Implement review functionality
+          });
+
+          agentList.appendChild(agentItem);
+        });
+      } catch (error) {
+        console.error('Error fetching popular agents:', error);
+      }
+    };
+
+    fetchPopularAgents();
+
+    // Refresh button
+    const refreshBtn = document.createElement('button');
+    refreshBtn.className = 'moc-chip-btn';
+    refreshBtn.textContent = 'Refresh Agents';
+    refreshBtn.addEventListener('click', fetchPopularAgents);
+
+    widget.querySelector('.moc-agent-market-content').appendChild(refreshBtn);
+
+    return widget;
+  };
+
+  // Register the widget with MyOffiCityAddons
+  if (window.MyOffiCityAddons) {
+    const agentMarketWidget = createAgentMarketWidget();
+    window.MyOffiCityAddons.addTool('AI Agent Market', '🤖', agentMarketWidget);
+    window.MyOffiCityAddons.register('AI Agent Market Widget');
+  }
+})();

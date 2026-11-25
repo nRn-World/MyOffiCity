@@ -1544,3 +1544,64 @@
   window.MyOffiCityAddons.register('Theme Controls');
   initThemeControls();
 })();
+
+(() => {
+  // Kontorshanteringswidget
+  const officeManagementWidget = () => {
+    const widget = document.createElement('div');
+    widget.id = 'moc-office-dashboard';
+    widget.innerHTML = `
+      <div class="moc-office-content">
+        <div class="moc-office-section">
+          <h3>Kontorsinställningar</h3>
+          <form class="moc-settings-form">
+            <div class="moc-form-group">
+              <label for="office-name">Kontorsnamn</label>
+              <input type="text" id="office-name" name="office-name" placeholder="Ditt kontorsnamn">
+            </div>
+            <div class="moc-form-group">
+              <label for="office-address">Adress</label>
+              <input type="text" id="office-address" name="office-address" placeholder="Kontorsadress">
+            </div>
+            <div class="moc-form-group">
+              <label for="office-capacity">Kapacitet</label>
+              <input type="number" id="office-capacity" name="office-capacity" placeholder="Antal platser">
+            </div>
+            <div class="moc-form-group">
+              <label for="office-type">Kontorstyp</label>
+              <select id="office-type" name="office-type">
+                <option value="standard">Standard</option>
+                <option value="premium">Premium</option>
+                <option value="virtual">Virtuellt</option>
+              </select>
+            </div>
+            <button type="button" id="save-settings" class="moc-chip-btn">Spara inställningar</button>
+          </form>
+        </div>
+        <div class="moc-office-section">
+          <h3>Bokningar</h3>
+          <div id="bookings-list">
+            <!-- Bokningar kommer att visas här -->
+          </div>
+        </div>
+        <div class="moc-office-section">
+          <h3>Möten</h3>
+          <div id="meetings-list">
+            <!-- Möten kommer att visas här -->
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Lägg till händelselyssnare för knappen
+    widget.querySelector('#save-settings').addEventListener('click', () => {
+      alert('Inställningar sparade!');
+    });
+
+    return widget;
+  };
+
+  // Lägg till widgeten i verktygsdockan
+  window.MyOffiCityAddons.addTool('Kontorshantering', '🏢', officeManagementWidget());
+  window.MyOffiCityAddons.register('Office Management Widget');
+})();

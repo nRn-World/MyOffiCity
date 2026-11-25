@@ -1190,3 +1190,70 @@
   // Register office manager as a feature
   window.MyOffiCityAddons.register('Kontorshantering');
 })();
+
+(() => {
+  // Interaktiv 3D-karta för navigering
+  const createCityMap = () => {
+    const mapContainer = document.createElement('div');
+    mapContainer.id = 'moc-city-map';
+    mapContainer.innerHTML = `
+      <div class="moc-map-content">
+        <div class="moc-map-controls">
+          <button id="zoom-in" class="moc-chip-btn">+</button>
+          <button id="zoom-out" class="moc-chip-btn">-</button>
+          <button id="reset-view" class="moc-chip-btn">Återställ</button>
+        </div>
+      </div>
+    `;
+
+    // Skapa markörer för olika platser
+    const locations = [
+      { name: 'Huvudkontoret', x: 30, y: 50 },
+      { name: 'Kaféet', x: 50, y: 30 },
+      { name: 'Parkeringen', x: 70, y: 70 },
+      { name: 'Biblioteket', x: 20, y: 20 }
+    ];
+
+    locations.forEach(location => {
+      const marker = document.createElement('div');
+      marker.className = 'moc-map-marker';
+      marker.style.left = `${location.x}%`;
+      marker.style.top = `${location.y}%`;
+      marker.title = location.name;
+      marker.addEventListener('click', () => {
+        alert(`Navigerar till ${location.name}`);
+        // Här skulle du implementera den faktiska navigeringen
+      });
+      mapContainer.querySelector('.moc-map-content').appendChild(marker);
+    });
+
+    // Hantera zoom och återställning
+    const zoomInBtn = mapContainer.querySelector('#zoom-in');
+    const zoomOutBtn = mapContainer.querySelector('#zoom-out');
+    const resetBtn = mapContainer.querySelector('#reset-view');
+
+    let zoomLevel = 1;
+
+    zoomInBtn.addEventListener('click', () => {
+      zoomLevel = Math.min(zoomLevel + 0.2, 2);
+      mapContainer.style.transform = `scale(${zoomLevel})`;
+    });
+
+    zoomOutBtn.addEventListener('click', () => {
+      zoomLevel = Math.max(zoomLevel - 0.2, 0.5);
+      mapContainer.style.transform = `scale(${zoomLevel})`;
+    });
+
+    resetBtn.addEventListener('click', () => {
+      zoomLevel = 1;
+      mapContainer.style.transform = 'scale(1)';
+    });
+
+    return mapContainer;
+  };
+
+  // Lägg till kartan som ett verktyg
+  const cityMap = createCityMap();
+  window.MyOffiCityAddons.addTool('3D-karta', '🗺️', cityMap);
+  window.MyOffiCityAddons.register('Interaktiv 3D-karta');
+})();

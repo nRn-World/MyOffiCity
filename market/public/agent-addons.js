@@ -1042,3 +1042,151 @@
   // Register theme manager as a feature
   window.MyOffiCityAddons.register('Teman');
 })();
+
+(() => {
+  const officeManager = {
+    init() {
+      this.setupOfficeDashboard();
+      this.setupBookingSystem();
+      this.setupMessageCenter();
+    },
+    setupOfficeDashboard() {
+      const dashboard = document.createElement('div');
+      dashboard.id = 'moc-office-dashboard';
+      dashboard.className = 'moc-tool-card';
+      dashboard.innerHTML = `
+        <div class="moc-tool-title">🏢 Kontorshantering</div>
+        <div class="moc-office-content">
+          <div class="moc-office-section">
+            <h3>Kontorsinställningar</h3>
+            <div class="moc-settings-form">
+              <div class="moc-form-group">
+                <label for="office-name">Kontorsnamn</label>
+                <input type="text" id="office-name" placeholder="Ditt kontorsnamn">
+              </div>
+              <div class="moc-form-group">
+                <label for="office-type">Kontorstyp</label>
+                <select id="office-type">
+                  <option value="startup">Startup Loft</option>
+                  <option value="modern">Modern Tech Hub</option>
+                  <option value="executive">Executive HQ</option>
+                </select>
+              </div>
+              <div class="moc-form-group">
+                <label for="logo-type">Logotypform</label>
+                <select id="logo-type">
+                  <option value="round">Rund</option>
+                  <option value="triangle">Triangel</option>
+                  <option value="square">Fyrkantig</option>
+                </select>
+              </div>
+              <button id="save-settings" class="moc-chip-btn">Spara inställningar</button>
+            </div>
+          </div>
+          <div class="moc-office-section">
+            <h3>Bokningar</h3>
+            <div id="moc-bookings-list"></div>
+          </div>
+          <div class="moc-office-section">
+            <h3>Meddelanden</h3>
+            <div id="moc-messages-list"></div>
+          </div>
+        </div>
+      `;
+
+      // Add event listeners for settings form
+      dashboard.querySelector('#save-settings').addEventListener('click', () => {
+        const name = dashboard.querySelector('#office-name').value;
+        const type = dashboard.querySelector('#office-type').value;
+        const logo = dashboard.querySelector('#logo-type').value;
+        this.saveOfficeSettings(name, type, logo);
+      });
+
+      window.MyOffiCityAddons.addTool('Kontorshantering', '🏢', dashboard);
+      this.loadOfficeSettings(dashboard);
+      this.loadBookings(dashboard);
+      this.loadMessages(dashboard);
+    },
+    saveOfficeSettings(name, type, logo) {
+      // In a real implementation, this would save to a database
+      console.log('Saving office settings:', { name, type, logo });
+      alert(`Kontorsinställningar sparade!\nNamn: ${name}\nTyp: ${type}\nLogotyp: ${logo}`);
+    },
+    loadOfficeSettings(dashboard) {
+      // In a real implementation, this would load from a database
+      dashboard.querySelector('#office-name').value = 'Mitt kontor';
+      dashboard.querySelector('#office-type').value = 'modern';
+      dashboard.querySelector('#logo-type').value = 'round';
+    },
+    setupBookingSystem() {
+      // This would be connected to a real booking system in a production environment
+      setInterval(() => {
+        const dashboard = document.getElementById('moc-office-dashboard');
+        if (dashboard) {
+          this.loadBookings(dashboard);
+        }
+      }, 30000); // Update bookings every 30 seconds
+    },
+    loadBookings(dashboard) {
+      const bookingsList = dashboard.querySelector('#moc-bookings-list');
+      if (!bookingsList) return;
+
+      // In a real implementation, this would fetch from a database
+      const mockBookings = [
+        { id: 1, title: 'Möte med Kund A', date: '2023-11-15', time: '10:00-11:00' },
+        { id: 2, title: 'Teammöte', date: '2023-11-16', time: '14:00-15:00' },
+        { id: 3, title: 'Kundpresentation', date: '2023-11-17', time: '09:00-10:30' }
+      ];
+
+      bookingsList.innerHTML = '';
+      mockBookings.forEach(booking => {
+        const bookingEl = document.createElement('div');
+        bookingEl.className = 'moc-booking-item';
+        bookingEl.innerHTML = `
+          <h4>${booking.title}</h4>
+          <p>Datum: ${booking.date}</p>
+          <p>Tid: ${booking.time}</p>
+        `;
+        bookingsList.appendChild(bookingEl);
+      });
+    },
+    setupMessageCenter() {
+      // This would be connected to a real messaging system in a production environment
+      setInterval(() => {
+        const dashboard = document.getElementById('moc-office-dashboard');
+        if (dashboard) {
+          this.loadMessages(dashboard);
+        }
+      }, 60000); // Update messages every 60 seconds
+    },
+    loadMessages(dashboard) {
+      const messagesList = dashboard.querySelector('#moc-messages-list');
+      if (!messagesList) return;
+
+      // In a real implementation, this would fetch from a database
+      const mockMessages = [
+        { id: 1, sender: 'Kund A', subject: 'Förfrågan om offert', date: '2023-11-14', read: true },
+        { id: 2, sender: 'Team', subject: 'Mötesminuter', date: '2023-11-13', read: false },
+        { id: 3, sender: 'System', subject: 'Kontosaldot uppdaterat', date: '2023-11-12', read: true }
+      ];
+
+      messagesList.innerHTML = '';
+      mockMessages.forEach(message => {
+        const messageEl = document.createElement('div');
+        messageEl.className = `moc-message-item ${message.read ? '' : 'unread'}`;
+        messageEl.innerHTML = `
+          <h4>${message.subject}</h4>
+          <p>Från: ${message.sender}</p>
+          <p>Datum: ${message.date}</p>
+        `;
+        messagesList.appendChild(messageEl);
+      });
+    }
+  };
+
+  // Initialize office manager
+  officeManager.init();
+
+  // Register office manager as a feature
+  window.MyOffiCityAddons.register('Kontorshantering');
+})();

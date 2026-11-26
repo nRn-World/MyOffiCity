@@ -2087,7 +2087,7 @@ async function runSprintStep(env, sprint) {
       if (totalCtxChars >= 12000) break;
       try {
         const f = await ghApi(sprint.gh_token, `/repos/${sprint.repo}/contents/${encodeURIComponent(item.p).replace(/%2F/g, '/')}?ref=${encodeURIComponent(sprint.work_branch)}`);
-        if (f && f.content && f.size < 60000) {
+        if (f && f.content && (item.p.includes('agent-addons.') ? f.size < 350000 : f.size < 60000)) {
           const decoded = b64DecodeUtf8(f.content);
           let snippet;
           if (item.p.includes('agent-addons.') && decoded.length > 4200) {

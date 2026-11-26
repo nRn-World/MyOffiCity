@@ -1727,3 +1727,96 @@ body.moc-font-dyslexic {
   border-radius: 4px;
   background: rgba(217, 180, 106, 0.2);
 }
+
+/* Integration Hub Styles */
+.moc-integration-hub {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 300px;
+  color: #f3ecdc;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.moc-int-section {
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid rgba(217, 180, 106, 0.2);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.moc-int-header {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #d9b46a;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.moc-int-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.moc-int-item {
+  background: rgba(217, 180, 106, 0.08);
+  border: 1px solid rgba(217, 180, 106, 0.15);
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  color: inherit;
+}
+
+.moc-int-item:hover {
+  background: rgba(217, 180, 106, 0.15);
+  border-color: #d9b46a;
+  transform: translateY(-2px);
+}
+
+.moc-int-icon {
+  font-size: 20px;
+}
+
+.moc-int-label {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.moc-int-status {
+  font-size: 9px;
+  opacity: 0.6;
+}
+
+.moc-int-sync-btn {
+  width: 100%;
+  padding: 8px;
+  background: #d9b46a;
+  color: #0f172a;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: opacity 0.2s;
+}
+
+.moc-int-sync-btn:hover {
+  opacity: 0.9;
+}
+
+.moc-int-sync-btn:disabled {
+  background: #444;
+  color: #888;
+  cursor: not-allowed;
+}

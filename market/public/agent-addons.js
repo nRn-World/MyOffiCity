@@ -188,3 +188,36 @@
 })();
 
 /* === APPEND NEW AGENT JS MODULES BELOW THIS LINE === */
+
+(() => {
+  try {
+    const glassModule = {
+      id: 'moc-glass-polish',
+      name: 'Glassmorphism Polish',
+      init() {
+        const container = document.createElement('div');
+        container.className = 'moc-chip-row';
+
+        const toggleBtn = document.createElement('button');
+        toggleBtn.className = 'moc-chip-btn on';
+        toggleBtn.innerHTML = '✨ Glass Mode: På';
+        
+        let enabled = true;
+        toggleBtn.onclick = () => {
+          enabled = !enabled;
+          document.body.classList.toggle('moc-no-glass', !enabled);
+          toggleBtn.innerHTML = enabled ? '✨ Glass Mode: På' : '🌑 Glass Mode: Av';
+          toggleBtn.classList.toggle('on', enabled);
+        };
+
+        container.appendChild(toggleBtn);
+        window.MyOffiCityAddons.addTool('Design-puts', '💎', container);
+        window.MyOffiCityAddons.register(this.name);
+      }
+    };
+
+    glassModule.init();
+  } catch (e) {
+    console.error('Glassmorphism addon error:', e);
+  }
+})();

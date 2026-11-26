@@ -204,3 +204,46 @@ html.moc-theme-warm {
 }
 
 /* === APPEND NEW AGENT CSS UPGRADES BELOW THIS LINE === */
+
+/* Glassmorphism & Depth Polish */
+:root {
+  --glass-bg: rgba(15, 23, 42, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-blur: blur(12px) saturate(160%);
+}
+
+body:not(.moc-no-glass) .dsb,
+body:not(.moc-no-glass) .tc-box,
+body:not(.moc-no-glass) .bar,
+body:not(.moc-no-glass) .cards > div {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur) !important;
+  -webkit-backdrop-filter: var(--glass-blur) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+body:not(.moc-no-glass) .cards > div:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.4) !important;
+  border-color: rgba(217, 180, 106, 0.3) !important;
+}
+
+/* Specific polish for dashboard sidebar */
+body:not(.moc-no-glass) .dsb {
+  border-right: 1px solid var(--glass-border) !important;
+  border-left: none !important;
+}
+
+/* Enhance readability of stats inside glass cards */
+body:not(.moc-no-glass) .cards div h3, 
+body:not(.moc-no-glass) .cards div b {
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  letter-spacing: 0.02em;
+}
+
+/* Smooth transition when toggling */
+.dsb, .tc-box, .bar, .cards > div {
+  transition: background 0.3s ease, backdrop-filter 0.3s ease;
+}

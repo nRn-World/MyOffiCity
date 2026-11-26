@@ -1549,3 +1549,41 @@ body.moc-font-dyslexic {
 .moc-read-text-button:hover {
   background-color: #3ab373;
 }
+
+@media (max-width: 768px) {
+  /* Adjustments for mobile devices */
+  .moc-scroll-top {
+    right: 10px;
+    bottom: 10px;
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+
+  .moc-dock-btn {
+    left: 10px;
+    bottom: 10px;
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .moc-dock {
+    width: 250px;
+    max-height: 70vh;
+  }
+
+  .moc-notification {
+    padding: 8px;
+  }
+
+  .moc-notification button {
+    font-size: 12px;
+  }
+
+  .moc-read-text-button {
+    bottom: 10px;
+    right: 10px;
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+}

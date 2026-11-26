@@ -2149,7 +2149,7 @@ Rules:
       },
       {
         role: 'user',
-        content: `Sprint goal: ${sprint.goal}\nTask #${task.seq}: ${task.title}\nDetails: ${task.details}${prevFeedback}\n\nRepo files:\n${treePaths.join('\n') || '(empty)'}\n\nRelevant existing files:\n${fileCtx.join('\n\n') || '(none)'}`,
+        content: `Sprint goal: ${sprint.goal}\nTask #${task.seq}: ${task.title}\nDetails: ${task.details}${prevFeedback}\n\nRepo files:\n${treePaths.join('\n') || '(empty)'}\n\nReference context (existing code snippets — do NOT summarize them):\n${fileCtx.join('\n\n') || '(none)'}\n\n=== YOUR TURN — WRITE THE CODE NOW ===\nDo NOT summarize or explain the existing code above. Output ONLY the required format starting on line 1 with:\nSUMMARY: <kort svensk sammanfattning>\nCOMMIT: <kort commit-meddelande>\n${hasAddons ? '===APPEND: market/public/agent-addons.js===\n(your new self-contained (() => { ... })(); module calling window.MyOffiCityAddons.addTool(...))\n===END===\n===APPEND: market/public/agent-addons.css===\n(your new CSS rules)\n===END===' : '===PATCH: <exact/path/from/repo>===\n<<<FIND\n...\n===REPLACE\n...\n>>>END\n===END==='}`,
       },
     ], 2400, workerTier);
 

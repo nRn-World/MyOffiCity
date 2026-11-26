@@ -1587,3 +1587,35 @@ body.moc-font-dyslexic {
     font-size: 14px;
   }
 }
+
+#moc-calendar {
+  font-family: Arial, sans-serif;
+}
+
+#moc-calendar button {
+  background: none;
+  border: none;
+  color: #d9b46a;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+#moc-calendar button:hover {
+  color: #f3ecdc;
+}
+
+#moc-calendar div {
+  text-align: center;
+}
+
+#moc-calendar .day-cell {
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+#moc-calendar .day-cell:hover {
+  background: rgba(217, 180, 106, 0.2);
+}

@@ -2397,3 +2397,129 @@
 
   window.MyOffiCityAddons.register('Mobilanpassning');
 })();
+
+(() => {
+  const calendarContainer = document.createElement('div');
+  calendarContainer.id = 'moc-calendar';
+  calendarContainer.style.position = 'fixed';
+  calendarContainer.style.right = '22px';
+  calendarContainer.style.bottom = '140px';
+  calendarContainer.style.zIndex = '950';
+  calendarContainer.style.width = '300px';
+  calendarContainer.style.height = '400px';
+  calendarContainer.style.backgroundColor = 'rgba(15, 23, 42, 0.88)';
+  calendarContainer.style.color = '#f3ecdc';
+  calendarContainer.style.borderRadius = '10px';
+  calendarContainer.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.32)';
+  calendarContainer.style.backdropFilter = 'blur(8px)';
+  calendarContainer.style.padding = '10px';
+  calendarContainer.style.display = 'none';
+
+  const calendarHeader = document.createElement('div');
+  calendarHeader.style.display = 'flex';
+  calendarHeader.style.justifyContent = 'space-between';
+  calendarHeader.style.alignItems = 'center';
+  calendarHeader.style.marginBottom = '10px';
+
+  const monthYearDisplay = document.createElement('span');
+  const prevButton = document.createElement('button');
+  prevButton.textContent = '<';
+  const nextButton = document.createElement('button');
+  nextButton.textContent = '>';
+
+  calendarHeader.appendChild(prevButton);
+  calendarHeader.appendChild(monthYearDisplay);
+  calendarHeader.appendChild(nextButton);
+
+  const calendarGrid = document.createElement('div');
+  calendarGrid.style.display = 'grid';
+  calendarGrid.style.gridTemplateColumns = 'repeat(7, 1fr)';
+  calendarGrid.style.gap = '5px';
+
+  const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  daysOfWeek.forEach(day => {
+    const dayLabel = document.createElement('div');
+    dayLabel.style.textAlign = 'center';
+    dayLabel.style.fontWeight = 'bold';
+    dayLabel.textContent = day;
+    calendarGrid.appendChild(dayLabel);
+  });
+
+  let currentDate = new Date();
+  function renderCalendar() {
+    calendarGrid.innerHTML = '';
+    daysOfWeek.forEach(day => {
+      const dayLabel = document.createElement('div');
+      dayLabel.style.textAlign = 'center';
+      dayLabel.style.fontWeight = 'bold';
+      dayLabel.textContent = day;
+      calendarGrid.appendChild(dayLabel);
+    });
+
+    const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
+    const lastDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+
+    for (let i = 0; i < firstDay; i++) {
+      const emptyCell = document.createElement('div');
+      calendarGrid.appendChild(emptyCell);
+    }
+
+    for (let date = 1; date <= lastDate; date++) {
+      const dateCell = document.createElement('div');
+      dateCell.style.textAlign = 'center';
+      dateCell.style.cursor = 'pointer';
+      dateCell.textContent = date;
+
+      dateCell.addEventListener('click', () => {
+        alert(`Book meeting for ${date}/${currentDate.getMonth() + 1}/${currentDate.getFullYear()}`);
+      });
+
+      calendarGrid.appendChild(dateCell);
+    }
+
+    monthYearDisplay.textContent = `${currentDate.toLocaleString('default', { month: 'long' })} ${currentDate.getFullYear()}`;
+  }
+
+  prevButton.addEventListener('click', () => {
+    currentDate.setMonth(currentDate.getMonth() - 1);
+    renderCalendar();
+  });
+
+  nextButton.addEventListener('click', () => {
+    currentDate.setMonth(currentDate.getMonth() + 1);
+    renderCalendar();
+  });
+
+  calendarContainer.appendChild(calendarHeader);
+  calendarContainer.appendChild(calendarGrid);
+
+  document.body.appendChild(calendarContainer);
+
+  const toggleButton = document.createElement('button');
+  toggleButton.className = 'moc-dock-btn';
+  toggleButton.textContent = 'Kalender';
+  toggleButton.style.backgroundColor = 'rgba(12, 18, 34, 0.92)';
+  toggleButton.style.color = '#f3ecdc';
+  toggleButton.style.border = '1px solid rgba(217, 180, 106, 0.48)';
+  toggleButton.style.boxShadow = '0 10px 28px rgba(0, 0, 0, 0.42)';
+  toggleButton.style.backdropFilter = 'blur(10px)';
+  toggleButton.style.transition = 'transform 0.18s ease, border-color 0.18s ease, background 0.18s ease';
+  toggleButton.style.left = '18px';
+  toggleButton.style.bottom = '18px';
+  toggleButton.style.zIndex = '940';
+
+  toggleButton.addEventListener('click', () => {
+    if (calendarContainer.style.display === 'none') {
+      calendarContainer.style.display = 'block';
+    } else {
+      calendarContainer.style.display = 'none';
+    }
+  });
+
+  document.body.appendChild(toggleButton);
+
+  renderCalendar();
+
+  window.MyOffiCityAddons.addTool('Kalender', '📅', toggleButton);
+  window.MyOffiCityAddons.register('Kalenderfunktion för Kontorsbokningar');
+})();

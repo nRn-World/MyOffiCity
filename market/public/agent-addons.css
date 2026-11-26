@@ -309,3 +309,26 @@ body.moc-compact-ui .cards > div { padding: 12px !important; }
     font-size: 12px;
   }
 }
+
+.moc-chip-btn {
+  background: rgba(217, 180, 106, 0.1);
+  border: 1px solid rgba(217, 180, 106, 0.3);
+  color: #f3ecdc;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.moc-chip-btn:hover {
+  background: rgba(217, 180, 106, 0.2);
+}
+.moc-tool-card {
+  margin-bottom: 15px;
+  padding: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.moc-tool-title {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #d9b46a;
+}

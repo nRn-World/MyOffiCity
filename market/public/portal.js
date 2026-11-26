@@ -1247,7 +1247,13 @@
       renderThreads(); render(); ta.focus();
     };
     const deleteThread = (id) => {
+      const victim = threads.find((x) => x.id === id);
+      const spId = victim && victim.sprintId ? victim.sprintId : '';
       threads = threads.filter((x) => x.id !== id);
+      if (spId && !threads.some((x) => x.sprintId === spId)) {
+        sprints = sprints.filter((s) => s.id !== spId);
+        api('DELETE', '/sprints/' + spId).catch(() => { /* */ });
+      }
       if (!threads.length) threads = [mkThread()];
       if (activeId === id) activeId = threads[0].id;
       saveThreads(); renderThreads(); render(); ta.focus();

@@ -247,3 +247,65 @@ body:not(.moc-no-glass) .cards div b {
 .dsb, .tc-box, .bar, .cards > div {
   transition: background 0.3s ease, backdrop-filter 0.3s ease;
 }
+
+/* Custom Scrollbar Polish */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.05); }
+::-webkit-scrollbar-thumb { background: rgba(217, 180, 106, 0.25); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(217, 180, 106, 0.45); }
+
+/* Typography & Global Smoothing */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Cinematic Mode Overlay */
+body.moc-cinematic::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle, transparent 30%, rgba(0,0,0,0.5) 100%);
+  z-index: 9999;
+  animation: mocFadeIn 1s ease-out;
+}
+
+@keyframes mocFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* High Contrast Mode */
+body.moc-high-contrast {
+  --glass-bg: rgba(0, 0, 0, 0.92);
+  --glass-border: #d9b46a;
+}
+body.moc-high-contrast .cards > div {
+  border-width: 2px !important;
+  box-shadow: 0 0 15px rgba(217, 180, 106, 0.15) !important;
+}
+
+/* Compact UI Mode */
+body.moc-compact-ui .cards { gap: 10px !important; }
+body.moc-compact-ui .cards > div { padding: 12px !important; }
+
+/* Mobile Responsiveness Fixes */
+@media (max-width: 768px) {
+  .cards {
+    grid-template-columns: 1fr !important;
+    padding: 12px !important;
+    gap: 16px !important;
+  }
+  .dsb {
+    width: 100% !important;
+    max-width: 280px;
+  }
+  .moc-dock-btn {
+    bottom: 12px;
+    left: 12px;
+    padding: 7px 12px;
+    font-size: 12px;
+  }
+}

@@ -266,3 +266,58 @@
     console.error('UI Enhancer error:', e);
   }
 })();
+
+(() => {
+  try {
+    const container = document.createElement('div');
+    container.style.padding = '10px';
+    container.style.textAlign = 'center';
+
+    const display = document.createElement('div');
+    display.style.fontSize = '24px';
+    display.style.fontWeight = 'bold';
+    display.style.marginBottom = '10px';
+    display.style.color = '#d9b46a';
+    display.textContent = '25:00';
+
+    const btn = document.createElement('button');
+    btn.className = 'moc-chip-btn';
+    btn.style.width = '100%';
+    btn.textContent = 'Starta fokus-session';
+    
+    let timeLeft = 1500;
+    let timer = null;
+
+    btn.onclick = () => {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+        btn.textContent = 'Starta fokus-session';
+        timeLeft = 1500;
+        display.textContent = '25:00';
+      } else {
+        btn.textContent = 'Stoppa';
+        timer = setInterval(() => {
+          timeLeft--;
+          const m = Math.floor(timeLeft / 60);
+          const s = timeLeft % 60;
+          display.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+          if (timeLeft <= 0) {
+            clearInterval(timer);
+            alert('Fokus-sessionen är slut! Ta en paus.');
+            btn.textContent = 'Starta fokus-session';
+            timeLeft = 1500;
+          }
+        }, 1000);
+      }
+    };
+
+    container.appendChild(display);
+    container.appendChild(btn);
+
+    window.MyOffiCityAddons.addTool('Fokus-timer', '⏱️', container);
+    window.MyOffiCityAddons.register('Fokus-timer');
+  } catch (e) {
+    console.error('Timer addon error:', e);
+  }
+})();

@@ -2622,3 +2622,77 @@
     OfficeStatsWidget.init();
   }
 })();
+
+(() => {
+  /**
+   * Integration Hub Module
+   * Provides quick access and status for external productivity tools.
+   */
+  const createIntegrationHub = () => {
+    const container = document.createElement('div');
+    container.className = 'moc-integration-hub';
+
+    const integrations = [
+      { id: 'gcal', name: 'Google Calendar', icon: '📅', url: 'https://calendar.google.com', status: 'Redo' },
+      { id: 'outlook', name: 'Outlook', icon: '📧', url: 'https://outlook.live.com', status: 'Anslut' },
+      { id: 'slack', name: 'Slack', icon: '💬', url: 'https://slack.com', status: 'Ansluten' },
+      { id: 'trello', name: 'Trello', icon: '📋', url: 'https://trello.com', status: 'Redo' }
+    ];
+
+    container.innerHTML = `
+      <div class="moc-int-section">
+        <div class="moc-int-header">
+          <span>Externa Verktyg</span>
+          <span style="font-size: 14px">⚡</span>
+        </div>
+        <div class="moc-int-grid">
+          ${integrations.map(int => `
+            <a href="${int.url}" target="_blank" class="moc-int-item" data-id="${int.id}">
+              <span class="moc-int-icon">${int.icon}</span>
+              <span class="moc-int-label">${int.name}</span>
+              <span class="moc-int-status">${int.status}</span>
+            </a>
+          `).join('')}
+        </div>
+      </div>
+
+      <div class="moc-int-section">
+        <div class="moc-int-header">Snabbåtgärder</div>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <button class="moc-int-sync-btn" id="moc-sync-all">Synkronisera allt</button>
+          <div id="moc-sync-status" style="font-size: 10px; text-align: center; margin-top: 4px; opacity: 0.7; display: none;">
+            Synkroniserar med molnet...
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Logic for Sync Button
+    const syncBtn = container.querySelector('#moc-sync-all');
+    const syncStatus = container.querySelector('#moc-sync-status');
+
+    syncBtn.addEventListener('click', () => {
+      syncBtn.disabled = true;
+      syncBtn.textContent = 'Arbetar...';
+      syncStatus.style.display = 'block';
+
+      // Simulate API calls to external services
+      setTimeout(() => {
+        syncBtn.disabled = false;
+        syncBtn.textContent = 'Synkronisera allt';
+        syncStatus.textContent = '✅ Allt är uppdaterat!';
+        
+        setTimeout(() => {
+          syncStatus.style.display = 'none';
+          syncStatus.textContent = 'Synkroniserar med molnet...';
+        }, 3000);
+      }, 2000);
+    });
+
+    return container;
+  };
+
+  // Register the tool
+  if (window.MyOffiCityAddons) {
+    window.MyOffiCityAddons.addTool('Integrationer', '⚡', createIntegrationHub());
+    window.MyOffiCityAddons.register('External

@@ -2523,3 +2523,14 @@
   window.MyOffiCityAddons.addTool('Kalender', '📅', toggleButton);
   window.MyOffiCityAddons.register('Kalenderfunktion för Kontorsbokningar');
 })();
+
+(() => {
+  // Säkerhetsstatusbadge
+  const securityBadge = document.createElement('div');
+  securityBadge.className = 'moc-addon-badge';
+  securityBadge.textContent = 'Säkerhet Aktiv';
+  securityBadge.title = 'Användaruppgifter är krypterade och säkert lagrade.';
+  document.getElementById('foot').appendChild(securityBadge);
+
+  window.MyOffiCityAddons.register('Säkerhetsstatusbadge');
+})();

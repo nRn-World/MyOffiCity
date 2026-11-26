@@ -1619,3 +1619,29 @@ body.moc-font-dyslexic {
 #moc-calendar .day-cell:hover {
   background: rgba(217, 180, 106, 0.2);
 }
+
+/* Säkerhetsstatusbadge */
+.moc-addon-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-left: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: #e9d7b0;
+  background: rgba(217, 180, 106, 0.12);
+  border: 1px solid rgba(217, 180, 106, 0.32);
+  vertical-align: middle;
+  cursor: pointer;
+}
+.moc-addon-badge::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.75);
+}

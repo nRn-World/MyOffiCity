@@ -1255,13 +1255,73 @@ async function discoverLiveModels(p) {
   }
 }
 
+let _localAiMem = { ts: 0, cfg: null };
+async function getLocalAiConfig(env) {
+  if (!env.LOCAL_AI_KEY || !env.DB) return null;
+  if (_localAiMem.cfg && (Date.now() - _localAiMem.ts) < 30000) return _localAiMem.cfg;
+  try {
+    await env.DB.prepare(`CREATE TABLE IF NOT EXISTS local_ai_config (
+      id TEXT PRIMARY KEY, url TEXT NOT NULL,
+      lead_model TEXT NOT NULL DEFAULT 'gemma4:latest',
+      design_model TEXT NOT NULL DEFAULT 'gemma4:latest',
+      coder_model TEXT NOT NULL DEFAULT 'qwen3.5:9b',
+      updated INTEGER NOT NULL
+    )`).run();
+    const row = await env.DB.prepare("SELECT url, lead_model, design_model, coder_model, updated FROM local_ai_config WHERE id='main'").first();
+    _localAiMem = { ts: Date.now(), cfg: (row && row.url) ? row : null };
+    return _localAiMem.cfg;
+  } catch { return null; }
+}
+
+async function registerLocalAi(req, env) {
+  if (!env.LOCAL_AI_KEY) throw new HttpError(503, 'local_ai_off', 'LOCAL_AI_KEY not configured on Worker');
+  const auth = String(req.headers.get('Authorization') || '');
+  if (auth !== 'Bearer ' + env.LOCAL_AI_KEY) throw new HttpError(401, 'unauthorized', 'Invalid LOCAL_AI_KEY');
+  const b = await readBody(req);
+  const url = String(b.url || '').trim().replace(/\/+$/, '');
+  if (!/^https:\/\/[a-z0-9.-]+/i.test(url)) throw bad('Valid https tunnel url required', 'bad_url');
+  const leadModel = clip(b.leadModel || 'gemma4:latest', 80);
+  const designModel = clip(b.designModel || 'gemma4:latest', 80);
+  const coderModel = clip(b.coderModel || 'qwen3.5:9b', 80);
+  await env.DB.prepare(`CREATE TABLE IF NOT EXISTS local_ai_config (
+    id TEXT PRIMARY KEY, url TEXT NOT NULL,
+    lead_model TEXT NOT NULL DEFAULT 'gemma4:latest',
+    design_model TEXT NOT NULL DEFAULT 'gemma4:latest',
+    coder_model TEXT NOT NULL DEFAULT 'qwen3.5:9b',
+    updated INTEGER NOT NULL
+  )`).run();
+  const ts = now();
+  await env.DB.prepare("INSERT OR REPLACE INTO local_ai_config(id, url, lead_model, design_model, coder_model, updated) VALUES('main',?,?,?,?,?)")
+    .bind(url, leadModel, designModel, coderModel, ts).run();
+  _localAiMem = { ts: Date.now(), cfg: { url, lead_model: leadModel, design_model: designModel, coder_model: coderModel, updated: ts } };
+  return { ok: true, url, leadModel, designModel, coderModel, updated: ts };
+}
+
 async function runExternalRelay(env, mode, messages, maxTokens = 1200, temperature = 0.3, extraOrKey = '') {
   const providers = activeRelaySpecs(env, mode, extraOrKey);
+  // Hybrid Local-AI (din egen RTX 4070 SUPER via krypterad Cloudflare Tunnel):
+  // Provas ALLTID som #1 när datorn är på (0 kr, obegränsat!). Är datorn avstängd returnerar tunneln 530 på <0,5s -> direkt fallback till Gemini 3 Flash!
+  const localCfg = await getLocalAiConfig(env);
+  if (localCfg && localCfg.url && env.LOCAL_AI_KEY) {
+    const isLead = mode === 'lead', isDesign = mode === 'design';
+    const localModels = isLead
+      ? [localCfg.lead_model || 'gemma4:latest', localCfg.coder_model || 'qwen3.5:9b']
+      : isDesign
+        ? [localCfg.design_model || 'gemma4:latest', localCfg.coder_model || 'qwen3.5:9b']
+        : [localCfg.coder_model || 'qwen3.5:9b', localCfg.lead_model || 'gemma4:latest'];
+    providers.unshift({
+      name: 'local-gpu',
+      url: localCfg.url + '/v1/chat/completions',
+      key: env.LOCAL_AI_KEY,
+      models: [...new Set(localModels)],
+      timeoutMs: 60000,
+    });
+  }
   const errs = [];
   const tryCall = async (p, model, msgs, mt) => {
     const res = await fetch(p.url, {
       method: 'POST',
-      signal: AbortSignal.timeout(25000),
+      signal: AbortSignal.timeout(p.timeoutMs || 25000),
       headers: {
         Authorization: 'Bearer ' + p.key,
         'Content-Type': 'application/json',
@@ -1553,6 +1613,14 @@ async function ensureSprintTables(env) {
     env.DB.prepare(`CREATE TABLE IF NOT EXISTS owner_chats (
       owner_id TEXT PRIMARY KEY,
       threads_json TEXT NOT NULL DEFAULT '[]',
+      updated INTEGER NOT NULL
+    )`),
+    env.DB.prepare(`CREATE TABLE IF NOT EXISTS local_ai_config (
+      id TEXT PRIMARY KEY,
+      url TEXT NOT NULL,
+      lead_model TEXT NOT NULL DEFAULT 'gemma4:latest',
+      design_model TEXT NOT NULL DEFAULT 'gemma4:latest',
+      coder_model TEXT NOT NULL DEFAULT 'qwen3.5:9b',
       updated INTEGER NOT NULL
     )`),
   ]);
@@ -2405,6 +2473,7 @@ export default {
       if (url.pathname === '/api/mcp') return await mcp(req, env, ctx);
       if (req.method === 'GET' && url.pathname === '/api/ai/quota') return send(await freeAiQuota(req, env), 200, req, env);
       if (req.method === 'POST' && url.pathname === '/api/ai/chat') return send(await freeAiChat(req, env), 200, req, env);
+      if (req.method === 'POST' && url.pathname === '/api/local-ai/register') return send(await registerLocalAi(req, env), 200, req, env);
       return send(await api(req, env, ctx), 200, req, env);
     } catch (err) {
       if (err instanceof HttpError) return send({ error: { code: err.code, message: err.message } }, err.status, req, env);

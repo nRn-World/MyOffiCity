@@ -9,3 +9,6 @@ node_modules/
 __pycache__/
 .DS_Store
 _tmp/
+.local-ai.key
+tools/cloudflared.exe
+tools/cloudflared

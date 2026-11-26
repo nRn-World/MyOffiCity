@@ -2534,3 +2534,91 @@
 
   window.MyOffiCityAddons.register('Säkerhetsstatusbadge');
 })();
+
+(() => {
+  /**
+   * Task #67: Interaktiv Widget för Kontorsstatistik
+   * Utvecklad av Laila för MyOffiCity.
+   */
+  const OfficeStatsWidget = {
+    data: [
+      { id: 1, name: "Konferensrum A", type: "Utrymme", status: "Upptagen" },
+      { id: 2, name: "Laila (AI)", type: "Användare", status: "Online" },
+      { id: 3, name: "Tomas (Lead)", type: "Användare", status: "Online" },
+      { id: 4, name: "Sprint Planering", type: "Möte", status: "Pågår" },
+      { id: 5, name: "Fokusrum 1", type: "Utrymme", status: "Ledigt" },
+      { id: 6, name: "Design Review", type: "Möte", status: "Planerat" },
+      { id: 7, name: "Anna Andersson", type: "Användare", status: "Offline" },
+    ],
+    filter: "Alla",
+    sort: "name",
+
+    init() {
+      const container = document.createElement('div');
+      container.className = 'moc-stats-container';
+      this.render(container);
+      
+      if (window.MyOffiCityAddons) {
+        window.MyOffiCityAddons.addTool('Statistik', '📊', container);
+        window.MyOffiCityAddons.register('Office Statistics Widget');
+      }
+    },
+
+    render(container) {
+      const counts = {
+        Användare: this.data.filter(d => d.type === "Användare").length,
+        Utrymme: this.data.filter(d => d.type === "Utrymme").length,
+        Möte: this.data.filter(d => d.type === "Möte").length
+      };
+
+      const filteredData = this.data
+        .filter(d => this.filter === "Alla" || d.type === this.filter)
+        .sort((a, b) => a[this.sort].localeCompare(b[this.sort]));
+
+      container.innerHTML = `
+        <div class="moc-stats-grid">
+          <div class="moc-stats-card"><h4>Användare</h4><span>${counts.Användare}</span></div>
+          <div class="moc-stats-card"><h4>Utrymmen</h4><span>${counts.Utrymme}</span></div>
+          <div class="moc-stats-card"><h4>Möten</h4><span>${counts.Möte}</span></div>
+        </div>
+        <div class="moc-stats-controls">
+          <select class="moc-stats-select" id="moc-stats-filter">
+            <option value="Alla" ${this.filter === 'Alla' ? 'selected' : ''}>Alla Typer</option>
+            <option value="Användare" ${this.filter === 'Användare' ? 'selected' : ''}>Användare</option>
+            <option value="Utrymme" ${this.filter === 'Utrymme' ? 'selected' : ''}>Utrymmen</option>
+            <option value="Möte" ${this.filter === 'Möte' ? 'selected' : ''}>Möten</option>
+          </select>
+          <select class="moc-stats-select" id="moc-stats-sort">
+            <option value="name" ${this.sort === 'name' ? 'selected' : ''}>Sortera: Namn</option>
+            <option value="status" ${this.sort === 'status' ? 'selected' : ''}>Sortera: Status</option>
+          </select>
+        </div>
+        <div class="moc-stats-list">
+          ${filteredData.map(item => `
+            <div class="moc-stats-item">
+              <span>${item.name}</span>
+              <span class="type-tag">${item.status}</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+
+      container.querySelector('#moc-stats-filter').addEventListener('change', (e) => {
+        this.filter = e.target.value;
+        this.render(container);
+      });
+
+      container.querySelector('#moc-stats-sort').addEventListener('change', (e) => {
+        this.sort = e.target.value;
+        this.render(container);
+      });
+    }
+  };
+
+  // Starta widgeten när DOM är redo
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => OfficeStatsWidget.init());
+  } else {
+    OfficeStatsWidget.init();
+  }
+})();

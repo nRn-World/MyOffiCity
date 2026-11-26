@@ -1645,3 +1645,85 @@ body.moc-font-dyslexic {
   background: #4ade80;
   box-shadow: 0 0 8px rgba(74, 222, 128, 0.75);
 }
+
+/* Office Statistics Widget Styles */
+.moc-stats-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  color: #f3ecdc;
+  font-family: system-ui, -apple-system, sans-serif;
+  min-width: 280px;
+}
+
+.moc-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.moc-stats-card {
+  background: rgba(217, 180, 106, 0.1);
+  border: 1px solid rgba(217, 180, 106, 0.2);
+  padding: 10px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.moc-stats-card h4 {
+  margin: 0;
+  font-size: 10px;
+  text-transform: uppercase;
+  opacity: 0.7;
+  letter-spacing: 0.05em;
+}
+
+.moc-stats-card span {
+  font-size: 18px;
+  font-weight: 700;
+  color: #d9b46a;
+}
+
+.moc-stats-controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.moc-stats-select {
+  flex: 1;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(217, 180, 106, 0.3);
+  color: #f3ecdc;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  outline: none;
+}
+
+.moc-stats-list {
+  max-height: 200px;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  padding: 4px;
+}
+
+.moc-stats-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 8px;
+  border-bottom: 1px solid rgba(217, 180, 106, 0.1);
+  font-size: 12px;
+}
+
+.moc-stats-item:last-child {
+  border-bottom: none;
+}
+
+.moc-stats-item .type-tag {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(217, 180, 106, 0.2);
+}

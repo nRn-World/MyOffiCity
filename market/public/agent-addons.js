@@ -2696,3 +2696,103 @@
   if (window.MyOffiCityAddons) {
     window.MyOffiCityAddons.addTool('Integrationer', '⚡', createIntegrationHub());
     window.MyOffiCityAddons.register('External
+
+(() => {
+  /**
+   * MyOffiCity Marketplace Quick-Peek Module
+   * Enhances the marketplace experience with hover-triggered previews.
+   */
+  const initQuickPeek = () => {
+    let peekEl = document.getElementById('moc-quick-peek');
+    if (!peekEl) {
+      peekEl = document.createElement('div');
+      peekEl.id = 'moc-quick-peek';
+      peekEl.className = 'moc-quick-peek';
+      peekEl.innerHTML = `
+        <div class="moc-peek-inner">
+          <div class="moc-peek-header">
+            <span class="moc-peek-tag">AI PREVIEW</span>
+            <h4 id="moc-peek-title"></h4>
+          </div>
+          <div class="moc-peek-body">
+            <p id="moc-peek-desc"></p>
+            <div class="moc-peek-specs">
+              <div class="moc-spec-item"><span>Status:</span> <strong style="color:#4ade80">Verifierad</strong></div>
+              <div class="moc-spec-item"><span>Version:</span> <strong>v1.4.2</strong></div>
+              <div class="moc-spec-item"><span>Pris:</span> <strong id="moc-peek-price"></strong></div>
+            </div>
+          </div>
+          <div class="moc-peek-footer">
+            <button class="moc-peek-btn-add">Snabbinstallera +</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(peekEl);
+    }
+
+    const titleEl = peekEl.querySelector('#moc-peek-title');
+    const descEl = peekEl.querySelector('#moc-peek-desc');
+    const priceEl = peekEl.querySelector('#moc-peek-price');
+    const addBtn = peekEl.querySelector('.moc-peek-btn-add');
+    let activeCard = null;
+
+    const showPeek = (e, card) => {
+      const rect = card.getBoundingClientRect();
+      const title = card.querySelector('h3')?.textContent || 'Tillägg';
+      const desc = card.querySelector('p')?.textContent || 'Ingen beskrivning tillgänglig.';
+      const price = card.querySelector('.price, b')?.textContent || 'Gratis';
+      
+      activeCard = card;
+      titleEl.textContent = title;
+      descEl.textContent = desc.length > 120 ? desc.substring(0, 117) + '...' : desc;
+      priceEl.textContent = price;
+
+      peekEl.classList.add('visible');
+      
+      // Position logic: prefer right of card, fallback to left
+      let left = rect.right + 15;
+      if (left + 280 > window.innerWidth) {
+        left = rect.left - 295;
+      }
+      
+      peekEl.style.left = `${left}px`;
+      peekEl.style.top = `${rect.top + window.scrollY}px`;
+    };
+
+    const hidePeek = () => {
+      peekEl.classList.remove('visible');
+      activeCard = null;
+    };
+
+    // Global listener for marketplace cards
+    document.addEventListener('mouseover', (e) => {
+      const card = e.target.closest('.card');
+      if (card && card.parentElement.classList.contains('cards')) {
+        showPeek(e, card);
+      } else if (!e.target.closest('#moc-quick-peek')) {
+        hidePeek();
+      }
+    });
+
+    addBtn.addEventListener('click', () => {
+      if (activeCard) {
+        const mainBtn = activeCard.querySelector('button, .btn, a.button');
+        if (mainBtn) {
+          mainBtn.click();
+          addBtn.textContent = '✅ Tillagd!';
+          setTimeout(() => { addBtn.textContent = 'Snabbinstallera +'; }, 2000);
+        }
+      }
+    });
+
+    // Register in the AI drawer
+    if (window.MyOffiCityAddons) {
+      const toggleContainer = document.createElement('div');
+      toggleContainer.style.padding = '10px';
+      toggleContainer.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px;">
+          <span>Marknadsplats Quick-Peek</span>
+          <span style="color:#4ade80">Aktiv</span>
+        </div>
+      `;
+      window.MyOffi

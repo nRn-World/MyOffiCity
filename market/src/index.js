@@ -2087,7 +2087,7 @@ async function runSprintStep(env, sprint) {
       if (totalCtxChars >= 12000) break;
       try {
         const f = await ghApi(sprint.gh_token, `/repos/${sprint.repo}/contents/${encodeURIComponent(item.p).replace(/%2F/g, '/')}?ref=${encodeURIComponent(sprint.work_branch)}`);
-        if (f && f.content && f.size < 60000) {
+        if (f && f.content && (item.p.includes('agent-addons.') ? f.size < 350000 : f.size < 60000)) {
           const decoded = b64DecodeUtf8(f.content);
           let snippet;
           if (item.p.includes('agent-addons.') && decoded.length > 4200) {
@@ -2194,13 +2194,14 @@ Rules:
 
     if (!files.length) {
       const tries = (task.tries || 0) + 1;
+      const diag = clip(String(ai.text || '').replace(/\s+/g, ' '), 100);
       if (tries >= 2) {
         await env.DB.prepare("UPDATE sprint_tasks SET status='skipped', tries=?, summary=?, updated=? WHERE id=?")
           .bind(tries, 'Hoppades över efter 2 försök utan giltiga filändringar.', ts, task.id).run();
-        await addSprintLog(env, sprint.id, task.assignee, `Hoppade över "${task.title}" efter 2 försök så att sprinten fortsätter framåt.`);
+        await addSprintLog(env, sprint.id, task.assignee, `Hoppade över "${task.title}" efter 2 försök (${ai.model}: "${diag || 'tomt svar'}").`);
       } else {
         await env.DB.prepare('UPDATE sprint_tasks SET tries=?, updated=? WHERE id=?').bind(tries, ts, task.id).run();
-        await addSprintLog(env, sprint.id, task.assignee, `Försökte lösa "${task.title}" men AI-svaret saknade filer – provar igen automatiskt nästa pass.`);
+        await addSprintLog(env, sprint.id, task.assignee, `Försökte lösa "${task.title}" (${ai.model}) men svaret saknade filer ("${diag || 'tomt svar'}") – provar igen automatiskt nästa pass.`);
       }
       return { ok: true, retried: true, task: task.title };
     }

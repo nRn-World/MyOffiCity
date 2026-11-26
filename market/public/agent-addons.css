@@ -332,3 +332,8 @@ body.moc-compact-ui .cards > div { padding: 12px !important; }
   margin-bottom: 8px;
   color: #d9b46a;
 }
+
+.moc-tool-card {
+  border-left: 2px solid #d9b46a;
+  background: rgba(255, 255, 255, 0.02);
+}

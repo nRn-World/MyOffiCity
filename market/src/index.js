@@ -2143,15 +2143,16 @@ replacement lines
 
 Rules:
 - Output 1 or 2 real, clean, working changes that make the project genuinely better right away.
+- Keep each new JS module concise (~40-90 lines) wrapped in (() => { try { ... } catch(e) {} })(); and CSS concise (~20-45 lines) so it NEVER gets truncated!
 - Never overwrite/truncate large core files with shorter code.${addonRules}
 - Never use paths starting with / or containing ..
 - Never use placeholder comments like "// rest of code" or leave code incomplete/truncated.`,
       },
       {
         role: 'user',
-        content: `Sprint goal: ${sprint.goal}\nTask #${task.seq}: ${task.title}\nDetails: ${task.details}${prevFeedback}\n\nRepo files:\n${treePaths.join('\n') || '(empty)'}\n\nReference context (existing code snippets — do NOT summarize them):\n${fileCtx.join('\n\n') || '(none)'}\n\n=== YOUR TURN — WRITE THE CODE NOW ===\nDo NOT summarize or explain the existing code above. Output ONLY the required format starting on line 1 with:\nSUMMARY: <kort svensk sammanfattning>\nCOMMIT: <kort commit-meddelande>\n${hasAddons ? '===APPEND: market/public/agent-addons.js===\n(your new self-contained (() => { ... })(); module calling window.MyOffiCityAddons.addTool(...))\n===END===\n===APPEND: market/public/agent-addons.css===\n(your new CSS rules)\n===END===' : '===PATCH: <exact/path/from/repo>===\n<<<FIND\n...\n===REPLACE\n...\n>>>END\n===END==='}`,
+        content: `Sprint goal: ${sprint.goal}\nTask #${task.seq}: ${task.title}\nDetails: ${task.details}${prevFeedback}\n\nRepo files:\n${treePaths.join('\n') || '(empty)'}\n\nReference context (existing code snippets — do NOT summarize them):\n${fileCtx.join('\n\n') || '(none)'}\n\n=== YOUR TURN — WRITE THE CODE NOW ===\nDo NOT summarize or explain the existing code above. Output ONLY the required format starting on line 1 with:\nSUMMARY: <kort svensk sammanfattning>\nCOMMIT: <kort commit-meddelande>\n${hasAddons ? '===APPEND: market/public/agent-addons.js===\n(your new self-contained (() => { try { ... } catch(e) {} })(); module calling window.MyOffiCityAddons.addTool(...))\n===END===\n===APPEND: market/public/agent-addons.css===\n(your new CSS rules)\n===END===' : '===PATCH: <exact/path/from/repo>===\n<<<FIND\n...\n===REPLACE\n...\n>>>END\n===END==='}`,
       },
-    ], 2400, workerTier);
+    ], 4096, workerTier);
 
     const parseAgentFiles = (raw) => {
       const txt = String(raw || '');
@@ -2240,7 +2241,36 @@ Rules:
       tomasNote = verdict.replace(/^APPROVE:?\s*/i, '').slice(0, 160);
     } catch { /* om granskningsanropet tillfälligt misslyckas, låt skyddsspärren & GitHub Actions verifiera */ }
 
-    // 4. Bygg och verifiera slutgiltigt filinnehåll (FILE / APPEND / PATCH) innan något committas
+    // 4. Bygg och verifiera slutgiltigt filinnehåll (FILE / APPEND / PATCH) + hård syntax-balanskontroll innan något committas
+    const checkBalancedSyntax = (path, code) => {
+      if (!/\.(js|mjs|cjs|css)$/i.test(path)) return '';
+      const isCss = /\.css$/i.test(path);
+      let b = 0, p = 0, k = 0, inS = '', esc = false, inLC = false, inBC = false;
+      for (let i = 0; i < code.length; i++) {
+        const ch = code[i], nx = code[i + 1] || '';
+        if (inLC) { if (ch === '\n') inLC = false; continue; }
+        if (inBC) { if (ch === '*' && nx === '/') { inBC = false; i++; } continue; }
+        if (inS) {
+          if (esc) { esc = false; continue; }
+          if (ch === '\\') { esc = true; continue; }
+          if (ch === inS) inS = '';
+          else if ((inS === "'" || inS === '"') && ch === '\n') return 'oavslutad sträng';
+          continue;
+        }
+        if (!isCss && ch === '/' && nx === '/') { inLC = true; i++; continue; }
+        if (ch === '/' && nx === '*') { inBC = true; i++; continue; }
+        if (ch === "'" || ch === '"' || (!isCss && ch === '`')) { inS = ch; continue; }
+        if (ch === '{') b++; else if (ch === '}') { b--; if (b < 0) return 'extra }'; }
+        if (ch === '(') p++; else if (ch === ')') { p--; if (p < 0) return 'extra )'; }
+        if (ch === '[') k++; else if (ch === ']') { k--; if (k < 0) return 'extra ]'; }
+      }
+      if (inS) return `oavslutad sträng (${inS})`;
+      if (inBC) return 'oavslutad kommentar (/*)';
+      if (b !== 0) return `obalanserade { } (${b})`;
+      if (p !== 0) return `obalanserade ( ) (${p})`;
+      if (k !== 0) return `obalanserade [ ] (${k})`;
+      return '';
+    };
     const commitMsg = clip((isTomasTask ? '' : '[Godkänd av Tomas] ') + (parsed.commit_message || `${task.assignee}: ${task.title}`), 120);
     const ready = [];
     let blockedCodeFile = false;
@@ -2264,6 +2294,12 @@ Rules:
       }
       let finalContent = f.content;
       if (f.mode === 'append') {
+        const synErr = checkBalancedSyntax(cleanPath, f.content);
+        if (synErr) {
+          await addSprintLog(env, sprint.id, 'Tomas', `🛡️ Syntaxskydd stoppade trasig/avklippt append på ${cleanPath} (${synErr}) – inget trasigt pushades.`);
+          if (!/\.css$/i.test(cleanPath)) blockedCodeFile = true;
+          continue;
+        }
         finalContent = (existingText ? existingText.trimEnd() + '\n\n' : '') + f.content.trimStart();
       } else if (f.mode === 'patch') {
         if (!existingText) {
@@ -2295,6 +2331,12 @@ Rules:
           if (!/\.css$/i.test(cleanPath)) blockedCodeFile = true;
           continue;
         }
+      }
+      const fullSynErr = checkBalancedSyntax(cleanPath, finalContent);
+      if (fullSynErr) {
+        await addSprintLog(env, sprint.id, 'Tomas', `🛡️ Syntaxskydd stoppade trasig kod i ${cleanPath} (${fullSynErr}) – hemsidan förblir felfri.`);
+        if (!/\.css$/i.test(cleanPath)) blockedCodeFile = true;
+        continue;
       }
       ready.push({ cleanPath, encPath, existingSha, content: finalContent });
     }

@@ -1212,8 +1212,8 @@
         const th = curThread();
         if (r.step && r.step.error) { toast(r.step.error); }
         else if (r.step && r.step.retried) {
-          th.messages.push({ role: 'assistant', ts: Date.now(), content: lang === 'sv' ? `⚠️ Försökte köra "${r.step.task || ''}" men fick inga filer från AI – klicka "▶ Kör steg" igen för ett nytt försök.` : `⚠️ Tried "${r.step.task || ''}" but AI returned no files – click "Run step" to retry.` });
-          saveThreads(); render();
+          syncSprintLogs(false);
+          toast(lang === 'sv' ? '🔍 Tomas granskade & bad om förbättring – se chatten' : '🔍 Tomas reviewed & requested fixes – see chat');
         } else {
           const msg = r.step && r.step.done
             ? (lang === 'sv' ? `Sprinten på ${sp.repo} är klar!` : `Sprint on ${sp.repo} is complete!`)

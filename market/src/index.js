@@ -1331,7 +1331,8 @@ async function runExternalRelay(env, mode, messages, maxTokens = 1200, temperatu
     });
     if (!res.ok) return { ok: false, status: res.status };
     const j = await res.json().catch(() => null);
-    const text = String(j?.choices?.[0]?.message?.content || '').trim();
+    const rawText = String(j?.choices?.[0]?.message?.content || '');
+    const text = rawText.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
     return text ? { ok: true, text } : { ok: false, status: 'empty' };
   };
   for (const p of providers) {

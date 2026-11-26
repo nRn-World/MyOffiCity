@@ -1506,3 +1506,29 @@ body.moc-font-dyslexic {
 .moc-notification button:hover {
   color: #f3ecdc;
 }
+
+#moc-guide-overlay {
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+#moc-guide-overlay div {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  max-width: 80%;
+  max-height: 80%;
+  overflow-y: auto;
+}
+
+#moc-guide-overlay h2 {
+  margin-top: 0;
+}
+
+#moc-guide-overlay ul {
+  list-style-type: disc;
+  padding-left: 20px;
+}

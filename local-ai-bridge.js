@@ -53,10 +53,13 @@ const server = http.createServer((req, res) => {
   req.on('data', (c) => chunks.push(c));
   req.on('end', () => {
     let bodyBuf = Buffer.concat(chunks);
+    let reqModel = '';
+    const t0 = Date.now();
     // For chat completions, keep model hot in VRAM, disable verbose thinking tokens (so code outputs directly & 5x faster!), and keep 12k context inside 12GB VRAM
     if (req.method === 'POST' && req.url.startsWith('/v1/chat/completions') && bodyBuf.length) {
       try {
         const j = JSON.parse(bodyBuf.toString('utf8'));
+        reqModel = j.model || '';
         j.keep_alive = '30m';
         j.reasoning_effort = 'none';
         j.think = false;
@@ -76,6 +79,9 @@ const server = http.createServer((req, res) => {
       headers,
       timeout: 120000,
     }, (pRes) => {
+      if (reqModel) {
+        pRes.on('end', () => console.log(`[MyOffiCity Local-AI] ⚡ ${reqModel} -> HTTP ${pRes.statusCode} (${((Date.now() - t0) / 1000).toFixed(1)}s)`));
+      }
       res.writeHead(pRes.statusCode || 502, pRes.headers);
       pRes.pipe(res);
     });

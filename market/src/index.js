@@ -2226,9 +2226,15 @@ Rules:
       if (/^REJECT\b/i.test(verdict)) {
         const reason = verdict.replace(/^REJECT:?\s*/i, '').slice(0, 320);
         const tries = (task.tries || 0) + 1;
-        await env.DB.prepare('UPDATE sprint_tasks SET tries=?, summary=?, updated=? WHERE id=?')
-          .bind(tries, 'TOMAS_FEEDBACK: ' + reason, ts, task.id).run();
-        await addSprintLog(env, sprint.id, 'Tomas', `🔍 Granskade & bad ${task.assignee} rätta till "${task.title}": ${reason} (${tries >= 2 ? 'Tomas tar över & höjer kvaliteten nästa pass' : 'skickar tillbaka med order om förbättring'}).`);
+        if (tries >= 3) {
+          await env.DB.prepare("UPDATE sprint_tasks SET status='skipped', tries=?, summary=?, updated=? WHERE id=?")
+            .bind(tries, 'Hoppades över efter 3 granskningar: ' + reason, ts, task.id).run();
+          await addSprintLog(env, sprint.id, 'Tomas', `🔍 Nekade "${task.title}" efter 3 försök (${reason}) – hoppar vidare till nästa uppgift så teamet inte fastnar.`);
+        } else {
+          await env.DB.prepare('UPDATE sprint_tasks SET tries=?, summary=?, updated=? WHERE id=?')
+            .bind(tries, 'TOMAS_FEEDBACK: ' + reason, ts, task.id).run();
+          await addSprintLog(env, sprint.id, 'Tomas', `🔍 Granskade & bad ${task.assignee} rätta till "${task.title}": ${reason} (${tries >= 2 ? 'Tomas tar över & höjer kvaliteten nästa pass' : 'skickar tillbaka med order om förbättring'}).`);
+        }
         return { ok: true, retried: true, task: task.title };
       }
       tomasNote = verdict.replace(/^APPROVE:?\s*/i, '').slice(0, 160);

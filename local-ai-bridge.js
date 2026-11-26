@@ -19,8 +19,8 @@ const WORKER_REGISTER_URL = 'https://nrnworld.one/MyOffiCity/api/local-ai/regist
 const KEY_FILE = path.join(__dirname, '.local-ai.key');
 const CLOUDFLARED = path.join(__dirname, 'tools', process.platform === 'win32' ? 'cloudflared.exe' : 'cloudflared');
 
-const LEAD_MODEL = process.env.LOCAL_LEAD_MODEL || 'gemma4:latest';
-const DESIGN_MODEL = process.env.LOCAL_DESIGN_MODEL || 'gemma4:latest';
+const LEAD_MODEL = process.env.LOCAL_LEAD_MODEL || 'gemma4:12b';
+const DESIGN_MODEL = process.env.LOCAL_DESIGN_MODEL || 'gemma4:12b';
 const CODER_MODEL = process.env.LOCAL_CODER_MODEL || 'qwen3.5:9b';
 
 function getOrCreateKey() {

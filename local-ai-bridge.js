@@ -58,6 +58,7 @@ const server = http.createServer((req, res) => {
       try {
         const j = JSON.parse(bodyBuf.toString('utf8'));
         j.keep_alive = '30m';
+        j.reasoning_effort = 'none';
         j.think = false;
         j.options = { ...(j.options || {}), num_ctx: 12288 };
         bodyBuf = Buffer.from(JSON.stringify(j), 'utf8');

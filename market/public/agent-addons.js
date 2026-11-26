@@ -2269,3 +2269,70 @@
   };
   window.MyOffiCityAddons.addTool('Meddelanden', '🔔', notificationsButton);
 })();
+
+(() => {
+  const guideButton = document.createElement('button');
+  guideButton.className = 'moc-dock-btn';
+  guideButton.textContent = 'Kontorsguide';
+  guideButton.addEventListener('click', toggleGuide);
+
+  const guideOverlay = document.createElement('div');
+  guideOverlay.id = 'moc-guide-overlay';
+  guideOverlay.style.position = 'fixed';
+  guideOverlay.style.top = '0';
+  guideOverlay.style.left = '0';
+  guideOverlay.style.width = '100%';
+  guideOverlay.style.height = '100%';
+  guideOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+  guideOverlay.style.display = 'none';
+  guideOverlay.style.justifyContent = 'center';
+  guideOverlay.style.alignItems = 'center';
+  guideOverlay.style.zIndex = '999';
+
+  const guideContent = document.createElement('div');
+  guideContent.style.backgroundColor = '#fff';
+  guideContent.style.padding = '20px';
+  guideContent.style.borderRadius = '8px';
+  guideContent.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.5)';
+  guideContent.style.maxWidth = '80%';
+  guideContent.style.maxHeight = '80%';
+  guideContent.style.overflowY = 'auto';
+
+  const guideText = `
+    <h2>Kontorsguide</h2>
+    <p>Här är några tips för att navigera i 3D-kontoret:</p>
+    <ul>
+      <li><strong>WASD</strong>: Flytta kameran.</li>
+      <li><strong>Shift</strong>: Gå snabbare.</li>
+      <li><strong>Space</strong>: Hoppa.</li>
+      <li><strong>Mouse</strong>: Rotera kameran.</li>
+      <li><strong>F</strong>: Fokusera på närmaste objekt.</li>
+      <li><strong>G</strong>: Visa dolda element.</li>
+      <li><strong>H</strong>: Dölj dolda element.</li>
+    </ul>
+    <p>Klicka utanför detta fönster för att stänga guiden.</p>
+  `;
+  guideContent.innerHTML = guideText;
+
+  guideOverlay.appendChild(guideContent);
+  document.body.appendChild(guideOverlay);
+
+  guideOverlay.addEventListener('click', (event) => {
+    if (event.target === guideOverlay) {
+      toggleGuide();
+    }
+  });
+
+  function toggleGuide() {
+    guideOverlay.style.display = guideOverlay.style.display === 'flex' ? 'none' : 'flex';
+  }
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'G') {
+      toggleGuide();
+    }
+  });
+
+  window.MyOffiCityAddons.addTool('Kontorsguide', '📖', guideButton);
+  window.MyOffiCityAddons.register('Interaktiv Kontorsguide');
+})();

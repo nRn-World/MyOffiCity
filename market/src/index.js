@@ -1392,6 +1392,16 @@ async function freeAiQuota(req, env) {
   ]);
   const usedN = nRow?.count || 0, usedG = gRow?.count || 0, usedIp = ipRow?.count || 0;
   const relays = activeRelaySpecs(env, 'code').map(p => p.name);
+  let localGpu = { online: false, lead_model: '', coder_model: '' };
+  try {
+    const lc = await getLocalAiConfig(env);
+    if (lc && lc.url) {
+      const hr = await fetch(lc.url + '/health', { signal: AbortSignal.timeout(2500) });
+      if (hr.ok) {
+        localGpu = { online: true, lead_model: lc.lead_model || 'gemma4:12b', coder_model: lc.coder_model || 'qwen3.5:9b' };
+      }
+    }
+  } catch { /* dator avstängd eller tunnel nere */ }
   return {
     ok: true,
     configured: true,
@@ -1400,8 +1410,9 @@ async function freeAiQuota(req, env) {
     remaining_neurons: Math.max(0, FREE_AI_GLOBAL_NEURONS_CAP - usedN),
     remaining_global: Math.max(0, FREE_AI_GLOBAL_DAILY_CAP - usedG),
     remaining_ip: Math.max(0, FREE_AI_IP_DAILY_CAP - usedIp),
+    local_gpu: localGpu,
     relay_providers: relays,
-    relay_count: relays.length + 1,
+    relay_count: relays.length + (localGpu.online ? 2 : 1),
     models: Object.entries(FREE_AI_MODELS).map(([k, v]) => ({ key: k, id: v.id })),
   };
 }
@@ -2097,6 +2108,9 @@ async function runSprintStep(env, sprint) {
     const addonRules = hasAddons
       ? `\n- LIVE WEBSITE CHANNEL: market/public/agent-addons.js and market/public/agent-addons.css are ALWAYS loaded live on nrnworld.one/MyOffiCity/. Put ALL visible UI/UX features, interactive widgets, animations, or visual enhancements into them using ===APPEND: market/public/agent-addons.js=== and/or ===APPEND: market/public/agent-addons.css===!\n- Using ===APPEND: ...=== automatically preserves ALL existing code — ONLY output your new self-contained (() => { ... })(); IIFE module!\n- REAL DOM & GUARANTEED VISIBILITY: To make any new interactive widget/tool immediately visible on the site without overlapping the 3D office or chat, call window.MyOffiCityAddons.addTool('Short Swedish Title', '✨', yourDomElement) AND window.MyOffiCityAddons.register('Your Feature Name')! Or style real existing elements ONLY: document.body, #topbar, #nav, #app, #foot, .bar, .dash, .dsb, .dmain, .cards.\n- STRICTLY FORBIDDEN: NEVER query nonexistent classes like .office-view, .dashboard-view, .dashboard-section, or .dashboard-item (they do NOT exist and make your widget invisible!). NEVER create disconnected root-level .js/.css files or fake /meeting/ pages.`
       : `\n- EDITING EXISTING FILES: For any existing medium/large file (> 60 lines), ALWAYS use ===PATCH: path=== with exact <<<FIND / ===REPLACE / >>>END blocks instead of rewriting the whole file! ONLY use exact file paths that actually appear in "Repo files:" — NEVER invent nonexistent paths like Header.tsx.\n- NEVER create orphan .css files unless you also import/wire them into the corresponding .tsx/.jsx/.html file in the SAME response!`;
+    const prevFeedback = (task.summary && task.summary.startsWith('TOMAS_FEEDBACK:'))
+      ? `\n\n⚠️ TOMAS GRANSKNING AV FÖRRA UTKASTET (RÄTTA ALLA DESSA PUNKTER OCH GÖR EN MYCKET BÄTTRE VERSION):\n${task.summary.replace(/^TOMAS_FEEDBACK:\s*/, '')}`
+      : '';
     const ai = await callSprintAi(env, sprint.or_key, [
       {
         role: 'system',
@@ -2134,7 +2148,7 @@ Rules:
       },
       {
         role: 'user',
-        content: `Sprint goal: ${sprint.goal}\nTask #${task.seq}: ${task.title}\nDetails: ${task.details}\n\nRepo files:\n${treePaths.join('\n') || '(empty)'}\n\nRelevant existing files:\n${fileCtx.join('\n\n') || '(none)'}`,
+        content: `Sprint goal: ${sprint.goal}\nTask #${task.seq}: ${task.title}\nDetails: ${task.details}${prevFeedback}\n\nRepo files:\n${treePaths.join('\n') || '(empty)'}\n\nRelevant existing files:\n${fileCtx.join('\n\n') || '(none)'}`,
       },
     ], 2400, workerTier);
 
@@ -2178,34 +2192,33 @@ Rules:
       return { ok: true, retried: true, task: task.title };
     }
 
-    // 3b. Tomas (högsta AI-modellen) granskar & godkänner kollegans kod innan den får pushas till GitHub!
+    // 3b. Tomas (högsta AI-hjärnan) granskar ALLA uppdateringar och bedömer om de verkligen gör projektet bättre innan något pushas till GitHub!
     let tomasNote = '';
-    if (!isTomasTask) {
-      try {
-        const preview = files.map(f => {
-          const body = f.content.length <= 12000
-            ? f.content
-            : (f.content.slice(0, 6000) + '\n/* ... (' + (f.content.length - 10000) + ' chars omitted in middle) ... */\n' + f.content.slice(-4000));
-          return `FILE: ${f.path} (${f.content.length} B, complete=${f.content.length <= 12000})\n${body}`;
-        }).join('\n\n');
-        const revRule = hasAddons
-          ? 'Reply ONLY with "APPROVE: <short Swedish approval note>" if the code is valid, complete, uses real DOM (#topbar, #app, #foot, document.body, or window.MyOffiCityAddons.addTool) and is wired into market/public/agent-addons.js or market/public/agent-addons.css, OR "REJECT: <short Swedish reason>" if it is broken, truncated, queries nonexistent classes like .office-view or .dashboard-view, creates disconnected root .js/.css files, or deletes existing code.'
-          : 'Reply ONLY with "APPROVE: <short Swedish approval note>" if the code is valid, complete, and fits the repository structure, OR "REJECT: <short Swedish reason>" if it is broken, truncated, empty, placeholder-only, or deletes existing code.';
-        const rev = await callSprintAi(env, sprint.or_key, [
-          { role: 'system', content: 'You are Tomas, Chief Architect & Team Leader. Review your teammate\'s code before it is pushed to GitHub. ' + revRule },
-          { role: 'user', content: `Task: ${task.title} (by ${task.assignee})\nGoal: ${sprint.goal}\n\nSubmitted files:\n${preview}` },
-        ], 200, 'lead');
-        const verdict = String(rev.text || '').trim();
-        if (/^REJECT\b/i.test(verdict)) {
-          const reason = verdict.replace(/^REJECT:?\s*/i, '').slice(0, 220);
-          const tries = (task.tries || 0) + 1;
-          await env.DB.prepare('UPDATE sprint_tasks SET tries=?, updated=? WHERE id=?').bind(tries, ts, task.id).run();
-          await addSprintLog(env, sprint.id, 'Tomas', `Granskade & nekade ${task.assignee}s utkast på "${task.title}": ${reason} (${tries >= 2 ? 'Tomas tar över nästa pass' : 'skickar tillbaka för förbättring'}).`);
-          return { ok: true, retried: true, task: task.title };
-        }
-        tomasNote = verdict.replace(/^APPROVE:?\s*/i, '').slice(0, 160);
-      } catch { /* om granskningsanropet tillfälligt misslyckas, låt skyddsspärren & GitHub Actions verifiera */ }
-    }
+    try {
+      const preview = files.map(f => {
+        const body = f.content.length <= 12000
+          ? f.content
+          : (f.content.slice(0, 6000) + '\n/* ... (' + (f.content.length - 10000) + ' chars omitted in middle) ... */\n' + f.content.slice(-4000));
+        return `[${(f.mode || 'file').toUpperCase()}] FILE: ${f.path} (${f.content.length} B, complete=${f.content.length <= 12000})\n${body}`;
+      }).join('\n\n');
+      const revRule = hasAddons
+        ? 'Decide strictly whether this update GENUINELY makes the live website better, cleaner, and visibly more useful. Reply ONLY with "APPROVE: <short Swedish note explaining why it improves the project>" if it is valid, complete, uses real DOM (#topbar, #app, #foot, document.body, or window.MyOffiCityAddons.addTool) and clearly improves the site, OR "REJECT: <specific Swedish instructions on what the agent must fix and improve>" if it adds little/no real value, uses fake hardcoded dummy data, is broken/truncated, queries nonexistent classes like .office-view/.dashboard-view, or creates disconnected files.'
+        : 'Decide strictly whether this update GENUINELY improves the real app/game (real visual, gameplay, UX, or stability improvement). Reply ONLY with "APPROVE: <short Swedish note explaining why it improves the project>" if it is valid, complete, compiles cleanly, and clearly improves the repo, OR "REJECT: <specific Swedish instructions on what the agent must fix and improve>" if it is weak/cosmetic bloat, broken, truncated, placeholder-only, has TypeScript/unused-import errors, or deletes existing code.';
+      const rev = await callSprintAi(env, sprint.or_key, [
+        { role: 'system', content: 'You are Tomas, strict Chief Architect & Quality Gatekeeper. Review every code update carefully before it is allowed onto GitHub. ' + revRule },
+        { role: 'user', content: `Task: ${task.title} (by ${task.assignee}, attempt #${(task.tries || 0) + 1})\nGoal: ${sprint.goal}\n\nSubmitted changes:\n${preview}` },
+      ], 260, 'lead');
+      const verdict = String(rev.text || '').trim();
+      if (/^REJECT\b/i.test(verdict)) {
+        const reason = verdict.replace(/^REJECT:?\s*/i, '').slice(0, 320);
+        const tries = (task.tries || 0) + 1;
+        await env.DB.prepare('UPDATE sprint_tasks SET tries=?, summary=?, updated=? WHERE id=?')
+          .bind(tries, 'TOMAS_FEEDBACK: ' + reason, ts, task.id).run();
+        await addSprintLog(env, sprint.id, 'Tomas', `🔍 Granskade & bad ${task.assignee} rätta till "${task.title}": ${reason} (${tries >= 2 ? 'Tomas tar över & höjer kvaliteten nästa pass' : 'skickar tillbaka med order om förbättring'}).`);
+        return { ok: true, retried: true, task: task.title };
+      }
+      tomasNote = verdict.replace(/^APPROVE:?\s*/i, '').slice(0, 160);
+    } catch { /* om granskningsanropet tillfälligt misslyckas, låt skyddsspärren & GitHub Actions verifiera */ }
 
     // 4. Bygg och verifiera slutgiltigt filinnehåll (FILE / APPEND / PATCH) innan något committas
     const commitMsg = clip((isTomasTask ? '' : '[Godkänd av Tomas] ') + (parsed.commit_message || `${task.assignee}: ${task.title}`), 120);

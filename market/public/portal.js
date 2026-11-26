@@ -314,8 +314,10 @@
   let googleId = '', gsiLang = '';
   async function loadFeatures() { try { const h = await api('GET', '/health'); mailOn = !!h.email; googleId = h.google || ''; } catch { /* */ } }
   function googleButton() {
-    const box = $('#gbtn'); if (!box || !googleId) return;
+    if (!$('#gbtn') || !googleId) return;
     const init = () => {
+      const box = $('#gbtn'); if (!box || !window.google || !window.google.accounts) return;
+      box.innerHTML = '';
       window.google.accounts.id.initialize({
         client_id: googleId, callback: async (r) => {
           try { const j = await api('POST', '/auth/google', { credential: r.credential }); token = j.token; lsSet(TOKEN_KEY, token); await loadMe(); renderBar(); goNext(); }
@@ -327,6 +329,8 @@
     if (window.google && window.google.accounts && gsiLang === lang) return init();
     if (window.google) { document.querySelectorAll('script[src*="gsi/client"]').forEach((x) => x.remove()); delete window.google; }
     gsiLang = lang;
+    const existing = document.querySelector('script[src*="gsi/client"]');
+    if (existing) { existing.addEventListener('load', init, { once: true }); return; }
     const s = document.createElement('script'); s.src = 'https://accounts.google.com/gsi/client?hl=' + lang; s.async = true; s.onload = init; document.head.appendChild(s);
   }
 
@@ -346,7 +350,7 @@
   }));
   const loadOffice = () => cityLoad || (cityLoad = new Promise((ok, no) => {
     const add = (src, next) => { const el = document.createElement('script'); el.src = src; el.onload = next; el.onerror = () => { cityLoad = null; no(new Error('3D')); }; document.head.appendChild(el); };
-    const run = (list, i = 0) => { if (i >= list.length) return add('office.js?v=81', ok); const [src, have] = list[i]; if (have()) return run(list, i + 1); add(src, () => run(list, i + 1)); };
+    const run = (list, i = 0) => { if (i >= list.length) return add('office.js?v=82', ok); const [src, have] = list[i]; if (have()) return run(list, i + 1); add(src, () => run(list, i + 1)); };
     const full = () => run([["cityassets.js?v=15", () => window.CityAssets]]);
     window.THREE ? full() : import("./three-shim.js").then(full, () => { cityLoad = null; no(new Error("3D")); });
   }));
@@ -931,7 +935,7 @@
     wrap.innerHTML = '<button type="button" class="tchat-fab" id="tcfab"><span class="tchat-dot"></span><span>' + esc(tn('tChatOpen', { name: leaderName })) + '</span></button>'
       + '<div class="tchat-box">'
       + '<div class="tchat-head"><div><b>' + esc(leaderName) + '</b><small id="tcsub">' + esc(t('tChatSub')) + '</small></div>'
-      + '<div class="tchat-act"><div class="tchat-modes"><button type="button" class="on" data-m="code">Qwen 32B</button><button type="button" data-m="chat">Llama 70B</button><button type="button" data-m="gemma">Gemma</button></div>'
+      + '<div class="tchat-act"><div class="tchat-modes"><button type="button" class="on" data-m="code">Auto</button><button type="button" data-m="chat">Kod</button><button type="button" data-m="gemma">Gemma 4</button></div>'
       + '<button type="button" class="tchat-ico" id="tcfull" title="' + esc(t('tChatFull')) + '">⛶</button>'
       + '<button type="button" class="tchat-ico" id="tcmin" title="−">−</button></div></div>'
       + '<div class="tchat-bar">'
@@ -1283,10 +1287,15 @@
     const refreshQuota = () => {
       api('GET', '/ai/quota').then((q) => {
         if (!q || !q.ok || !sub) return;
-        if (q.relay_providers && q.relay_providers.length) {
+        if (q.local_gpu && q.local_gpu.online) {
+          const lm = q.local_gpu.lead_model || 'gemma4:12b';
           sub.textContent = (lang === 'sv'
-            ? `Teamledare · Online AI (0 kr · ${q.relay_count} motorer i stafett)`
-            : `Team leader · Online AI (0 kr · ${q.relay_count} engines in relay)`);
+            ? `🟢 Lokal GPU (${lm}) · 0 kr obegränsat`
+            : `🟢 Local GPU (${lm}) · Unlimited 0 kr`);
+        } else if (q.relay_providers && q.relay_providers.length) {
+          sub.textContent = (lang === 'sv'
+            ? `☁️ Moln-AI (Gemini 3 + Qwen 3.8) · 0 kr`
+            : `☁️ Cloud AI (Gemini 3 + Qwen 3.8) · 0 kr`);
         } else {
           sub.textContent = t('tChatSub') + ' · ' + q.remaining_ip + '/80';
         }

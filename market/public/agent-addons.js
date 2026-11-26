@@ -2373,3 +2373,27 @@
   window.MyOffiCityAddons.register('Tillgänglighetsverktyg');
   window.MyOffiCityAddons.addTool('Tillgänglighetsverktyg', '', readTextButton);
 })();
+
+(() => {
+  // Responsive adjustments for mobile devices
+  const adjustForMobile = () => {
+    if (window.innerWidth <= 768) {
+      document.body.style.fontSize = '14px';
+      document.getElementById('topbar').style.padding = '10px';
+      document.getElementById('nav').style.flexDirection = 'column';
+      document.getElementById('app').style.padding = '10px';
+      document.getElementById('foot').style.padding = '10px';
+    } else {
+      document.body.style.fontSize = '';
+      document.getElementById('topbar').style.padding = '';
+      document.getElementById('nav').style.flexDirection = '';
+      document.getElementById('app').style.padding = '';
+      document.getElementById('foot').style.padding = '';
+    }
+  };
+
+  window.addEventListener('resize', adjustForMobile);
+  adjustForMobile();
+
+  window.MyOffiCityAddons.register('Mobilanpassning');
+})();

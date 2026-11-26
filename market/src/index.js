@@ -2155,17 +2155,29 @@ Rules:
 
     const parseAgentFiles = (raw) => {
       const txt = String(raw || '');
-      const sumM = txt.match(/^\s*SUMMARY:\s*(.+)$/im);
-      const comM = txt.match(/^\s*COMMIT:\s*(.+)$/im);
+      const sumM = txt.match(/^\s*(?:\*{0,2})SUMMARY(?:\*{0,2}):\s*(.+)$/im);
+      const comM = txt.match(/^\s*(?:\*{0,2})COMMIT(?:\*{0,2}):\s*(.+)$/im);
       const outFiles = [];
-      const re = /===(FILE|APPEND|PATCH):\s*([^\r\n=]+?)\s*===\r?\n([\s\S]*?)(?:===END===|(?====(?:FILE|APPEND|PATCH):)|$)/g;
+      const re = /={2,4}\s*(FILE|APPEND|PATCH)\s*:\s*([^\r\n=`*]+?)\s*={2,4}\s*\r?\n([\s\S]*?)(?:={2,4}\s*END\s*={2,4}|(?=={2,4}\s*(?:FILE|APPEND|PATCH)\s*:)|$)/gi;
       let m;
       while ((m = re.exec(txt)) !== null) {
         const mode = m[1].toLowerCase();
-        const p = m[2].trim().replace(/^["'`]+|["'`]+$/g, '');
+        const p = m[2].trim().replace(/^["'`*]+|["'`*]+$/g, '');
         const c = m[3].replace(/^\s*```[a-zA-Z0-9_-]*\r?\n/, '').replace(/\r?\n```\s*$/, '').trimEnd() + '\n';
         if (p && !p.startsWith('/') && !p.includes('..') && c.trim().length > 5 && c.length < 120000) {
           outFiles.push({ mode, path: p, content: c });
+        }
+      }
+      if (!outFiles.length) {
+        // Fallback: om AI skrev filnamn följt av ```kodblock``` utan ===APPEND===
+        const mdRe = /(?:^|\n)[^\n]*?([A-Za-z0-9_./-]+\.(?:js|ts|tsx|jsx|css|html|json|md))[^\n]*\r?\n```[a-zA-Z0-9_-]*\r?\n([\s\S]*?)\r?\n```/g;
+        let mm;
+        while ((mm = mdRe.exec(txt)) !== null) {
+          const p = mm[1].trim().replace(/^\/+/, '');
+          const c = mm[2].trimEnd() + '\n';
+          if (p && !p.includes('..') && c.trim().length > 10 && c.length < 120000) {
+            outFiles.push({ mode: /agent-addons\.(js|css)$/i.test(p) ? 'append' : 'file', path: p, content: c });
+          }
         }
       }
       if (outFiles.length) return { summary: sumM ? sumM[1].trim() : '', commit_message: comM ? comM[1].trim() : '', files: outFiles.slice(0, 4) };

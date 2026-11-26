@@ -1532,3 +1532,20 @@ body.moc-font-dyslexic {
   list-style-type: disc;
   padding-left: 20px;
 }
+
+.moc-read-text-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  background-color: #4ade80;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.moc-read-text-button:hover {
+  background-color: #3ab373;
+}

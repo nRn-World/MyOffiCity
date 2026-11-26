@@ -2336,3 +2336,40 @@
   window.MyOffiCityAddons.addTool('Kontorsguide', '📖', guideButton);
   window.MyOffiCityAddons.register('Interaktiv Kontorsguide');
 })();
+
+(() => {
+  // Funktion för att läsa upp text på sidan med skärmläsare
+  function readTextWithScreenReader(text) {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'sv-SE';
+    utterance.rate = 1;
+    speechSynthesis.speak(utterance);
+  }
+
+  // Funktion för att hantera tangentbordsnavigering
+  function handleKeyboardNavigation(event) {
+    if (event.key === 'ArrowUp') {
+      // Scrolla uppåt på sidan
+      window.scrollTo({ top: window.scrollY - 100, behavior: 'smooth' });
+    } else if (event.key === 'ArrowDown') {
+      // Scrolla neråt på sidan
+      window.scrollTo({ top: window.scrollY + 100, behavior: 'smooth' });
+    }
+  }
+
+  // Lägg till eventlyssnare för tangentbordsnavigering
+  document.addEventListener('keydown', handleKeyboardNavigation);
+
+  // Lägg till knapp för att läsa upp text på sidan
+  const readTextButton = document.createElement('button');
+  readTextButton.textContent = 'Läs upp text';
+  readTextButton.onclick = () => {
+    const text = document.querySelector('body').textContent;
+    readTextWithScreenReader(text);
+  };
+  document.body.appendChild(readTextButton);
+
+  // Registrera funktionen som ett verktyg
+  window.MyOffiCityAddons.register('Tillgänglighetsverktyg');
+  window.MyOffiCityAddons.addTool('Tillgänglighetsverktyg', '', readTextButton);
+})();

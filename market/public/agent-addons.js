@@ -221,3 +221,48 @@
     console.error('Glassmorphism addon error:', e);
   }
 })();
+
+(() => {
+  try {
+    const uiEnhancer = {
+      id: 'moc-ui-polish',
+      name: 'UI & Design-lyft',
+      init() {
+        const container = document.createElement('div');
+        container.style.display = 'flex';
+        container.style.flexDirection = 'column';
+        container.style.gap = '10px';
+        container.style.padding = '5px 0';
+
+        const createToggle = (label, className, icon) => {
+          const btn = document.createElement('button');
+          btn.className = 'moc-chip-btn';
+          btn.style.width = '100%';
+          btn.style.justifyContent = 'flex-start';
+          btn.innerHTML = `<span>${icon}</span> ${label}`;
+          
+          btn.onclick = () => {
+            const isActive = document.body.classList.toggle(className);
+            btn.classList.toggle('on', isActive);
+            if (isActive && className === 'moc-cinematic') {
+              // Auto-hide dock when entering cinematic mode for immersion
+              setTimeout(() => window.MyOffiCityAddons.toggleDock(false), 800);
+            }
+          };
+          return btn;
+        };
+
+        container.appendChild(createToggle('Bio-läge (Vignette)', 'moc-cinematic', '🎬'));
+        container.appendChild(createToggle('Hög kontrast', 'moc-high-contrast', '🌓'));
+        container.appendChild(createToggle('Kompakt vy', 'moc-compact-ui', '📏'));
+
+        window.MyOffiCityAddons.addTool('Design-puts', '🎨', container);
+        window.MyOffiCityAddons.register(this.name);
+      }
+    };
+
+    uiEnhancer.init();
+  } catch (e) {
+    console.error('UI Enhancer error:', e);
+  }
+})();

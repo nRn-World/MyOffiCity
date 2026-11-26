@@ -200,7 +200,7 @@ async function googleLogin(req, env) {
   if (cred.length < 100 || cred.length > 4000) throw bad('Missing Google credential', 'bad_credential');
   const r = await fetch('https://oauth2.googleapis.com/tokeninfo?id_token=' + encodeURIComponent(cred));
   const g = r.ok ? await r.json().catch(() => null) : null;
-  if (!g || g.aud !== env.GOOGLE_CLIENT_ID || !/^(https:\/\/)?accounts\.google\.com$/.test(String(g.iss)) || g.email_verified !== 'true' || !g.sub || !g.email) throw new HttpError(401, 'bad_google', 'Google sign-in failed');
+  if (!g || g.aud !== env.GOOGLE_CLIENT_ID || !/^(https:\/\/)?accounts\.google\.com$/.test(String(g.iss)) || String(g.email_verified) !== 'true' || !g.sub || !g.email) throw new HttpError(401, 'bad_google', 'Google sign-in failed');
   const email = normEmail(g.email);
   let u = await env.DB.prepare('SELECT id,username FROM users WHERE google_sub=?').bind(g.sub).first(), isNew = false;
   if (!u) {
@@ -1151,7 +1151,7 @@ const FREE_AI_GLOBAL_NEURONS_CAP = 7500;
 const FREE_AI_GLOBAL_DAILY_CAP = 180;
 const FREE_AI_IP_DAILY_CAP = 80;
 
-/* ---------- Multi-provider gratis AI-stafett (byts automatiskt i bakgrunden utan att användaren märker något) ---------- */
+/* ---------- Multi-provider gratis AI-stafett (roterar automatiskt mellan alla konfigurerade gratis-motorer) ---------- */
 function activeRelaySpecs(env, mode, extraOrKey = '') {
   const list = [];
   const isLead = mode === 'lead';
@@ -1161,31 +1161,31 @@ function activeRelaySpecs(env, mode, extraOrKey = '') {
     name: 'gemini',
     url: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
     key: env.GEMINI_API_KEY,
-    models: mode === 'gemma' ? ['gemma-3-27b-it', 'gemini-2.5-flash', 'gemini-2.0-flash'] : ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemma-3-27b-it'],
+    models: mode === 'gemma' ? ['gemma-3-27b-it', 'gemini-2.5-flash-lite', 'gemini-2.5-flash'] : ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemma-3-27b-it'],
   } : null;
   const sambanova = env.SAMBANOVA_API_KEY ? {
     name: 'sambanova',
     url: 'https://api.sambanova.ai/v1/chat/completions',
     key: env.SAMBANOVA_API_KEY,
-    models: isCoder ? ['Qwen2.5-Coder-32B-Instruct', 'DeepSeek-V3-0324', 'Meta-Llama-3.3-70B-Instruct'] : ['DeepSeek-V3-0324', 'DeepSeek-R1-Distill-Llama-70B', 'Meta-Llama-3.3-70B-Instruct'],
+    models: isCoder ? ['Qwen2.5-Coder-32B-Instruct', 'Meta-Llama-3.3-70B-Instruct', 'DeepSeek-V3-0324'] : ['Meta-Llama-3.3-70B-Instruct', 'DeepSeek-V3-0324', 'DeepSeek-R1-Distill-Llama-70B'],
   } : null;
   const groq = env.GROQ_API_KEY ? {
     name: 'groq',
     url: 'https://api.groq.com/openai/v1/chat/completions',
     key: env.GROQ_API_KEY,
-    models: ['qwen/qwen3-32b', 'llama-3.3-70b-versatile', 'llama-3.1-8b-instant'],
+    models: ['llama-3.3-70b-versatile', 'qwen/qwen3-32b', 'llama-3.1-8b-instant'],
   } : null;
   const mistral = env.MISTRAL_API_KEY ? {
     name: 'mistral',
     url: 'https://api.mistral.ai/v1/chat/completions',
     key: env.MISTRAL_API_KEY,
-    models: isCoder ? ['codestral-latest', 'mistral-large-latest', 'mistral-small-latest'] : ['mistral-large-latest', 'codestral-latest', 'mistral-small-latest'],
+    models: isCoder ? ['codestral-latest', 'mistral-small-latest', 'mistral-large-latest'] : ['mistral-small-latest', 'mistral-large-latest', 'codestral-latest'],
   } : null;
   const cerebras = env.CEREBRAS_API_KEY ? {
     name: 'cerebras',
     url: 'https://api.cerebras.ai/v1/chat/completions',
     key: env.CEREBRAS_API_KEY,
-    models: ['qwen-3-32b', 'llama-3.3-70b'],
+    models: ['llama-3.3-70b', 'qwen-3-32b', 'llama3.1-8b'],
   } : null;
   const orKey = (extraOrKey && extraOrKey.trim().length > 10 ? extraOrKey.trim() : '') || (env.OPENROUTER_API_KEY || '').trim();
   const openrouter = orKey ? {
@@ -1195,40 +1195,121 @@ function activeRelaySpecs(env, mode, extraOrKey = '') {
     models: OR_FREE_MODELS,
     headers: { 'HTTP-Referer': 'https://nrnworld.one/MyOffiCity/', 'X-Title': 'MyOffiCity' },
   } : null;
-  const order = isLead
-    ? [gemini, sambanova, groq, mistral, cerebras, openrouter]
+  const baseOrder = isLead
+    ? [gemini, groq, mistral, sambanova, cerebras, openrouter]
     : isDesign
-      ? [gemini, mistral, sambanova, groq, cerebras, openrouter]
-      : [mistral, groq, sambanova, gemini, cerebras, openrouter];
-  for (const p of order) if (p) list.push(p);
+      ? [gemini, mistral, groq, sambanova, cerebras, openrouter]
+      : [mistral, groq, cerebras, sambanova, gemini, openrouter];
+  const active = baseOrder.filter(Boolean);
+  if (active.length > 1) {
+    // Rotera startleverantör varje timme så att ingen enskild gratiskvot (t.ex. Mistral) töms på förmiddagen
+    const rot = Math.floor(Date.now() / 3600000) % active.length;
+    for (let i = 0; i < active.length; i++) list.push(active[(i + rot) % active.length]);
+  } else {
+    for (const p of active) list.push(p);
+  }
   return list;
+}
+
+function compactRelayMessages(messages, maxUserChars = 5500) {
+  return messages.map((m, idx) => {
+    if (idx === messages.length - 1 && typeof m.content === 'string' && m.content.length > maxUserChars) {
+      return { ...m, content: m.content.slice(0, maxUserChars) + '\n/* ... (context trimmed to fit provider TPM limit) ... */' };
+    }
+    return m;
+  });
+}
+
+const _liveModelCache = new Map();
+async function discoverLiveModels(p) {
+  const cached = _liveModelCache.get(p.name);
+  if (cached && (Date.now() - cached.ts) < 6 * 3600000) return cached.models;
+  const modelsUrl = p.url.replace(/\/chat\/completions$/, '/models');
+  try {
+    const res = await fetch(modelsUrl, {
+      method: 'GET',
+      signal: AbortSignal.timeout(10000),
+      headers: { Authorization: 'Bearer ' + p.key, ...(p.headers || {}) },
+    });
+    if (!res.ok) return [];
+    const j = await res.json().catch(() => null);
+    const raw = Array.isArray(j?.data) ? j.data : (Array.isArray(j?.models) ? j.models : []);
+    const skip = /embed|whisper|tts|audio|speech|imagen|veo|guard|moderation|rerank|aqa|bison|gecko|transcribe|playai|orpheus|safeguard|prompt-guard|compound|robotics|computer-use|deep-research|nano-banana|lyria/i;
+    const ids = raw
+      .map(m => String(m?.id || m?.name || '').replace(/^models\//, '').trim())
+      .filter(id => id && !skip.test(id));
+    const score = (id) => {
+      const l = id.toLowerCase();
+      let s = 0;
+      if (/gemini-3|gemini-2\.5|llama-4|qwen3|deepseek-v3|deepseek-r1|codestral|mistral-large/i.test(l)) s += 30;
+      if (/flash|versatile|coder|instruct|70b|32b|27b/i.test(l)) s += 15;
+      if (/preview|exp|lite|mini|instant|8b/i.test(l)) s += 5;
+      if (/-\d{4}|-001|-002/i.test(l)) s -= 3;
+      return s;
+    };
+    const picked = [...new Set(ids)].sort((a, b) => score(b) - score(a)).slice(0, 5);
+    _liveModelCache.set(p.name, { ts: Date.now(), models: picked });
+    return picked;
+  } catch {
+    return [];
+  }
 }
 
 async function runExternalRelay(env, mode, messages, maxTokens = 1200, temperature = 0.3, extraOrKey = '') {
   const providers = activeRelaySpecs(env, mode, extraOrKey);
-  let lastErr = '';
+  const errs = [];
+  const tryCall = async (p, model, msgs, mt) => {
+    const res = await fetch(p.url, {
+      method: 'POST',
+      signal: AbortSignal.timeout(25000),
+      headers: {
+        Authorization: 'Bearer ' + p.key,
+        'Content-Type': 'application/json',
+        ...(p.headers || {}),
+      },
+      body: JSON.stringify({ model, messages: msgs, max_tokens: mt, temperature }),
+    });
+    if (!res.ok) return { ok: false, status: res.status };
+    const j = await res.json().catch(() => null);
+    const text = String(j?.choices?.[0]?.message?.content || '').trim();
+    return text ? { ok: true, text } : { ok: false, status: 'empty' };
+  };
   for (const p of providers) {
-    for (const model of p.models) {
-      try {
-        const res = await fetch(p.url, {
-          method: 'POST',
-          headers: {
-            Authorization: 'Bearer ' + p.key,
-            'Content-Type': 'application/json',
-            ...(p.headers || {}),
-          },
-          body: JSON.stringify({ model, messages, max_tokens: maxTokens, temperature }),
-        });
-        if (!res.ok) { lastErr = `${p.name}/${model} HTTP ${res.status}`; continue; }
-        const j = await res.json().catch(() => null);
-        const text = String(j?.choices?.[0]?.message?.content || '').trim();
-        if (text) return { text, model: `${p.name}:${model}`, provider: p.name };
-      } catch (e) {
-        lastErr = `${p.name}/${model}: ${String(e && e.message || e)}`;
+    let pErr = '';
+    let saw404 = false;
+    const tried = new Set();
+    const runList = async (modelList) => {
+      for (const model of modelList) {
+        if (tried.has(model)) continue;
+        tried.add(model);
+        try {
+          let r = await tryCall(p, model, messages, maxTokens);
+          if (!r.ok && (r.status === 413 || r.status === 400)) {
+            r = await tryCall(p, model, compactRelayMessages(messages, 5500), Math.min(1800, maxTokens));
+          }
+          if (r.ok) return { text: r.text, model: `${p.name}:${model}`, provider: p.name };
+          pErr = `${p.name}:${r.status}`;
+          if (r.status === 404) saw404 = true;
+          if (r.status === 401 || r.status === 403 || r.status === 402) return 'stop';
+        } catch (e) {
+          pErr = `${p.name}:err`;
+        }
+      }
+      return null;
+    };
+    const hit1 = await runList(p.models);
+    if (hit1 && hit1 !== 'stop') return hit1;
+    if (hit1 !== 'stop' && saw404) {
+      // Auto-upptäck aktuella aktiva modeller från leverantörens /models-endpoint så 404 aldrig stoppar oss igen!
+      const liveModels = await discoverLiveModels(p);
+      if (liveModels.length) {
+        const hit2 = await runList(liveModels);
+        if (hit2 && hit2 !== 'stop') return hit2;
       }
     }
+    if (pErr) errs.push(pErr);
   }
-  return { text: '', model: '', provider: '', lastErr };
+  return { text: '', model: '', provider: '', lastErr: errs.join(', ') };
 }
 
 function clientIp(req) {
@@ -1534,16 +1615,18 @@ async function callSprintAi(env, orKey, messages, maxTokens = 1600, tier = 'work
   const relayMode = tier === 'lead' ? 'lead' : tier === 'design' ? 'design' : 'coder';
   const ext = await runExternalRelay(env, relayMode, messages, maxTokens, 0.25, orKey);
   if (ext.text) return { text: ext.text, model: ext.model };
-  let lastErr = ext.lastErr || '';
-  if (!env.AI || !env.DB) throw new HttpError(503, 'ai_unavailable', lastErr || 'AI not configured');
+  const extSummary = ext.lastErr ? `Externa [${ext.lastErr}]` : '';
+  let cfErr = '';
+  if (!env.AI || !env.DB) throw new HttpError(503, 'ai_unavailable', extSummary || 'AI not configured');
   const day = new Date().toISOString().slice(0, 10);
   await ensureAiQuotaTable(env);
   await env.DB.prepare('INSERT OR IGNORE INTO ai_quota (day, scope, count) VALUES (?, ?, 0)').bind(day, 'global_neurons').run();
-  const estNeurons = 90;
+  const promptChars = messages.reduce((a, m) => a + String(m?.content || '').length, 0);
+  const estNeurons = Math.max(120, Math.min(900, Math.ceil((promptChars / 4 + Math.min(2048, maxTokens)) * 0.08)));
   const nRes = await env.DB.prepare('UPDATE ai_quota SET count = count + ? WHERE day = ? AND scope = ? AND count + ? <= ?')
     .bind(estNeurons, day, 'global_neurons', estNeurons, FREE_AI_GLOBAL_NEURONS_CAP).run();
   if (!nRes?.meta?.changes) {
-    throw new HttpError(429, 'free_ai_neuron_cap_exceeded', 'Dagens gratisgräns på Cloudflare är nådd – nästa pass körs imorgon.');
+    throw new HttpError(429, 'free_ai_neuron_cap_exceeded', (extSummary ? extSummary + ' | ' : '') + 'Dagens gratisgräns på Cloudflare är nådd – nästa pass körs imorgon.');
   }
   const cfModels = tier === 'lead'
     ? ['@cf/meta/llama-3.3-70b-instruct-fp8-fast', '@cf/qwen/qwen2.5-coder-32b-instruct', '@cf/deepseek-ai/deepseek-r1-distill-qwen-32b']
@@ -1554,11 +1637,12 @@ async function callSprintAi(env, orKey, messages, maxTokens = 1600, tier = 'work
       const text = String((r && (r.response || r.result || r?.choices?.[0]?.message?.content)) || '').trim();
       if (text) return { text, model: mid };
     } catch (e) {
-      lastErr = String(e && e.message || e);
+      cfErr = String(e && e.message || e);
     }
   }
   await env.DB.prepare('UPDATE ai_quota SET count = MAX(0, count - ?) WHERE day = ? AND scope = ?').bind(estNeurons, day, 'global_neurons').run().catch(() => {});
-  throw new HttpError(502, 'ai_run_failed', 'AI-fel: ' + lastErr.slice(0, 180));
+  const detail = [extSummary, cfErr ? `CF: ${cfErr}` : ''].filter(Boolean).join(' | ');
+  throw new HttpError(502, 'ai_run_failed', 'AI-fel: ' + detail.slice(0, 240));
 }
 
 async function addSprintLog(env, sprintId, agent, message) {
@@ -1918,11 +2002,23 @@ async function runSprintStep(env, sprint) {
     }).sort((a, b) => b.sc - a.sc).slice(0, 3);
 
     const fileCtx = [];
+    let totalCtxChars = 0;
     for (const item of scored) {
+      if (totalCtxChars >= 12000) break;
       try {
         const f = await ghApi(sprint.gh_token, `/repos/${sprint.repo}/contents/${encodeURIComponent(item.p).replace(/%2F/g, '/')}?ref=${encodeURIComponent(sprint.work_branch)}`);
-        const limit = item.p.includes('agent-addons.') ? 16000 : 5000;
-        if (f && f.content && f.size < 40000) fileCtx.push(`--- FILE: ${item.p} ---\n${b64DecodeUtf8(f.content).slice(0, limit)}`);
+        if (f && f.content && f.size < 60000) {
+          const decoded = b64DecodeUtf8(f.content);
+          let snippet;
+          if (item.p.includes('agent-addons.') && decoded.length > 4200) {
+            // Skicka API-huvudet + slutet så kontexten ryms hos alla gratis-AI-motorer (Groq/Cerebras/SambaNova/Mistral/Gemini)
+            snippet = decoded.slice(0, 2600) + '\n/* ... (existing addons omitted) ... */\n' + decoded.slice(-1400);
+          } else {
+            snippet = decoded.slice(0, 4500);
+          }
+          totalCtxChars += snippet.length;
+          fileCtx.push(`--- FILE: ${item.p} ---\n${snippet}`);
+        }
       } catch { /* */ }
     }
 
@@ -1972,7 +2068,7 @@ Rules:
         role: 'user',
         content: `Sprint goal: ${sprint.goal}\nTask #${task.seq}: ${task.title}\nDetails: ${task.details}\n\nRepo files:\n${treePaths.join('\n') || '(empty)'}\n\nRelevant existing files:\n${fileCtx.join('\n\n') || '(none)'}`,
       },
-    ], 3200, workerTier);
+    ], 2400, workerTier);
 
     const parseAgentFiles = (raw) => {
       const txt = String(raw || '');

@@ -1392,6 +1392,16 @@ async function freeAiQuota(req, env) {
   ]);
   const usedN = nRow?.count || 0, usedG = gRow?.count || 0, usedIp = ipRow?.count || 0;
   const relays = activeRelaySpecs(env, 'code').map(p => p.name);
+  let localGpu = { online: false, lead_model: '', coder_model: '' };
+  try {
+    const lc = await getLocalAiConfig(env);
+    if (lc && lc.url) {
+      const hr = await fetch(lc.url + '/health', { signal: AbortSignal.timeout(2500) });
+      if (hr.ok) {
+        localGpu = { online: true, lead_model: lc.lead_model || 'gemma4:12b', coder_model: lc.coder_model || 'qwen3.5:9b' };
+      }
+    }
+  } catch { /* dator avstängd eller tunnel nere */ }
   return {
     ok: true,
     configured: true,
@@ -1400,8 +1410,9 @@ async function freeAiQuota(req, env) {
     remaining_neurons: Math.max(0, FREE_AI_GLOBAL_NEURONS_CAP - usedN),
     remaining_global: Math.max(0, FREE_AI_GLOBAL_DAILY_CAP - usedG),
     remaining_ip: Math.max(0, FREE_AI_IP_DAILY_CAP - usedIp),
+    local_gpu: localGpu,
     relay_providers: relays,
-    relay_count: relays.length + 1,
+    relay_count: relays.length + (localGpu.online ? 2 : 1),
     models: Object.entries(FREE_AI_MODELS).map(([k, v]) => ({ key: k, id: v.id })),
   };
 }

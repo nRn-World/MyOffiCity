@@ -2221,3 +2221,51 @@
     document.getElementById('profile-icon-display').innerText = savedProfileIcon;
   }
 })();
+
+(() => {
+  const notifications = [];
+
+  function addNotification(message) {
+    const notificationDiv = document.createElement('div');
+    notificationDiv.className = 'moc-notification';
+    notificationDiv.innerHTML = `
+      <span>${message}</span>
+      <button onclick="this.parentElement.remove()">×</button>
+    `;
+    notifications.push(notificationDiv);
+    document.querySelector('.moc-notifications').appendChild(notificationDiv);
+
+    // Remove notification after 10 seconds
+    setTimeout(() => {
+      const index = notifications.indexOf(notificationDiv);
+      if (index > -1) {
+        notifications.splice(index, 1);
+        notificationDiv.remove();
+      }
+    }, 10000);
+  }
+
+  // Example usage: addNotification('Ett nytt meddelande har anlänt!');
+  window.addEventListener('keydown', (event) => {
+    if (event.key === 'n' && event.ctrlKey) {
+      addNotification('Ett nytt meddelande har anlänt via tangentbordsgenväg!');
+    }
+  });
+
+  // Initialize notifications container
+  const notificationsContainer = document.createElement('div');
+  notificationsContainer.className = 'moc-notifications';
+  document.body.appendChild(notificationsContainer);
+
+  // Register the feature
+  window.MyOffiCityAddons.register('Real-tidsmeddelanden');
+
+  // Add tool to dock
+  const notificationsButton = document.createElement('button');
+  notificationsButton.className = 'moc-dock-btn';
+  notificationsButton.innerHTML = '<span>🔔</span> Meddelanden';
+  notificationsButton.onclick = () => {
+    notificationsContainer.classList.toggle('visible');
+  };
+  window.MyOffiCityAddons.addTool('Meddelanden', '🔔', notificationsButton);
+})();

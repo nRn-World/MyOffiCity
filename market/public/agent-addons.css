@@ -3746,3 +3746,42 @@ a.moc-breadcrumb-item:hover {
 .moc-breadcrumb:hover .moc-bc-seg {
   text-decoration: underline;
 }
+
+.moc-tour-box {
+  position: fixed;
+  z-index: 10000;
+  width: 250px;
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.98);
+  border: 1px solid #d9b46a;
+  border-radius: 12px;
+  color: #f3ecdc;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+  backdrop-filter: blur(10px);
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  pointer-events: auto;
+}
+.moc-tour-box h3 { margin: 0 0 8px; color: #d9b46a; font-size: 16px; }
+.moc-tour-box p { margin: 0 0 15px; font-size: 13px; line-height: 1.4; opacity: 0.9; }
+.moc-tour-btns { display: flex; justify-content: flex-end; }
+.moc-tour-btns button {
+  background: #d9b46a;
+  color: #0f172a;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 12px;
+}
+.moc-btn-tour {
+  width: 100%;
+  padding: 8px;
+  background: rgba(217, 180, 106, 0.1);
+  border: 1px dashed #d9b46a;
+  color: #d9b46a;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.moc-btn-tour:hover { background: rgba(217, 180, 106, 0.2); }

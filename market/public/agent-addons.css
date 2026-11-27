@@ -4604,3 +4604,58 @@ body {
   border-radius: 4px;
   border-left: 2px solid #d9b46a;
 }
+
+/* --------------------------------------------------------------------------
+   Contextual Hover Cards – visar kort sammanfattning + status på .cards‑kort
+   --------------------------------------------------------------- */
+.cards .card {
+  position: relative;               /* för ::before / ::after placering */
+  cursor: pointer;
+}
+
+/* Status‑badge i övre högra hörnet (online / offline) */
+.cards .card::before {
+  content: attr(data-status);
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  padding: 2px 5px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 3px;
+  text-transform: capitalize;
+}
+
+/* Hover‑tooltip med kort sammanfattning */
+.cards .card:hover::after {
+  content: attr(data-summary);
+  position: absolute;
+  left: 50%;
+  bottom: 110%;
+  transform: translateX(-50%);
+  max-width: 200px;
+  padding: 6px 8px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #f3ecdc;
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(217, 180, 106, 0.32);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  white-space: normal;
+  z-index: 999;
+}
+
+/* Små pil‑effekt under tooltipen */
+.cards .card:hover::after::before {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: rgba(15, 23, 42, 0.92) transparent transparent transparent;
+}

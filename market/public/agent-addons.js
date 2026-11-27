@@ -3168,3 +3168,56 @@
     window.MyOffiCityAddons.register('Reading Progress Bar');
   } catch(e) {}
 })();
+
+(() => {
+  try {
+    const toolEl = document.createElement('div');
+    toolEl.className = 'moc-save-monitor';
+    toolEl.innerHTML = `
+      <div class="moc-save-status"><span class="moc-save-dot"></span><span class="moc-save-text">System redo</span></div>
+      <div class="moc-save-time">Väntar på autosave...</div>
+    `;
+    window.MyOffiCityAddons.addTool('Auto-Save', '💾', toolEl);
+
+    const triggerUI = () => {
+      const chat = document.querySelector('.tc-box') || document.querySelector('.dmain');
+      if (!chat) return;
+      let pill = chat.querySelector('.moc-save-pill');
+      if (!pill) {
+        pill = document.createElement('div');
+        pill.className = 'moc-save-pill';
+        pill.textContent = '✨ Sparat';
+        if (getComputedStyle(chat).position === 'static') chat.style.position = 'relative';
+        chat.appendChild(pill);
+      }
+      pill.classList.remove('active');
+      void pill.offsetWidth; 
+      pill.classList.add('active');
+      
+      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      toolEl.querySelector('.moc-save-time').textContent = `Senast synkad: ${timeStr}`;
+      toolEl.querySelector('.moc-save-text').textContent = 'Konfiguration sparad';
+    };
+
+    // Smart interceptor: Fångar nätverksanrop till local-ai eller agent-API:er
+    const originalFetch = window.fetch;
+    window.fetch = function(...args) {
+      return originalFetch.apply(this, args).then(res => {
+        const url = String(args[0] || '');
+        const opts = args[1] || {};
+        const isWrite = ['POST', 'PUT', 'PATCH'].includes(opts.method);
+        if (res.ok && isWrite && (url.includes('local-ai') || url.includes('agent') || url.includes('config'))) {
+          triggerUI();
+        }
+        return res;
+      });
+    };
+
+    // Lyssna även på lokala ändringar (fallback)
+    window.addEventListener('storage', (e) => {
+      if (e.key && (e.key.includes('agent') || e.key.includes('moc_'))) triggerUI();
+    });
+
+    window.MyOffiCityAddons.register('Auto-Save Monitor');
+  } catch(e) {}
+})();

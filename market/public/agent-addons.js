@@ -7918,3 +7918,149 @@
     console.error('Theme Switcher Error:', e);
   }
 })();
+
+(() => {
+  try {
+    /* ---------- Kommandodefinitioner ---------- */
+    const commands = [
+      { name: 'Gå till Hem', action: () => (location.hash = '#/'), keywords: ['hem', 'home'] },
+      { name: 'Gå till Stad', action: () => (location.hash = '#/city'), keywords: ['stad', 'city'] },
+      { name: 'Gå till Dashboard', action: () => (location.hash = '#/dash'), keywords: ['dashboard', 'dash', 'panel'] },
+      { name: 'Tema: Auto', action: () => setTheme('auto'), keywords: ['tema', 'auto'] },
+      { name: 'Tema: Ljus', action: () => setTheme('light'), keywords: ['tema', 'ljus', 'light'] },
+      { name: 'Tema: Mörk', action: () => setTheme('dark'), keywords: ['tema', 'mörk', 'dark'] },
+      { name: 'Kopiera agent‑ID', action: copyAgentId, keywords: ['kopiera', 'agent', 'id', 'copy'] },
+    ];
+
+    /* ---------- Hjälpfunktioner ---------- */
+    const fuzzyMatch = (query, str) => {
+      query = query.toLowerCase();
+      str = str.toLowerCase();
+      let i = 0;
+      for (let ch of str) {
+        if (ch === query[i]) i++;
+        if (i === query.length) break;
+      }
+      return i === query.length;
+    };
+
+    const setTheme = (theme) => {
+      const root = document.documentElement;
+      if (theme === 'auto') root.removeAttribute('data-theme');
+      else root.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+    };
+
+    const copyAgentId = async () => {
+      const id = window.agentId || document.body.dataset.agentId || 'unknown';
+      try {
+        await navigator.clipboard.writeText(id);
+        alert('Agent‑ID kopierad: ' + id);
+      } catch (e) {
+        console.error('Kunde inte kopiera agent‑ID', e);
+      }
+    };
+
+    /* ---------- Palette‑UI ---------- */
+    let overlay = null;
+    const openPalette = () => {
+      if (overlay) return; // redan öppen
+
+      overlay = document.createElement('div');
+      overlay.className = 'mcp-overlay';
+
+      const modal = document.createElement('div');
+      modal.className = 'mcp-modal';
+
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'mcp-input';
+      input.placeholder = 'Skriv ett kommando…';
+      modal.appendChild(input);
+
+      const list = document.createElement('ul');
+      list.className = 'mcp-list';
+      modal.appendChild(list);
+      overlay.appendChild(modal);
+      document.body.appendChild(overlay);
+      input.focus();
+
+      const render = () => {
+        const q = input.value.trim();
+        const filtered = commands.filter(c =>
+          fuzzyMatch(q, c.name) ||
+          c.keywords.some(k => fuzzyMatch(q, k))
+        );
+        list.innerHTML = '';
+        filtered.slice(0, 10).forEach((c, idx) => {
+          const li = document.createElement('li');
+          li.className = 'mcp-item';
+          li.textContent = c.name;
+          li.tabIndex = 0;
+          li.dataset.idx = idx;
+          li.addEventListener('click', () => { c.action(); close(); });
+          li.addEventListener('keydown', e => {
+            if (e.key === 'Enter') { c.action(); close(); }
+          });
+          list.appendChild(li);
+        });
+        const first = list.querySelector('.mcp-item');
+        if (first) first.classList.add('active');
+      };
+
+      const moveActive = (delta) => {
+        const items = Array.from(list.querySelectorAll('.mcp-item'));
+        if (!items.length) return;
+        let cur = items.findIndex(i => i.classList.contains('active'));
+        items[cur]?.classList.remove('active');
+        cur = (cur + delta + items.length) % items.length;
+        items[cur].classList.add('active');
+        items[cur].scrollIntoView({ block: 'nearest' });
+      };
+
+      const keyNav = e => {
+        if (e.key === 'Escape') { close(); return; }
+        if (e.key === 'ArrowDown') { e.preventDefault(); moveActive(1); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); moveActive(-1); }
+        else if (e.key === 'Enter') {
+          const active = list.querySelector('.mcp-item.active');
+          if (active) {
+            const idx = Number(active.dataset.idx);
+            const cmd = commands.filter(c => true)[idx];
+            cmd && cmd.action();
+            close();
+          }
+        }
+      };
+
+      const close = () => {
+        overlay?.remove();
+        overlay = null;
+        document.removeEventListener('keydown', keyNav);
+      };
+
+      input.addEventListener('input', render);
+      overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+      document.addEventListener('keydown', keyNav);
+      render();
+    };
+
+    /* ---------- Globalt kortkommando ---------- */
+    const shortcutHandler = e => {
+      const isMac = navigator.platform.toUpperCase().includes('MAC');
+      if ((isMac ? e.metaKey : e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'p') {
+        e.preventDefault();
+        openPalette();
+      }
+    };
+    document.addEventListener('keydown', shortcutHandler);
+
+    /* ---------- Lägg till verktyg i docken ---------- */
+    const toolEl = document.createElement('div');
+    toolEl.innerHTML = '<p>⌨️ Command Palette (Cmd/Ctrl + Shift + P)</p>';
+    window.MyOffiCityAddons.addTool('Command Palette', '⌨️', toolEl);
+    window.MyOffiCityAddons.register('Command Palette');
+  } catch (e) {
+    console.error('Command Palette addon error:', e);
+  }
+})();

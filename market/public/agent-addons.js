@@ -2719,3 +2719,38 @@
     window.MyOffiCityAddons.register('Breadcrumb-navigering');
   } catch(e) {}
 })();
+
+(() => {
+  try {
+    const shortcuts = [
+      { key: 'a', label: 'Öppna AI-tillägg', action: () => window.MyOffiCityAddons.toggleDock() },
+      { key: 'm', label: 'Marknadsplats / Dash', action: () => window.location.hash = '#/dash' },
+      { key: 'h', label: 'Hem (3D-vy)', action: () => window.location.hash = '#/' }
+    ];
+
+    window.addEventListener('keydown', (e) => {
+      const isInput = ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName) || document.activeElement.isContentEditable;
+      if (isInput || e.ctrlKey || e.metaKey || e.altKey) return;
+      
+      const match = shortcuts.find(s => s.key === e.key.toLowerCase());
+      if (match) {
+        e.preventDefault();
+        match.action();
+      }
+    });
+
+    const info = document.createElement('div');
+    info.className = 'moc-shortcut-list';
+    info.innerHTML = `
+      <div style="margin-bottom:10px;font-size:12px;opacity:0.8;">Snabba kommandon för navigation:</div>
+      ${shortcuts.map(s => `
+        <div class="moc-shortcut-item">
+          <kbd>${s.key.toUpperCase()}</kbd> <span>${s.label}</span>
+        </div>
+      `).join('')}
+    `;
+    
+    window.MyOffiCityAddons.addTool('Genvägar', '⌨️', info);
+    window.MyOffiCityAddons.register('Keyboard-shortcuts');
+  } catch(e) { console.error('Shortcut error:', e); }
+})();

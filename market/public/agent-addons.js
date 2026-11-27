@@ -3599,3 +3599,35 @@
     console.error('Heatmap error:', e);
   }
 })();
+
+(() => {
+  try {
+    const initClipboard = () => {
+      const boxes = document.querySelectorAll('.tc-box');
+      boxes.forEach(box => {
+        if (box.querySelector('.moc-copy-btn')) return;
+        
+        const btn = document.createElement('button');
+        btn.className = 'moc-copy-btn';
+        btn.innerHTML = '📋';
+        btn.title = 'Kopiera innehåll';
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          const text = box.innerText.replace('📋', '').trim();
+          navigator.clipboard.writeText(text).then(() => {
+            const original = btn.innerHTML;
+            btn.innerHTML = '✅';
+            setTimeout(() => btn.innerHTML = original, 2000);
+          });
+        };
+        box.style.position = 'relative';
+        box.appendChild(btn);
+      });
+    };
+
+    setInterval(initClipboard, 2000);
+    window.MyOffiCityAddons.register('Smart Clipboard');
+  } catch(e) {
+    console.error('Clipboard error:', e);
+  }
+})();

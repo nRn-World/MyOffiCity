@@ -6756,3 +6756,53 @@
     }
   } catch (e) { console.error('Theme Error:', e); }
 })();
+
+(() => {
+  try {
+    const commands = [
+      { title: 'Gå till Hem', action: () => window.location.hash = '#/' },
+      { title: 'Gå till City', action: () => window.location.hash = '#/city' },
+      { title: 'Gå till Dashboard', action: () => window.location.hash = '#/dash' },
+      { title: 'Byt tema', action: () => document.querySelector('button[onclick*="toggleTheme"]')?.click() },
+      { title: 'Kopiera länk', action: () => navigator.clipboard.writeText(window.location.href).then(() => alert('Länk kopierad!')) }
+    ];
+
+    const modal = document.createElement('div');
+    modal.className = 'moc-cmd-palette';
+    modal.innerHTML = `
+      <div class="moc-cmd-inner">
+        <input type="text" placeholder="Sök kommando (t.ex. 'City')..." id="moc-cmd-input">
+        <ul id="moc-cmd-list"></ul>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    const input = modal.querySelector('#moc-cmd-input');
+    const list = modal.querySelector('#moc-cmd-list');
+
+    const render = (filter = '') => {
+      list.innerHTML = '';
+      const filtered = commands.filter(c => c.title.toLowerCase().includes(filter.toLowerCase()));
+      filtered.forEach(c => {
+        const li = document.createElement('li');
+        li.textContent = c.title;
+        li.onclick = () => { c.action(); modal.style.display = 'none'; };
+        list.appendChild(li);
+      });
+    };
+
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+        if (modal.style.display === 'flex') input.focus();
+      }
+      if (e.key === 'Escape') modal.style.display = 'none';
+    });
+
+    input.oninput = (e) => render(e.target.value);
+    modal.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
+    render();
+    window.MyOffiCityAddons.register('Command Palette');
+  } catch (e) { console.error('CmdPalette Error:', e); }
+})();

@@ -2257,3 +2257,9 @@ body.moc-zen-active canvas {
 #agent-sort:focus, #agent-tag-filter:focus {
   border-color: #f3ecdc;
 }
+
+/* Ambient Soundscape widget styles */
+#noise-vol {
+  accent-color: #d9b46a;
+  cursor: pointer;
+}

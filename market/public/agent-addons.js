@@ -2854,3 +2854,62 @@
     window.MyOffiCityAddons.register('Agent-Filter');
   } catch(e) {}
 })();
+
+(() => {
+  try {
+    let audioCtx = null;
+    let noiseNode = null;
+    let gainNode = null;
+
+    const container = document.createElement('div');
+    container.innerHTML = `
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <label style="font-size:11px; color:#94a3b8;">Volym: <span id="vol-val">0</span>%</label>
+        <input type="range" id="noise-vol" min="0" max="100" value="0" style="width:100%;">
+        <button id="noise-toggle" style="background:#d9b46a; color:#0f172a; border:none; padding:6px; cursor:pointer; font-weight:bold; border-radius:4px;">Starta Ljud</button>
+      </div>
+    `;
+
+    const toggleBtn = container.querySelector('#noise-toggle');
+    const volSlider = container.querySelector('#noise-vol');
+    const volVal = container.querySelector('#vol-val');
+
+    toggleBtn.addEventListener('click', () => {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const bufferSize = audioCtx.sampleRate * 2;
+        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+        noiseNode = audioCtx.createBufferSource();
+        noiseNode.buffer = buffer;
+        noiseNode.loop = true;
+
+        gainNode = audioCtx.createGain();
+        gainNode.gain.value = 0;
+
+        noiseNode.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        noiseNode.start();
+      }
+
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      
+      const isPlaying = toggleBtn.textContent === 'Stoppa Ljud';
+      toggleBtn.textContent = isPlaying ? 'Starta Ljud' : 'Stoppa Ljud';
+      gainNode.gain.value = isPlaying ? 0 : (volSlider.value / 100) * 0.05;
+    });
+
+    volSlider.addEventListener('input', (e) => {
+      const val = e.target.value;
+      volVal.textContent = val;
+      if (gainNode && toggleBtn.textContent === 'Stoppa Ljud') {
+        gainNode.gain.value = (val / 100) * 0.05;
+      }
+    });
+
+    window.MyOffiCityAddons.addTool('Ambient Soundscape', '🔊', container);
+    window.MyOffiCityAddons.register('Ambient Soundscape');
+  } catch(e) {}
+})();

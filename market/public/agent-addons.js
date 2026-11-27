@@ -7130,3 +7130,50 @@
     console.error('Focus Mode Addon Error:', e);
   }
 })();
+
+(() => {
+  try {
+    // Vänta tills hela sidan är laddad
+    document.addEventListener('DOMContentLoaded', () => {
+      const boxes = document.querySelectorAll('.tc-box');
+      if (!boxes.length) return;
+
+      boxes.forEach((box) => {
+        // Skapa knapp
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'moc-clipboard-btn';
+        btn.textContent = 'Kopiera som JSON';
+        btn.title = 'Kopiera agentens metadata till urklipp';
+
+        // Klick‑handler
+        btn.addEventListener('click', async () => {
+          try {
+            // Samla alla data‑attribut från .tc-box
+            const meta = { ...box.dataset };
+            // Om det finns någon textuell metadata i elementet kan vi också lägga till den
+            const textParts = [];
+            box.querySelectorAll('[data-key]').forEach((el) => {
+              const key = el.getAttribute('data-key');
+              if (key) textParts.push({ [key]: el.textContent.trim() });
+            });
+            if (textParts.length) Object.assign(meta, ...textParts);
+
+            const json = JSON.stringify(meta, null, 2);
+            await navigator.clipboard.writeText(json);
+            const original = btn.textContent;
+            btn.textContent = 'Kopierad!';
+            setTimeout(() => { btn.textContent = original; }, 2000);
+          } catch (e) {
+            console.error('Smart Clipboard fel:', e);
+          }
+        });
+
+        // Lägg till knappen i slutet av .tc-box‑innehållet
+        box.appendChild(btn);
+      });
+    });
+  } catch (e) {
+    console.error('Smart Clipboard Addon Error:', e);
+  }
+})();

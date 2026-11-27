@@ -5113,3 +5113,21 @@ body.moc-focus-mode .chat-container {
   border: 1px solid #d9b46a !important;
   box-shadow: 0 0 30px rgba(217, 180, 106, 0.2) !important;
 }
+
+/* Smart Clipboard‑knapp i .tc-box */
+.moc-clipboard-btn {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 4px 8px;
+  background: #d9b46a;
+  color: #0f172a;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background 0.18s ease;
+}
+.moc-clipboard-btn:hover {
+  background: #c5a35e;
+}

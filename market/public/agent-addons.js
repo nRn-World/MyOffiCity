@@ -9898,3 +9898,65 @@
     console.error("Wayfinding Tool Error:", e);
   }
 })();
+
+(() => {
+  try {
+    const syncContainer = document.createElement('div');
+    syncContainer.id = 'moc-sync-widget';
+    syncContainer.className = 'moc-sync-indicator';
+    syncContainer.innerHTML = `
+      <span id="moc-sync-dot" class="moc-sync-dot status-idle"></span>
+      <span id="moc-sync-text">Syncing...</span>
+    `;
+
+    const updateStatus = (state) => {
+      const dot = document.getElementById('moc-sync-dot');
+      const text = document.getElementById('moc-sync-text');
+      
+      dot.className = 'moc-sync-dot'; // Reset
+      
+      switch(state) {
+        case 'online':
+          dot.classList.add('status-online');
+          text.innerText = 'Agents Online';
+          break;
+        case 'processing':
+          dot.classList.add('status-processing');
+          text.innerText = 'Processing...';
+          break;
+        case 'idle':
+          dot.classList.add('status-idle');
+          text.innerText = 'Agents Idle';
+          break;
+        default:
+          dot.classList.add('status-idle');
+          text.innerText = 'Disconnected';
+      }
+    };
+
+    // Monitor local-ai-bridge logic via interval or event if available
+    // Here we simulate the check against the bridge's state
+    setInterval(() => {
+      if (window.localAiBridge && window.localAiBridge.isProcessing) {
+        updateStatus('processing');
+      } else if (window.localAiBridge && window.localAiBridge.isConnected) {
+        updateStatus('online');
+      } else {
+        updateStatus('idle');
+      }
+    }, 2000);
+
+    window.MyOffiCityAddons.addTool('Agent Sync', '🔄', syncContainer);
+    window.MyOffiCityAddons.register('AgentSyncStatus');
+    
+    // Append to a visible area (e.g., near topbar or a fixed position)
+    document.body.appendChild(syncContainer);
+    syncContainer.style.position = 'fixed';
+    syncContainer.style.top = '20px';
+    syncContainer.style.right = '20px';
+    syncContainer.style.zIndex = '1000';
+
+  } catch (e) {
+    console.error('Agent-Sync Widget Error:', e);
+  }
+})();

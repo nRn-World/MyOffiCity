@@ -8686,3 +8686,31 @@
     console.error('Price Trends Addon Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const style = document.createElement('style');
+    style.textContent = `.moc-dimmed { filter: brightness(0.3) blur(2px); transition: filter 0.4s ease; }`;
+    document.head.appendChild(style);
+
+    const target = document.querySelector('#app') || document.body;
+    const main = document.querySelector('.dmain') || document.body;
+
+    const applyDim = (dim) => {
+      const canvas = document.querySelector('canvas');
+      if (canvas) {
+        canvas.classList.toggle('moc-dimmed', dim);
+      }
+    };
+
+    [target, main].forEach(el => {
+      if (!el) return;
+      el.addEventListener('mouseenter', () => applyDim(true));
+      el.addEventListener('mouseleave', () => applyDim(false));
+    });
+
+    window.MyOffiCityAddons.register('Focus-Zone');
+  } catch (e) {
+    console.error('Focus-Zone Error:', e);
+  }
+})();

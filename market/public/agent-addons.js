@@ -4976,3 +4976,95 @@
     console.error('Drag‑Drop‑preview‑addon error:', e);
   }
 })();
+
+(() => {
+  try {
+    const storageKey = 'mocQuickActions';
+    const defaultActions = [
+      {label: 'Chat', icon: '💬', action: 'chat'},
+      {label: 'Code Review', icon: '📝', action: 'codeReview'},
+      {label: 'Deploy', icon: '🚀', action: 'deploy'}
+    ];
+
+    function loadActions() {
+      const stored = localStorage.getItem(storageKey);
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch {}
+      }
+      return defaultActions;
+    }
+
+    function saveActions(actions) {
+      localStorage.setItem(storageKey, JSON.stringify(actions));
+    }
+
+    function createButton(action) {
+      const btn = document.createElement('button');
+      btn.className = 'moc-quick-action';
+      btn.title = action.label;
+      btn.innerHTML = `${action.icon} ${action.label}`;
+      btn.addEventListener('click', () => {
+        if (action.action === 'chat') {
+          const chat = document.getElementById('chat');
+          if (chat) chat.hidden = !chat.hidden;
+        } else if (action.action === 'codeReview') {
+          const cr = document.getElementById('code-review');
+          if (cr) cr.hidden = !cr.hidden;
+        } else if (action.action === 'deploy') {
+          const deploy = document.getElementById('deploy-panel');
+          if (deploy) deploy.hidden = !deploy.hidden;
+        } else if (action.url) {
+          window.open(action.url, '_blank');
+        }
+      });
+      return btn;
+    }
+
+    function renderToolbar() {
+      const container = document.createElement('div');
+      container.className = 'moc-quick-actions';
+      const actions = loadActions();
+      actions.forEach(action => {
+        container.appendChild(createButton(action));
+      });
+
+      // Pin button for custom actions
+      const pinBtn = document.createElement('button');
+      pinBtn.className = 'moc-quick-action pin';
+      pinBtn.title = 'Add custom action';
+      pinBtn.innerHTML = '+';
+      pinBtn.addEventListener('click', () => {
+        const label = prompt('Action label:');
+        if (!label) return;
+        const url = prompt('URL (leave empty for custom action):');
+        const newAction = {label, icon: '🔗', url};
+        const actions = loadActions();
+        actions.push(newAction);
+        saveActions(actions);
+        // Re-render
+        container.innerHTML = '';
+        actions.forEach(a => container.appendChild(createButton(a)));
+      });
+      container.appendChild(pinBtn);
+
+      // Attach to .tc-box or fallback to body
+      let tcBox = document.querySelector('.tc-box');
+      if (!tcBox) tcBox = document.body;
+      tcBox.appendChild(container);
+
+      // Mount in AI drawer
+      window.MyOffiCityAddons.addTool('Snabbtillgång', '⚡', container);
+      window.MyOffiCityAddons.register('Quick Actions Toolbar');
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', renderToolbar);
+    } else {
+      renderToolbar();
+    }
+  } catch (e) {
+    console.error('Quick Actions Toolbar error:', e);
+  }
+})();

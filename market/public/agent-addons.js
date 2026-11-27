@@ -8283,3 +8283,76 @@
     console.error('Focus Mode error:', e);
   }
 })();
+
+(() => {
+  try {
+    // Find main content area
+    const dmain = document.querySelector('.dmain');
+    if (!dmain) return;
+
+    // Collect headings that act as categories (must have an id)
+    const headings = Array.from(dmain.querySelectorAll('h2, h3')).filter(h => h.id);
+    if (headings.length === 0) return;
+
+    // Build the floating side menu
+    const spyContainer = document.createElement('div');
+    spyContainer.className = 'moc-scroll-spy';
+    const list = document.createElement('ul');
+
+    headings.forEach((h) => {
+      const li = document.createElement('li');
+      const link = document.createElement('a');
+      link.href = `#${h.id}`;
+      link.textContent = h.textContent.trim();
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById(h.id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      li.appendChild(link);
+      list.appendChild(li);
+    });
+
+    spyContainer.appendChild(list);
+    document.body.appendChild(spyContainer);
+
+    // Highlight active heading using IntersectionObserver
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        const id = entry.target.id;
+        const anchor = spyContainer.querySelector(`a[href="#${id}"]`);
+        if (!anchor) return;
+        if (entry.isIntersecting) {
+          anchor.parentElement.classList.add('active');
+        } else {
+          anchor.parentElement.classList.remove('active');
+        }
+      });
+    }, {
+      root: null,
+      rootMargin: '0px 0px -80% 0px',
+      threshold: 0,
+    });
+
+    headings.forEach((h) => observer.observe(h));
+
+    // Add a small toggle button inside the AI‑addons drawer
+    const toolWrapper = document.createElement('div');
+    const toggleBtn = document.createElement('button');
+    toggleBtn.textContent = 'Toggle Scroll‑Spy';
+    toggleBtn.style.marginBottom = '6px';
+    toggleBtn.style.padding = '4px 8px';
+    toggleBtn.style.fontSize = '12px';
+    toggleBtn.style.cursor = 'pointer';
+    toggleBtn.onclick = () => {
+      spyContainer.style.display = spyContainer.style.display === 'none' ? 'block' : 'none';
+    };
+    toolWrapper.appendChild(toggleBtn);
+    // Clone the menu so it also appears inside the drawer (optional)
+    toolWrapper.appendChild(spyContainer.cloneNode(true));
+
+    window.MyOffiCityAddons.addTool('Scroll‑Spy', '🔎', toolWrapper);
+    window.MyOffiCityAddons.register('Scroll Spy');
+  } catch (e) {
+    console.error('Scroll‑Spy error:', e);
+  }
+})();

@@ -6728,3 +6728,31 @@
     }
   } catch (e) { console.error('Task Error:', e); }
 })();
+
+(() => {
+  try {
+    const toggleTheme = (isDark) => {
+      document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+      localStorage.setItem('moc-theme', isDark ? 'dark' : 'light');
+    };
+
+    const saved = localStorage.getItem('moc-theme');
+    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    toggleTheme(saved === 'dark' || (!saved && systemDark));
+
+    const container = document.createElement('div');
+    const btn = document.createElement('button');
+    btn.textContent = 'Växla mörkt/ljust läge';
+    btn.style.cssText = 'width: 100%; padding: 8px; cursor: pointer; background: var(--moc-accent); border: none; border-radius: 4px; color: #000; font-weight: bold;';
+    
+    btn.onclick = () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      toggleTheme(current !== 'dark');
+    };
+
+    container.appendChild(btn);
+    if (window.MyOffiCityAddons) {
+      window.MyOffiCityAddons.addTool('Tema-inställningar', '🌓', container);
+    }
+  } catch (e) { console.error('Theme Error:', e); }
+})();

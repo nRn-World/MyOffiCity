@@ -4864,3 +4864,31 @@ body {
   color: #d9b46a;
   text-decoration: line-through;
 }
+
+:root {
+  --moc-bg: #f3ecdc;
+  --moc-text: #0f172a;
+  --moc-accent: #d9b46a;
+}
+
+[data-theme='dark'] {
+  --moc-bg: #0f172a;
+  --moc-text: #f3ecdc;
+  --moc-accent: #d9b46a;
+}
+
+body, #app, .dash, .cards {
+  background-color: var(--moc-bg) !important;
+  color: var(--moc-text) !important;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+#topbar, #nav {
+  background: var(--moc-bg) !important;
+  border-bottom: 1px solid var(--moc-accent) !important;
+}
+
+.moc-tool-card {
+  background: rgba(0,0,0,0.1);
+  border: 1px solid var(--moc-accent);
+}

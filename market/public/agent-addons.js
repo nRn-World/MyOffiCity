@@ -3499,3 +3499,103 @@
     window.MyOffiCityAddons.register('Dynamic Breadcrumb Trail');
   } catch(e) {}
 })();
+
+(() => {
+  try {
+    const heatmapData = {};
+    const MAX_POINTS = 50;
+    const DECAY_RATE = 0.98;
+    const canvas = document.createElement('canvas');
+    canvas.id = 'moc-heatmap-canvas';
+    canvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:5;opacity:0.85;';
+    
+    const container = document.getElementById('app') || document.body;
+    container.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d');
+    
+    function resizeCanvas() {
+      const rect = container.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function trackInteraction(x, y) {
+      const key = `${Math.round(x/20)}_${Math.round(y/20)}`;
+      if (!heatmapData[key]) {
+        heatmapData[key] = { x: x, y: y, intensity: 1, lastUpdate: Date.now() };
+      } else {
+        heatmapData[key].intensity = Math.min(heatmapData[key].intensity + 0.5, 5);
+        heatmapData[key].lastUpdate = Date.now();
+      }
+      
+      const keys = Object.keys(heatmapData);
+      if (keys.length > MAX_POINTS) {
+        const oldest = keys.reduce((a, b) => heatmapData[a].lastUpdate < heatmapData[b].lastUpdate ? a : b);
+        delete heatmapData[oldest];
+      }
+    }
+
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('#moc-heatmap-canvas')) return;
+      const rect = container.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      trackInteraction(x, y);
+    });
+
+    function renderHeatmap() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      const now = Date.now();
+      Object.values(heatmapData).forEach(point => {
+        const age = (now - point.lastUpdate) / 1000;
+        const decay = Math.pow(DECAY_RATE, age * 10);
+        const currentIntensity = point.intensity * decay;
+        
+        if (currentIntensity < 0.1) return;
+
+        const radius = 30 + currentIntensity * 15;
+        const gradient = ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, radius);
+        
+        const hue = 200 - (currentIntensity / 5) * 100;
+        gradient.addColorStop(0, `hsla(${hue}, 100%, 60%, ${currentIntensity * 0.4})`);
+        gradient.addColorStop(0.5, `hsla(${hue}, 100%, 50%, ${currentIntensity * 0.2})`);
+        gradient.addColorStop(1, 'transparent');
+        
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, radius, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      
+      requestAnimationFrame(renderHeatmap);
+    }
+    
+    renderHeatmap();
+
+    const infoPanel = document.createElement('div');
+    infoPanel.className = 'moc-heatmap-info';
+    infoPanel.innerHTML = `
+      <div class="moc-heatmap-title">🔥 Interaktionskarta</div>
+      <div class="moc-heatmap-desc">Klicka i 3D-scenen för att markera aktiva zoner</div>
+      <div class="moc-heatmap-stats">
+        <span id="moc-heatmap-count">0</span> aktiva punkter
+      </div>
+    `;
+    
+    setInterval(() => {
+      const countEl = document.getElementById('moc-heatmap-count');
+      if (countEl) {
+        countEl.textContent = Object.keys(heatmapData).length;
+      }
+    }, 1000);
+
+    window.MyOffiCityAddons.addTool('Agent Heatmap', '🔥', infoPanel);
+    window.MyOffiCityAddons.register('Agent Interaction Heatmap');
+  } catch(e) {
+    console.error('Heatmap error:', e);
+  }
+})();

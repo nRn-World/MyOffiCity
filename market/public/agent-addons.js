@@ -2316,3 +2316,32 @@
   window.MyOffiCityAddons.addTool('Tillgänglighet', '♿', wrap);
   window.MyOffiCityAddons.register('Tillgänglighet');
 } catch(e) {} })();
+
+(() => { try {
+  const wrap = document.createElement('div');
+  wrap.innerHTML = `
+    <div class="moc-calc-row">
+      <label>Antal agenter:</label>
+      <input type="number" id="moc-calc-agents" value="1" min="1" max="50">
+    </div>
+    <div class="moc-calc-row">
+      <label>Period:</label>
+      <select id="moc-calc-period">
+        <option value="1">Månadsvis</option>
+        <option value="10">Årsvis (20% rabatt)</option>
+      </select>
+    </div>
+    <div class="moc-calc-result" id="moc-calc-total">Totalt: 499 kr/mån</div>
+  `;
+
+  const update = () => {
+    const agents = parseInt(document.getElementById('moc-calc-agents').value) || 1;
+    const period = parseInt(document.getElementById('moc-calc-period').value);
+    const base = 499;
+    const total = (agents * base * (period === 10 ? 0.8 : 1)).toFixed(0);
+    document.getElementById('moc-calc-total').textContent = `Totalt: ${total} kr/${period === 10 ? 'år' : 'mån'}`;
+  };
+
+  wrap.querySelectorAll('input, select').forEach(el => el.addEventListener('input', update));
+  window.MyOffiCityAddons.addTool('Prisberäknare', '💰', wrap);
+} catch(e) {} })();

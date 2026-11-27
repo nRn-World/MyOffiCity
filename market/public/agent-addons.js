@@ -5237,3 +5237,61 @@
     console.error('Theme Switcher init error:', e);
   }
 })();
+
+(() => {
+  try {
+    // Skapa breadcrumb‑container i topbaren
+    const topbar = document.getElementById('topbar');
+    if (!topbar) return;
+
+    const breadcrumb = document.createElement('nav');
+    breadcrumb.className = 'moc-breadcrumb';
+    breadcrumb.setAttribute('aria-label', 'Navigationsstig');
+    topbar.appendChild(breadcrumb);
+
+    // Uppdatera breadcrumb med en array av segment
+    const render = (segments) => {
+      breadcrumb.innerHTML = '';
+      if (!Array.isArray(segments) || segments.length === 0) return;
+      segments.forEach((seg, i) => {
+        const span = document.createElement('span');
+        span.className = 'moc-bc-seg';
+        span.textContent = seg;
+        breadcrumb.appendChild(span);
+        if (i < segments.length - 1) {
+          const sep = document.createElement('span');
+          sep.className = 'moc-bc-sep';
+          sep.textContent = '>';
+          breadcrumb.appendChild(sep);
+        }
+      });
+    };
+
+    // Init‑värde (kan sättas via data‑attribut på #topbar)
+    const initPath = topbar.dataset.path ? topbar.dataset.path.split('/') : ['City'];
+    render(initPath);
+
+    // Lyssna på anpassat event för att uppdatera breadcrumb
+    document.addEventListener('myofficity-location', (e) => {
+      if (e?.detail?.path) render(e.detail.path);
+    });
+
+    // -------------------------------------------------
+    // Debug‑verktyg – visar senaste location‑eventet
+    // -------------------------------------------------
+    const debugPre = document.createElement('pre');
+    debugPre.style.maxHeight = '150px';
+    debugPre.style.overflow = 'auto';
+    const debugWrapper = document.createElement('div');
+    debugWrapper.appendChild(debugPre);
+
+    window.MyOffiCityAddons.addTool('Location Debug', '📍', debugWrapper);
+    window.MyOffiCityAddons.register('Location Debug');
+
+    document.addEventListener('myofficity-location', (e) => {
+      debugPre.textContent = JSON.stringify(e.detail, null, 2);
+    });
+  } catch (e) {
+    console.error('Breadcrumb init error:', e);
+  }
+})();

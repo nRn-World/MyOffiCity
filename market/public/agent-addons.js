@@ -1162,3 +1162,109 @@
     console.error('Shortcuts Panel Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const panel = document.createElement('div');
+    panel.className = 'moc-filter-widget';
+    
+    const categories = [
+      { id: 'all', label: 'Alla', icon: '🌐' },
+      { id: 'kodning', label: 'Kodning', icon: '💻' },
+      { id: 'design', label: 'Design', icon: '🎨' },
+      { id: 'support', label: 'Support', icon: '🛟' },
+      { id: 'analys', label: 'Analys', icon: '📊' }
+    ];
+
+    const sorts = [
+      { id: 'default', label: 'Standard' },
+      { id: 'price-asc', label: 'Pris ↑' },
+      { id: 'price-desc', label: 'Pris ↓' },
+      { id: 'newest', label: 'Nyast' }
+    ];
+
+    panel.innerHTML = `
+      <div class="moc-filter-header">
+        <span class="moc-filter-icon">🔍</span>
+        <span class="moc-filter-title">Filtrera & Sortera</span>
+      </div>
+      <div class="moc-filter-chips" id="mocFilterChips">
+        ${categories.map(c => `<button class="moc-chip" data-cat="${c.id}">${c.icon} ${c.label}</button>`).join('')}
+      </div>
+      <div class="moc-filter-sort">
+        <label>Sortera:</label>
+        <select id="mocSortSelect">
+          ${sorts.map(s => `<option value="${s.id}">${s.label}</option>`).join('')}
+        </select>
+      </div>
+      <div class="moc-filter-count" id="mocFilterCount">Visar alla agenter</div>
+    `;
+
+    const chips = panel.querySelectorAll('.moc-chip');
+    const sortSelect = panel.querySelector('#mocSortSelect');
+    const countEl = panel.querySelector('#mocFilterCount');
+
+    let activeCat = 'all';
+    let activeSort = 'default';
+
+    const getCards = () => document.querySelectorAll('.card, .agent-card, [class*="card"]');
+
+    const applyFilters = () => {
+      const cards = Array.from(getCards());
+      if (!cards.length) return;
+
+      const filtered = cards.filter(card => {
+        if (activeCat === 'all') return true;
+        const text = (card.textContent || '').toLowerCase();
+        return text.includes(activeCat);
+      });
+
+      const sorted = filtered.sort((a, b) => {
+        if (activeSort === 'price-asc') {
+          const pa = parseFloat((a.textContent.match(/(\d+)[^\d]*kr/i) || [0, 0])[1]) || 0;
+          const pb = parseFloat((b.textContent.match(/(\d+)[^\d]*kr/i) || [0, 0])[1]) || 0;
+          return pa - pb;
+        }
+        if (activeSort === 'price-desc') {
+          const pa = parseFloat((a.textContent.match(/(\d+)[^\d]*kr/i) || [0, 0])[1]) || 0;
+          const pb = parseFloat((b.textContent.match(/(\d+)[^\d]*kr/i) || [0, 0])[1]) || 0;
+          return pb - pa;
+        }
+        if (activeSort === 'newest') {
+          return b.dataset.date ? (b.dataset.date > a.dataset.date ? 1 : -1) : 0;
+        }
+        return 0;
+      });
+
+      const container = cards[0].parentElement;
+      if (container) {
+        container.innerHTML = '';
+        sorted.forEach(card => container.appendChild(card));
+      }
+
+      countEl.textContent = `Visar ${sorted.length} av ${cards.length} agenter`;
+    };
+
+    chips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        chips.forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        activeCat = chip.dataset.cat;
+        applyFilters();
+      });
+    });
+
+    sortSelect.addEventListener('change', (e) => {
+      activeSort = e.target.value;
+      applyFilters();
+    });
+
+    // Starta med "Alla" aktivt
+    chips[0].classList.add('active');
+
+    window.MyOffiCityAddons.addTool('Snickra Filter', '🔍', panel);
+    window.MyOffiCityAddons.register('Snickra Filter');
+  } catch (e) {
+    console.error('Filter Widget Error:', e);
+  }
+})();

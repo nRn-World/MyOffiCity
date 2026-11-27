@@ -548,3 +548,82 @@
     console.error('Sparkline error:', e);
   }
 })();
+
+(() => {
+  try {
+    let audioCtx = null;
+    let noiseNode = null;
+    let gainNode = null;
+    let filterNode = null;
+    let isPlaying = false;
+
+    const container = document.createElement('div');
+    container.className = 'moc-ambient-ctrl';
+    container.innerHTML = `
+      <div class="moc-ambient-row">
+        <button class="moc-ambient-toggle">▶️ Starta ljud</button>
+        <input type="range" class="moc-ambient-vol" min="0" max="0.1" step="0.005" value="0.02" title="Volym">
+      </div>
+      <div class="moc-ambient-label">Atmosfäriskt kontorsbrus</div>
+    `;
+
+    const btn = container.querySelector('.moc-ambient-toggle');
+    const vol = container.querySelector('.moc-ambient-vol');
+
+    const initAudio = () => {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const bufferSize = 2 * audioCtx.sampleRate;
+      const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const output = buffer.getChannelData(0);
+      
+      // Generate white noise
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+
+      noiseNode = audioCtx.createBufferSource();
+      noiseNode.buffer = buffer;
+      noiseNode.loop = true;
+
+      gainNode = audioCtx.createGain();
+      gainNode.gain.value = parseFloat(vol.value);
+
+      // Filter to create a muffled "office hum" effect
+      filterNode = audioCtx.createBiquadFilter();
+      filterNode.type = 'lowpass';
+      filterNode.frequency.value = 750; 
+      filterNode.Q.value = 1;
+
+      noiseNode.connect(filterNode);
+      filterNode.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      noiseNode.start();
+    };
+
+    btn.onclick = async () => {
+      if (!audioCtx) initAudio();
+      
+      if (isPlaying) {
+        await audioCtx.suspend();
+        btn.textContent = '▶️ Starta ljud';
+        isPlaying = false;
+      } else {
+        await audioCtx.resume();
+        btn.textContent = '⏸️ Pausa ljud';
+        isPlaying = true;
+      }
+    };
+
+    vol.oninput = (e) => {
+      const v = parseFloat(e.target.value);
+      if (gainNode && audioCtx) {
+        gainNode.gain.setTargetAtTime(v, audioCtx.currentTime, 0.1);
+      }
+    };
+
+    window.MyOffiCityAddons.addTool('Ljudlandskap', '🎧', container);
+    window.MyOffiCityAddons.register('Ambient Sound Controller');
+  } catch (e) {
+    console.error('Ambient Sound Error:', e);
+  }
+})();

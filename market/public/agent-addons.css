@@ -6382,3 +6382,34 @@ canvas {
   border-bottom: 1px solid rgba(217, 180, 106, 0.2);
   transition: all 0.3s ease;
 }
+
+/* Dark Mode toggle button */
+.moc-dark-toggle-btn {
+  padding: 4px 8px;
+  margin: 4px;
+  background: rgba(15, 23, 42, 0.8);
+  color: #f3ecdc;
+  border: 1px solid rgba(217, 180, 106, 0.4);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.moc-dark-toggle-btn:hover {
+  background: rgba(20, 32, 61, 0.9);
+  border-color: #d9b46a;
+}
+
+/* Global dark theme overrides */
+[data-theme="dark"] {
+  background-color: #0f172a !important;
+  color: #f3ecdc !important;
+}
+[data-theme="dark"] a {
+  color: #d9b46a !important;
+}
+[data-theme="dark"] .moc-scroll-top,
+[data-theme="dark"] .moc-dock-btn {
+  background: rgba(12, 18, 34, 0.92);
+  color: #f3ecdc;
+}

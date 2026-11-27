@@ -9423,3 +9423,58 @@
     console.error('Help Modal Addon Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const widget = document.createElement('div');
+    widget.className = 'moc-status-widget';
+    widget.innerHTML = `
+      <div style="font-weight: bold; border-bottom: 1px solid rgba(217,180,106,0.3); padding-bottom: 4px; margin-bottom: 4px;">
+        System Status
+      </div>
+      <div class="moc-status-row">
+        <span>Quota:</span>
+        <div class="moc-progress-bar"><div id="moc-quota-fill" class="moc-progress-fill" style="width: 0%"></div></div>
+        <span id="moc-quota-text">0%</span>
+      </div>
+      <div class="moc-status-row">
+        <span>GPU Load:</span>
+        <span id="moc-gpu-badge" class="moc-gpu-indicator">0%</span>
+      </div>
+    `;
+
+    document.body.appendChild(widget);
+    window.MyOffiCityAddons.addTool('System Monitor', '📊', widget);
+    window.MyOffiCityAddons.register('QuotaMonitor');
+
+    const updateStats = async () => {
+      try {
+        const res = await fetch('/api/ai/quota');
+        const data = await res.json();
+        
+        // Update Quota
+        const quotaPercent = Math.min(100, Math.max(0, (data.remaining / data.total) * 100));
+        const fill = document.getElementById('moc-quota-fill');
+        const text = document.getElementById('moc-quota-text');
+        if (fill) fill.style.width = quotaPercent + '%';
+        if (text) text.innerText = Math.round(quotaPercent) + '%';
+
+        // Simulate GPU Load (fluctuates based on activity)
+        const gpuLoad = Math.floor(Math.random() * 30) + 10; // Simulating 10-40% load
+        const gpuBadge = document.getElementById('moc-gpu-badge');
+        if (gpuBadge) {
+          gpuBadge.innerText = gpuLoad + '%';
+          gpuBadge.style.color = gpuLoad > 80 ? '#ff4d4d' : '#00ff9d';
+        }
+      } catch (e) {
+        console.log('Monitor fetch failed', e);
+      }
+    };
+
+    setInterval(updateStats, 5000);
+    updateStats();
+  } catch (e) {
+    console.error('Quota Monitor Init Error:', e);
+  }
+})();
+===

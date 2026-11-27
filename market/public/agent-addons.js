@@ -2106,3 +2106,99 @@
     window.MyOffiCityAddons.register('Tidslinje & Atmosfär');
   } catch(e) {}
 })();
+
+(() => {
+  try {
+    const wrap = document.createElement('div');
+    wrap.className = 'moc-notif-wrap';
+
+    const seed = [
+      { id: 1, type: 'success', text: 'Tomas svarade på din fråga', time: '2 min sedan', read: false },
+      { id: 2, type: 'info', text: 'Ny agent installerad: Anna', time: '15 min sedan', read: false },
+      { id: 3, type: 'warning', text: 'Hög CPU-användning på servern', time: '1 tim sedan', read: false },
+      { id: 4, type: 'success', text: 'Systemuppdatering slutförd', time: '3 tim sedan', read: true },
+      { id: 5, type: 'info', text: 'Nytt meddelande från teamet', time: '5 tim sedan', read: true },
+      { id: 6, type: 'warning', text: 'Lagring nästan full', time: '1 dag sedan', read: true }
+    ];
+
+    let notifs = JSON.parse(localStorage.getItem('mocNotifs') || 'null') || seed;
+    let filter = 'all';
+
+    const save = () => localStorage.setItem('mocNotifs', JSON.stringify(notifs));
+
+    const typeIcons = { info: 'ℹ️', warning: '⚠️', success: '✅' };
+    const typeLabels = { all: 'Alla', info: 'Info', warning: 'Varning', success: 'Framgång' };
+
+    const header = document.createElement('div');
+    header.className = 'moc-notif-header';
+    header.innerHTML = `<span class="moc-notif-title">🔔 Aktivitetshistorik</span><span class="moc-notif-count" id="mocNotifCount"></span>`;
+    wrap.appendChild(header);
+
+    const filterBar = document.createElement('div');
+    filterBar.className = 'moc-notif-filters';
+    ['all', 'info', 'warning', 'success'].forEach(t => {
+      const btn = document.createElement('button');
+      btn.className = 'moc-notif-filter-btn' + (t === 'all' ? ' active' : '');
+      btn.dataset.type = t;
+      btn.textContent = typeLabels[t];
+      btn.addEventListener('click', () => {
+        filter = t;
+        filterBar.querySelectorAll('.moc-notif-filter-btn').forEach(b => b.classList.toggle('active', b.dataset.type === t));
+        render();
+      });
+      filterBar.appendChild(btn);
+    });
+    wrap.appendChild(filterBar);
+
+    const list = document.createElement('div');
+    list.className = 'moc-notif-list';
+    wrap.appendChild(list);
+
+    const markAllBtn = document.createElement('button');
+    markAllBtn.className = 'moc-notif-markall';
+    markAllBtn.textContent = 'Markera alla som lästa';
+    markAllBtn.addEventListener('click', () => {
+      notifs.forEach(n => n.read = true);
+      save();
+      render();
+    });
+    wrap.appendChild(markAllBtn);
+
+    function render() {
+      const unread = notifs.filter(n => !n.read).length;
+      const countEl = document.getElementById('mocNotifCount');
+      if (countEl) countEl.textContent = unread > 0 ? `${unread} olästa` : 'Alla lästa';
+
+      list.innerHTML = '';
+      const filtered = filter === 'all' ? notifs : notifs.filter(n => n.type === filter);
+      
+      if (filtered.length === 0) {
+        list.innerHTML = '<div class="moc-notif-empty">Inga notifikationer</div>';
+        return;
+      }
+
+      filtered.forEach(n => {
+        const item = document.createElement('div');
+        item.className = 'moc-notif-item' + (n.read ? ' read' : '');
+        item.innerHTML = `
+          <div class="moc-notif-icon">${typeIcons[n.type]}</div>
+          <div class="moc-notif-content">
+            <div class="moc-notif-text">${n.text}</div>
+            <div class="moc-notif-time">${n.time}</div>
+          </div>
+          <button class="moc-notif-read-btn" title="Markera som läst">${n.read ? '✓' : '○'}</button>
+        `;
+        item.querySelector('.moc-notif-read-btn').addEventListener('click', () => {
+          n.read = !n.read;
+          save();
+          render();
+        });
+        list.appendChild(item);
+      });
+    }
+
+    render();
+    window.MyOffiCityAddons.addTool('Aktivitetshistorik', '🔔', wrap);
+    window.MyOffiCityAddons.register('Aktivitetshistorik');
+  } catch(e) {}
+})();

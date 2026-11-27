@@ -3726,3 +3726,23 @@ a.moc-breadcrumb-item:hover {
 .moc-theme-toggle:hover {
   background: rgba(217,180,106,0.3);
 }
+
+/* Breadcrumb‑navigation i topbaren */
+.moc-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: #d9b46a;
+  padding: 4px 8px;
+}
+.moc-breadcrumb .moc-bc-seg {
+  cursor: default;
+}
+.moc-breadcrumb .moc-bc-sep {
+  margin: 0 2px;
+  color: #f3ecdc;
+}
+.moc-breadcrumb:hover .moc-bc-seg {
+  text-decoration: underline;
+}

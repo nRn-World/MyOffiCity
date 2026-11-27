@@ -813,3 +813,123 @@
     window.MyOffiCityAddons.addTool('Pulse Status', '💓', statusInfo);
   } catch (e) { console.error('Pulse Addon Error:', e); }
 })();
+
+(() => {
+  try {
+    if (window.__mocQuickSearch) return;
+    window.__mocQuickSearch = true;
+
+    const overlay = document.createElement('div');
+    overlay.className = 'moc-qs-overlay';
+    overlay.hidden = true;
+    overlay.innerHTML = `
+      <div class="moc-qs-box">
+        <div class="moc-qs-head">
+          <span class="moc-qs-icon">🔍</span>
+          <input type="text" class="moc-qs-input" placeholder="Sök objekt, sidor eller kommandon... (Ctrl+K)" autocomplete="off" />
+          <kbd class="moc-qs-kbd">ESC</kbd>
+        </div>
+        <div class="moc-qs-list"></div>
+        <div class="moc-qs-foot">
+          <span><kbd>↑</kbd><kbd>↓</kbd> Navigera</span>
+          <span><kbd>Enter</kbd> Öppna</span>
+          <span><kbd>Ctrl</kbd>+<kbd>K</kbd> Stäng</span>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    const input = overlay.querySelector('.moc-qs-input');
+    const list = overlay.querySelector('.moc-qs-list');
+    let items = [];
+    let activeIdx = -1;
+
+    const buildIndex = () => {
+      const base = [
+        { label: 'Hem / Start', icon: '🏠', hint: 'Huvudsidan', action: () => { location.hash = '#/'; } },
+        { label: 'City / Staden', icon: '🏙️', hint: '3D-staden', action: () => { location.hash = '#/city'; } },
+        { label: 'Marketplace', icon: '🛒', hint: 'Butik & objekt', action: () => { location.hash = '#/'; } },
+        { label: 'AI-tillägg', icon: '✨', hint: 'Öppna AI-docken', action: () => { window.MyOffiCityAddons.toggleDock(true); } },
+      ];
+      // Dynamiskt: samla synliga länkar & marketplace-items om de finns
+      document.querySelectorAll('a[href^="#/"]').forEach(a => {
+        const href = a.getAttribute('href');
+        const label = (a.textContent || '').trim().slice(0, 40);
+        if (label && !base.some(b => b.label === label)) {
+          base.push({ label, icon: '🔗', hint: href, action: () => { location.hash = href; } });
+        }
+      });
+      document.querySelectorAll('.card, .dsb, .dmain, .moc-portal-item').forEach(el => {
+        const t = (el.textContent || '').trim().slice(0, 40);
+        if (t && !base.some(b => b.label === t)) {
+          base.push({ label: t, icon: '📦', hint: 'Marketplace-objekt', action: () => { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.classList.add('moc-qs-flash'); setTimeout(() => el.classList.remove('moc-qs-flash'), 1200); } });
+        }
+      });
+      return base;
+    };
+
+    const render = (filtered) => {
+      list.innerHTML = '';
+      if (!filtered.length) {
+        list.innerHTML = '<div class="moc-qs-empty">Inga träffar</div>';
+        return;
+      }
+      filtered.forEach((it, i) => {
+        const row = document.createElement('div');
+        row.className = 'moc-qs-row' + (i === activeIdx ? ' active' : '');
+        row.innerHTML = `<span class="moc-qs-row-icon">${it.icon}</span><span class="moc-qs-row-label">${it.label}</span><span class="moc-qs-row-hint">${it.hint || ''}</span>`;
+        row.addEventListener('click', () => { it.action(); close(); });
+        list.appendChild(row);
+      });
+    };
+
+    const filter = (q) => {
+      const query = q.toLowerCase().trim();
+      if (!query) return items;
+      return items.filter(it => it.label.toLowerCase().includes(query) || (it.hint || '').toLowerCase().includes(query));
+    };
+
+    const open = () => {
+      items = buildIndex();
+      activeIdx = -1;
+      overlay.hidden = false;
+      input.value = '';
+      render(items);
+      setTimeout(() => input.focus(), 30);
+    };
+    const close = () => { overlay.hidden = true; input.value = ''; activeIdx = -1; };
+
+    input.addEventListener('input', () => {
+      activeIdx = -1;
+      render(filter(input.value));
+    });
+
+    input.addEventListener('keydown', (e) => {
+      const rows = list.querySelectorAll('.moc-qs-row');
+      if (e.key === 'ArrowDown') { e.preventDefault(); activeIdx = Math.min(activeIdx + 1, rows.length - 1); render(filter(input.value)); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); activeIdx = Math.max(activeIdx - 1, 0); render(filter(input.value)); }
+      else if (e.key === 'Enter') { e.preventDefault(); if (activeIdx >= 0 && items[activeIdx]) { items[activeIdx].action(); close(); } }
+    });
+
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        overlay.hidden ? open() : close();
+      } else if (e.key === 'Escape' && !overlay.hidden) {
+        close();
+      }
+    });
+
+    // Liten info-widget i AI-docken
+    const info = document.createElement('div');
+    info.className = 'moc-toast-info';
+    info.innerHTML = `
+      <div class="moc-toast-info-title">Snabbsök</div>
+      <div class="moc-toast-info-text">Tryck <kbd>Ctrl</kbd>+<kbd>K</kbd> (eller <kbd>⌘</kbd>+<kbd>K</kbd>) för att snabbt söka och navigera.</div>
+    `;
+    window.MyOffiCityAddons.addTool('Quick-Search', '🔍', info);
+    window.MyOffiCityAddons.register('Quick-Search Overlay');
+  } catch (e) { console.error('Quick-Search Addon Error:', e); }
+})();

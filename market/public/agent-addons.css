@@ -2231,3 +2231,18 @@ body.moc-zen-active canvas {
   border-bottom: 1px solid rgba(217, 180, 106, 0.1);
   padding-bottom: 4px;
 }
+
+.agent-log-btn {
+  background: rgba(217, 180, 106, 0.1);
+  border: 1px solid #d9b46a;
+  color: #d9b46a;
+  padding: 2px 6px;
+  font-size: 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  margin-left: 8px;
+}
+.agent-log-btn:hover {
+  background: #d9b46a;
+  color: #0f172a;
+}

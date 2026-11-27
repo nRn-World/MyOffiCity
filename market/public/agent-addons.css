@@ -516,3 +516,79 @@ body {
   letter-spacing: 0.02em;
   text-transform: uppercase;
 }
+
+/* Toast Notification Container */
+#mocToastContainer {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+/* Individual Toast */
+.moc-toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(217, 180, 106, 0.4);
+  color: #f3ecdc;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(10px);
+  opacity: 0;
+  transform: translateX(20px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: auto;
+}
+
+.moc-toast-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.moc-toast-success {
+  border-color: rgba(74, 222, 128, 0.5);
+}
+
+.moc-toast-error {
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.moc-toast-icon {
+  font-size: 16px;
+}
+
+.moc-toast-message {
+  flex: 1;
+}
+
+/* Toast Info Tool in Dock */
+.moc-toast-info {
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  border: 1px solid rgba(217, 180, 106, 0.2);
+  margin-top: 5px;
+}
+
+.moc-toast-info-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e9d7b0;
+  margin-bottom: 6px;
+}
+
+.moc-toast-info-text {
+  font-size: 11px;
+  color: #e9d7b0;
+  opacity: 0.7;
+  line-height: 1.4;
+}

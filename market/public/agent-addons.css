@@ -4592,3 +4592,15 @@ body {
   flex: 1;
   white-space: nowrap;
 }
+
+.moc-tool-card ul {
+  margin: 8px 0;
+  list-style: none;
+}
+.moc-tool-card li {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px 8px;
+  margin-bottom: 4px;
+  border-radius: 4px;
+  border-left: 2px solid #d9b46a;
+}

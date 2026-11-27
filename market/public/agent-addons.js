@@ -4593,3 +4593,78 @@
     console.error('Quick-View addon error:', e);
   }
 })();
+
+(() => {
+  try {
+    const storageKey = 'moc_recent_visits';
+    const container = document.createElement('div');
+    container.className = 'moc-recent-box';
+
+    const getRecent = () => {
+      try {
+        return JSON.parse(sessionStorage.getItem(storageKey) || '[]');
+      } catch (e) { return []; }
+    };
+
+    const saveRecent = (list) => {
+      sessionStorage.setItem(storageKey, JSON.stringify(list.slice(0, 3)));
+    };
+
+    const render = () => {
+      const list = getRecent();
+      if (list.length === 0) {
+        container.innerHTML = '<p style="font-size:11px;opacity:0.5;margin:5px 0;">Inga besökta platser än.</p>';
+        return;
+      }
+      container.innerHTML = list.map(item => `
+        <a href="${item.url}" class="moc-recent-item">
+          <span class="moc-recent-icon">${item.type === 'agent' ? '👤' : '🏢'}</span>
+          <span class="moc-recent-name">${item.name}</span>
+        </a>
+      `).join('');
+    };
+
+    const track = () => {
+      const hash = window.location.hash;
+      // Vi loggar bara agenter, kontor eller specifika platser
+      if (!hash || !hash.includes('/') || hash === '#/' || hash === '#/dash') return;
+
+      let type = 'place';
+      if (hash.includes('/agent/')) type = 'agent';
+      else if (hash.includes('/office/')) type = 'office';
+      else if (hash.includes('/neighborhood')) type = 'place';
+      else return; // Ignorera övriga
+
+      // Vänta lite så att DOM hinner uppdateras med rätt titel
+      setTimeout(() => {
+        let name = 'Okänd plats';
+        const titleEl = document.querySelector('.dmain h2, .dsb-h, h1, .moc-tool-title');
+        
+        if (titleEl && titleEl.textContent) {
+          name = titleEl.textContent.trim().split('\n')[0].replace('✨', '').trim();
+        } else {
+          // Fallback på URL-del
+          const parts = hash.split('/');
+          name = parts[parts.length - 1].charAt(0).toUpperCase() + parts[parts.length - 1].slice(1);
+        }
+
+        const current = getRecent();
+        const newItem = { name, url: hash, type, ts: Date.now() };
+        
+        // Flytta till toppen om den redan finns, annars lägg till ny
+        const filtered = current.filter(i => i.url !== hash);
+        saveRecent([newItem, ...filtered]);
+        render();
+      }, 800);
+    };
+
+    window.addEventListener('hashchange', track);
+    window.MyOffiCityAddons.addTool('Senast Besökta', '🕒', container);
+    
+    // Initial körning
+    render();
+    track();
+  } catch (e) {
+    console.error('Recent Visits addon error:', e);
+  }
+})();

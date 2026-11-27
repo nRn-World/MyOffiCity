@@ -8436,3 +8436,74 @@
     console.error('Scroll‑Spy‑addon error:', e);
   }
 })();
+
+(() => {
+  try {
+    // Hitta Three.js‑canvasen (vanligtvis den enda <canvas> på sidan)
+    const canvas = document.querySelector('canvas');
+    if (!canvas) return;
+
+    // Skapa etikett‑elementet som visas ovanför agenten
+    const label = document.createElement('div');
+    label.className = 'agent-status-label';
+    document.body.appendChild(label);
+
+    // Raycaster & muskoordinater
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+
+    // Hjälpfunktioner för att hämta namn/status från mesh‑userData
+    const getName = (mesh) => mesh.userData?.agentName || mesh.name || 'Agent';
+    const getStatus = (mesh) => mesh.userData?.status || 'Aktiv';
+
+    // Mus‑event‑handler
+    const onMouseMove = (ev) => {
+      const rect = canvas.getBoundingClientRect();
+      mouse.x = ((ev.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((ev.clientY - rect.top) / rect.height) * 2 + 1;
+
+      // Anta att scenen och kameran finns på window‑objektet
+      const scene = window.scene;
+      const camera = window.camera;
+      if (!scene || !camera) return;
+
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(scene.children, true);
+
+      // Hitta första objektet som representerar en agent
+      const hit = intersects.find(i => i.object.userData?.agentName);
+      if (hit) {
+        const mesh = hit.object;
+        const worldPos = mesh.getWorldPosition(new THREE.Vector3());
+        const proj = worldPos.clone().project(camera);
+
+        // Omvandla till skärmkoordinater
+        const x = (proj.x + 1) / 2 * window.innerWidth;
+        const y = (-proj.y + 1) / 2 * window.innerHeight;
+
+        label.style.left = `${x}px`;
+        label.style.top = `${y}px`;
+        label.textContent = `${getName(mesh)}: ${getStatus(mesh)}`;
+        label.classList.add('visible');
+      } else {
+        label.classList.remove('visible');
+      }
+    };
+
+    canvas.addEventListener('mousemove', onMouseMove);
+    // Rensa vid sidavslut
+    window.addEventListener('beforeunload', () => {
+      canvas.removeEventListener('mousemove', onMouseMove);
+    });
+
+    // Lägg till ett litet verktyg i AI‑dockan för att informera användaren
+    const info = document.createElement('div');
+    info.style.fontSize = '12px';
+    info.style.padding = '4px 8px';
+    info.textContent = 'Hovera över en agent för att se dess status.';
+    window.MyOffiCityAddons.addTool('Agent‑Status', '🟢', info);
+    window.MyOffiCityAddons.register('Agent‑Status');
+  } catch (e) {
+    console.error('Agent‑Status‑addon error:', e);
+  }
+})();

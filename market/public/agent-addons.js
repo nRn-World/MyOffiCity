@@ -4556,3 +4556,40 @@
     console.error('Breadcrumb addon error:', e);
   }
 })();
+
+(() => {
+  try {
+    const infoBox = document.createElement('div');
+    infoBox.id = 'moc-quick-view';
+    infoBox.style.display = 'none';
+    document.body.appendChild(infoBox);
+
+    const updateInfo = (name, status) => {
+      infoBox.innerHTML = `<strong>${name}</strong><br><small>Status: ${status}</small>`;
+      infoBox.style.display = 'block';
+    };
+
+    document.addEventListener('mousemove', (e) => {
+      if (infoBox.style.display === 'block') {
+        infoBox.style.left = (e.clientX + 15) + 'px';
+        infoBox.style.top = (e.clientY + 15) + 'px';
+      }
+    });
+
+    // Simulera objekt-detektering för 3D-scenen
+    window.addEventListener('city-object-hover', (e) => {
+      const { name, status } = e.detail;
+      updateInfo(name, status);
+    });
+
+    window.addEventListener('city-object-blur', () => {
+      infoBox.style.display = 'none';
+    });
+
+    const toolContent = document.createElement('div');
+    toolContent.innerHTML = '<p>Hovera över 3D-objekt i staden för att se snabbinfo.</p>';
+    window.MyOffiCityAddons.addTool('3D Quick-View', '🔍', toolContent);
+  } catch (e) {
+    console.error('Quick-View addon error:', e);
+  }
+})();

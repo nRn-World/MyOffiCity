@@ -204,3 +204,47 @@ html.moc-theme-warm {
 }
 
 /* === APPEND NEW AGENT CSS UPGRADES BELOW THIS LINE === */
+
+/* Premium Glassmorphism & Depth Refinement */
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37), 
+                    0 4px 12px 0 rgba(0, 0, 0, 0.2);
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card, .dpane, .moc-dock-panel {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(12px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--glass-shadow) !important;
+  transition: var(--transition-smooth) !important;
+  padding: 16px !important; /* 8px * 2 */
+  margin-bottom: 16px !important; /* 8px * 2 */
+}
+
+.card:hover, .dpane:hover, .moc-dock-panel:hover {
+  transform: translateY(-4px) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(217, 180, 106, 0.3) !important;
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45) !important;
+}
+
+/* Standardized Spacing Grid */
+.card .card-body, .dpane .dpane-content {
+  padding: 12px !important; /* 4px * 3 */
+  gap: 8px !important; /* 4px * 2 */
+}
+
+.card-title, .dpane-header {
+  margin-bottom: 8px !important; /* 4px * 2 */
+  font-weight: 600;
+}
+
+.card-text, .dpane-description {
+  margin-bottom: 12px !important; /* 4px * 3 */
+  line-height: 1.5;
+}

@@ -2586,3 +2586,72 @@
     window.MyOffiCityAddons.register('Zen-mode');
   } catch(e) {}
 })();
+
+(() => { try {
+  const copyIcon = '📋';
+  const checkIcon = '✅';
+
+  const injectCopyBtn = (box) => {
+    if (box.querySelector('.moc-copy-json')) return;
+    
+    const content = box.innerText || "";
+    // Heuristik: Innehåller det troligen JSON?
+    if (!content.includes('{') || !content.includes('}') || !content.includes('"')) return;
+
+    const btn = document.createElement('button');
+    btn.className = 'moc-copy-json';
+    btn.innerHTML = `${copyIcon} Kopiera JSON`;
+    
+    btn.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      let textToCopy = "";
+      const codeBlock = box.querySelector('code, pre');
+      
+      if (codeBlock) {
+        textToCopy = codeBlock.innerText;
+      } else {
+        // Extrahera JSON-liknande sträng mellan första { och sista }
+        const start = content.indexOf('{');
+        const end = content.lastIndexOf('}');
+        if (start !== -1 && end !== -1) {
+          textToCopy = content.substring(start, end + 1);
+        } else {
+          textToCopy = content;
+        }
+      }
+
+      if (textToCopy) {
+        navigator.clipboard.writeText(textToCopy.trim()).then(() => {
+          const original = btn.innerHTML;
+          btn.innerHTML = `${checkIcon} Kopierad!`;
+          btn.classList.add('success');
+          setTimeout(() => {
+            btn.innerHTML = original;
+            btn.classList.remove('success');
+          }, 2000);
+        });
+      }
+    };
+
+    // Säkerställ att boxen kan positionera knappen absolut
+    if (getComputedStyle(box).position === 'static') {
+      box.style.position = 'relative';
+    }
+    box.appendChild(btn);
+  };
+
+  // Effektiv event-delegation istället för tung MutationObserver på hela body
+  document.addEventListener('mouseover', (e) => {
+    const box = e.target.closest('.tc-box');
+    if (box) injectCopyBtn(box);
+  }, { passive: true });
+
+  // Registrera verktyget i AI-panelen
+  const info = document.createElement('div');
+  info.style.cssText = 'font-size:11px; color:#94a3b8; line-height:1.4;';
+  info.innerHTML = 'Hovra över ett chattsvar som innehåller JSON-konfigurationer för att snabbt kopiera koden till urklipp.';
+  window.MyOffiCityAddons.addTool('JSON-kopiering', '📋', info);
+  window.MyOffiCityAddons.register('Smart Copy-to-Clipboard');
+} catch(e) {} })();

@@ -3714,3 +3714,90 @@
     }
   } catch(e) {}
 })();
+
+(() => {
+  try {
+    const commands = [
+      { id: 'city', label: 'Gå till 3D-staden', icon: '🏙️', action: () => { window.location.hash = '#city'; } },
+      { id: 'office', label: 'Gå till kontoret', icon: '🏢', action: () => { window.location.hash = '#office'; } },
+      { id: 'theme-light', label: 'Byt till Ljust tema', icon: '☀️', action: () => { document.body.classList.remove('dark-mode'); document.body.classList.add('light-mode'); } },
+      { id: 'theme-dark', label: 'Byt till Mörkt tema', icon: '🌙', action: () => { document.body.classList.remove('light-mode'); document.body.classList.add('dark-mode'); } },
+      { id: 'copy-id', label: 'Kopiera Agent-ID', icon: '📋', action: () => { navigator.clipboard.writeText('moc-agent-01'); } },
+      { id: 'focus', label: 'Aktivera Focus Mode', icon: '🎯', action: () => { const btn = document.getElementById('mocFocusBtn'); if(btn) btn.click(); } },
+      { id: 'help', label: 'Visa hjälp & genvägar', icon: '❓', action: () => { alert('Snabbkommandon:\nCtrl+K: Öppna kommandofältet\nEsc: Stäng fältet'); } }
+    ];
+
+    const init = () => {
+      if (document.getElementById('mocCmdPalette')) return;
+
+      const overlay = document.createElement('div');
+      overlay.id = 'mocCmdPalette';
+      overlay.innerHTML = `
+        <div class="moc-cmd-backdrop"></div>
+        <div class="moc-cmd-panel">
+          <div class="moc-cmd-header">
+            <span class="moc-cmd-icon">⌘</span>
+            <input type="text" class="moc-cmd-input" placeholder="Sök kommando eller skriv..." autocomplete="off" />
+            <span class="moc-cmd-hint">Esc för att stänga</span>
+          </div>
+          <div class="moc-cmd-list"></div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+
+      const input = overlay.querySelector('.moc-cmd-input');
+      const list = overlay.querySelector('.moc-cmd-list');
+      const backdrop = overlay.querySelector('.moc-cmd-backdrop');
+
+      const renderList = (filter = '') => {
+        list.innerHTML = '';
+        const filtered = commands.filter(c => c.label.toLowerCase().includes(filter.toLowerCase()));
+        if (filtered.length === 0) {
+          list.innerHTML = '<div class="moc-cmd-empty">Inga kommandon hittades</div>';
+          return;
+        }
+        filtered.forEach((cmd, idx) => {
+          const item = document.createElement('div');
+          item.className = 'moc-cmd-item' + (idx === 0 ? ' active' : '');
+          item.innerHTML = `<span class="moc-cmd-item-icon">${cmd.icon}</span><span>${cmd.label}</span>`;
+          item.addEventListener('click', () => {
+            cmd.action();
+            closePalette();
+          });
+          list.appendChild(item);
+        });
+      };
+
+      const openPalette = () => {
+        overlay.classList.add('open');
+        input.value = '';
+        renderList();
+        setTimeout(() => input.focus(), 50);
+      };
+
+      const closePalette = () => {
+        overlay.classList.remove('open');
+      };
+
+      document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+          e.preventDefault();
+          openPalette();
+        } else if (e.key === 'Escape' && overlay.classList.contains('open')) {
+          closePalette();
+        }
+      });
+
+      input.addEventListener('input', (e) => renderList(e.target.value));
+      backdrop.addEventListener('click', closePalette);
+
+      window.MyOffiCityAddons.register('Command Palette');
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  } catch(e) {}
+})();

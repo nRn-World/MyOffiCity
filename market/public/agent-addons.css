@@ -6234,3 +6234,19 @@ canvas {
 .moc-tool-card button:hover {
   background: #c5a35e;
 }
+
+.moc-dark-mode {
+  filter: invert(0.9) hue-rotate(180deg);
+  background: #0f172a;
+}
+
+.moc-dark-mode img, 
+.moc-dark-mode video, 
+.moc-dark-mode canvas {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+.moc-dark-mode .moc-dock-btn,
+.moc-dark-mode #moc-breadcrumb {
+  filter: invert(1) hue-rotate(180deg);
+}

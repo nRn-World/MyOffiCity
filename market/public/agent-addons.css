@@ -5275,3 +5275,58 @@ body.moc-focus-mode .chat-container {
   z-index: 9999 !important;
   transition: all 0.2s ease;
 }
+
+/* Dashboard widget styling */
+.moc-dashboard-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+  padding: 8px;
+}
+.moc-dashboard-card {
+  background: rgba(255, 253, 248, 0.12);
+  border: 1px solid rgba(217, 180, 106, 0.28);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: #f3ecdc;
+  text-align: center;
+  backdrop-filter: blur(4px);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.moc-dashboard-card:hover {
+  background: rgba(255, 253, 248, 0.2);
+  transform: translateY(-2px);
+}
+.moc-dashboard-header {
+  font-size: 12px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-bottom: 4px;
+  color: var(--gold, #d9b46a);
+}
+.moc-dashboard-icon {
+  font-size: 14px;
+}
+.moc-dashboard-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #f3ecdc;
+}
+.moc-dashboard-refresh {
+  grid-column: 1 / -1;
+  margin-top: 8px;
+  padding: 6px 12px;
+  background: rgba(217, 180, 106, 0.15);
+  border: 1px solid rgba(217, 180, 106, 0.4);
+  border-radius: 6px;
+  color: #f3ecdc;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.2s ease;
+}
+.moc-dashboard-refresh:hover {
+  background: rgba(217, 180, 106, 0.25);
+}

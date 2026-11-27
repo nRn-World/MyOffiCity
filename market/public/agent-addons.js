@@ -3631,3 +3631,86 @@
     console.error('Clipboard error:', e);
   }
 })();
+
+(() => {
+  try {
+    const isCityView = () => window.location.hash === '#/city';
+    let focusActive = false;
+    let inactivityTimer = null;
+    const INACTIVITY_MS = 5000;
+
+    const applyFocus = (on) => {
+      const nav = document.getElementById('nav');
+      const foot = document.getElementById('foot');
+      if (nav) nav.classList.toggle('moc-focus-hidden', on);
+      if (foot) foot.classList.toggle('moc-focus-hidden', on);
+      document.body.classList.toggle('moc-focus-mode', on);
+    };
+
+    const resetTimer = () => {
+      if (!focusActive) return;
+      clearTimeout(inactivityTimer);
+      inactivityTimer = setTimeout(() => {
+        if (isCityView() && focusActive) applyFocus(true);
+      }, INACTIVITY_MS);
+    };
+
+    const onActivity = () => {
+      if (focusActive && isCityView()) {
+        applyFocus(false);
+        resetTimer();
+      }
+    };
+
+    const toggleFocus = () => {
+      focusActive = !focusActive;
+      if (focusActive) {
+        applyFocus(false);
+        resetTimer();
+      } else {
+        clearTimeout(inactivityTimer);
+        applyFocus(false);
+      }
+      const btn = document.getElementById('mocFocusBtn');
+      if (btn) {
+        btn.classList.toggle('moc-focus-active', focusActive);
+        btn.title = focusActive ? 'Focus Mode: PÅ (klicka för av)' : 'Focus Mode: AV (klicka för på)';
+      }
+    };
+
+    const init = () => {
+      const topbar = document.getElementById('topbar');
+      if (!topbar || document.getElementById('mocFocusBtn')) return;
+
+      const btn = document.createElement('button');
+      btn.id = 'mocFocusBtn';
+      btn.className = 'moc-focus-btn';
+      btn.innerHTML = '🎯';
+      btn.title = 'Focus Mode: AV (klicka för på)';
+      btn.addEventListener('click', toggleFocus);
+      topbar.appendChild(btn);
+
+      ['mousemove', 'keydown', 'touchstart', 'wheel'].forEach(evt => {
+        document.addEventListener(evt, onActivity, { passive: true });
+      });
+
+      window.addEventListener('hashchange', () => {
+        if (!isCityView() && focusActive) {
+          focusActive = false;
+          clearTimeout(inactivityTimer);
+          applyFocus(false);
+          btn.classList.remove('moc-focus-active');
+          btn.title = 'Focus Mode: AV (klicka för på)';
+        }
+      });
+
+      window.MyOffiCityAddons.register('Focus Mode');
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  } catch(e) {}
+})();

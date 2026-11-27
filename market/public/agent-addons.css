@@ -2707,3 +2707,34 @@ a.moc-breadcrumb-item:hover {
   background: rgba(217, 180, 106, 0.2);
   border-color: #d9b46a;
 }
+
+.moc-focus-btn {
+  margin-left: 10px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(217, 180, 106, 0.35);
+  background: rgba(15, 23, 42, 0.6);
+  color: #f3ecdc;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.moc-focus-btn:hover {
+  border-color: #d9b46a;
+  background: rgba(20, 32, 61, 0.9);
+}
+.moc-focus-active {
+  border-color: #4ade80;
+  background: rgba(74, 222, 128, 0.15);
+  box-shadow: 0 0 12px rgba(74, 222, 128, 0.3);
+}
+.moc-focus-hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.moc-focus-mode .moc-focus-hidden {
+  opacity: 0;
+  pointer-events: none;
+}

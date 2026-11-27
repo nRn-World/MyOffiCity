@@ -6860,3 +6860,40 @@
     window.MyOffiCityAddons.addTool('Live Search', '🔍', searchContainer);
   } catch (e) { console.error('LiveSearch Error:', e); }
 })();
+
+(() => {
+  try {
+    const container = document.createElement('div');
+    container.innerHTML = `
+      <div id="moc-loader-ui" style="display:none; padding:15px; text-align:center;">
+        <div style="margin-bottom:10px; font-size:12px; color:#d9b46a;">Laddar 3D-miljö...</div>
+        <div style="height:6px; background:#1e293b; border-radius:3px; overflow:hidden;">
+          <div id="moc-progress-bar" style="width:0%; height:100%; background:#d9b46a; transition:width 0.3s;"></div>
+        </div>
+        <div id="moc-retry-box" style="display:none; margin-top:15px;">
+          <button id="moc-retry-btn" class="moc-dock-btn" style="position:static; width:100%; justify-content:center;">Försök igen</button>
+        </div>
+      </div>
+    `;
+
+    window.MyOffiCityAddons.addTool('3D Status', '🏗️', container);
+
+    window.MyOffiCityLoader = {
+      update: (percent) => {
+        const bar = document.getElementById('moc-progress-bar');
+        const ui = document.getElementById('moc-loader-ui');
+        if (ui) ui.style.display = 'block';
+        if (bar) bar.style.width = Math.min(percent, 100) + '%';
+      },
+      showError: () => {
+        document.getElementById('moc-retry-box').style.display = 'block';
+      }
+    };
+
+    document.getElementById('moc-retry-btn').addEventListener('click', () => {
+      window.location.reload();
+    });
+
+    window.MyOffiCityAddons.register('3D-Loader-Manager');
+  } catch (e) { console.error('3D-Loader-Manager Error:', e); }
+})();

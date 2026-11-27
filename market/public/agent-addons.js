@@ -6426,3 +6426,66 @@
     console.warn('Contextual Hover Cards Addon Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const mon = document.createElement('div');
+    mon.id = 'mocPerfMon';
+    mon.className = 'moc-perf-monitor';
+    mon.innerHTML = `
+      <div class="moc-perf-row"><span class="moc-perf-label">FPS</span><span id="moc-fps">--</span></div>
+      <div class="moc-perf-row"><span class="moc-perf-label">MEM</span><span id="moc-mem">--</span></div>
+    `;
+    document.body.appendChild(mon);
+
+    let last = performance.now(), frames = 0, rafId = null;
+    
+    const update = () => {
+      frames++;
+      const now = performance.now();
+      if (now >= last + 1000) {
+        const fps = Math.round((frames * 1000) / (now - last));
+        document.getElementById('moc-fps').textContent = fps;
+        frames = 0; last = now;
+        if (window.performance && performance.memory) {
+          const used = Math.round(performance.memory.usedJSHeapSize / 1048576);
+          document.getElementById('moc-mem').textContent = used + 'MB';
+        } else {
+          document.getElementById('moc-mem').textContent = 'N/A';
+        }
+      }
+      rafId = requestAnimationFrame(update);
+    };
+
+    const toggle = (force) => {
+      const isAct = typeof force === 'boolean' ? force : !mon.classList.contains('active');
+      mon.classList.toggle('active', isAct);
+      if (isAct) {
+        last = performance.now();
+        frames = 0;
+        update();
+      } else if (rafId) {
+        cancelAnimationFrame(rafId);
+      }
+    };
+
+    // Aktivering via Alt+P eller hash-kommando
+    window.addEventListener('keydown', (e) => {
+      if (e.altKey && e.key.toLowerCase() === 'p') { e.preventDefault(); toggle(); }
+    });
+    
+    window.addEventListener('hashchange', () => {
+      if (window.location.hash.includes('perf')) toggle(true);
+    });
+
+    const ctrl = document.createElement('div');
+    ctrl.style.marginTop = '8px';
+    ctrl.innerHTML = `<button class="moc-perf-btn">Växla Monitor (Alt+P)</button>`;
+    ctrl.querySelector('button').onclick = () => toggle();
+
+    window.MyOffiCityAddons.addTool('Performance', '📊', ctrl);
+    window.MyOffiCityAddons.register('Performance Monitor');
+  } catch (e) {
+    console.warn('Performance Monitor Error:', e);
+  }
+})();

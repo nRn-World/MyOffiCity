@@ -463,3 +463,26 @@
     console.error('Smart Note error:', e);
   }
 })();
+
+(() => {
+  try {
+    const topbar = document.getElementById('topbar');
+    if (!topbar) return;
+
+    const btn = document.createElement('button');
+    btn.innerHTML = '🎯 Focus';
+    btn.style.cssText = 'margin-left:10px; padding:4px 10px; border-radius:6px; background:rgba(217,180,106,0.2); border:1px solid rgba(217,180,106,0.4); color:#f3ecdc; cursor:pointer; font-size:12px;';
+    
+    let active = false;
+    btn.onclick = () => {
+      active = !active;
+      document.body.classList.toggle('moc-focus-mode', active);
+      btn.style.background = active ? 'rgba(217,180,106,0.5)' : 'rgba(217,180,106,0.2)';
+    };
+
+    topbar.appendChild(btn);
+    window.MyOffiCityAddons.register('Focus Mode');
+  } catch (e) {
+    console.error('Focus Mode error:', e);
+  }
+})();

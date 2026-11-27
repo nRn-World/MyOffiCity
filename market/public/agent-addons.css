@@ -5580,3 +5580,56 @@ body.moc-focus-mode .chat-container {
 .theme-switcher-btn:hover {
   opacity: 0.8;
 }
+
+/* Command Palette – overlay & modal */
+.mcp-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 960;
+}
+.mcp-modal {
+  background: rgba(15, 23, 42, 0.92);
+  padding: 16px;
+  border-radius: 12px;
+  width: 320px;
+  max-width: 90vw;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mcp-input {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 15px;
+  background: rgba(255,255,255,0.08);
+  color: #f3ecdc;
+  border: 1px solid rgba(217,180,106,0.4);
+  border-radius: 4px;
+}
+.mcp-input:focus {
+  outline: 2px solid var(--accent-color);
+  border-color: var(--accent-color);
+}
+.mcp-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.mcp-item {
+  padding: 6px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #f3ecdc;
+}
+.mcp-item:hover,
+.mcp-item.active {
+  background: rgba(217,180,106,0.2);
+}

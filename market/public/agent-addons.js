@@ -7177,3 +7177,33 @@
     console.error('Smart Clipboard Addon Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const container = document.createElement('div');
+    container.id = 'moc-breadcrumbs';
+    container.className = 'moc-breadcrumb-bar';
+    
+    const updateBreadcrumbs = () => {
+      const path = window.location.hash || '#/city';
+      const parts = path.replace('#/', '').split('/');
+      container.innerHTML = `<span class="moc-bc-item" onclick="window.location.hash='#/city'">🏠 City</span>`;
+      
+      let currentPath = '#/city';
+      parts.forEach(part => {
+        if (!part || part === 'city') return;
+        currentPath += `/${part}`;
+        container.innerHTML += `<span class="moc-bc-sep">/</span><span class="moc-bc-item" onclick="window.location.hash='${currentPath}'">${part.charAt(0).toUpperCase() + part.slice(1)}</span>`;
+      });
+    };
+
+    window.addEventListener('hashchange', updateBreadcrumbs);
+    
+    const topbar = document.getElementById('topbar');
+    if (topbar) {
+      topbar.insertAdjacentElement('afterend', container);
+      updateBreadcrumbs();
+      window.MyOffiCityAddons.register('Visual Breadcrumbs');
+    }
+  } catch(e) { console.error('Breadcrumb Addon Error:', e); }
+})();

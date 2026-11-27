@@ -7207,3 +7207,36 @@
     }
   } catch(e) { console.error('Breadcrumb Addon Error:', e); }
 })();
+
+(() => {
+  try {
+    const tooltip = document.createElement('div');
+    tooltip.id = 'moc-3d-tooltip';
+    tooltip.className = 'moc-3d-tooltip';
+    document.body.appendChild(tooltip);
+
+    window.addEventListener('mousemove', (e) => {
+      const target = e.target;
+      if (target && target.dataset && target.dataset.mocMeta) {
+        const meta = JSON.parse(target.dataset.mocMeta);
+        tooltip.innerHTML = `
+          <div class="moc-tt-header">${meta.name || 'Objekt'}</div>
+          <div class="moc-tt-body">
+            <div>Ägare: <b>${meta.owner || 'N/A'}</b></div>
+            <div>Status: <b>${meta.status || 'Aktiv'}</b></div>
+            <div>AI: <b>${meta.model || 'Standard'}</b></div>
+          </div>
+        `;
+        tooltip.style.left = (e.clientX + 15) + 'px';
+        tooltip.style.top = (e.clientY + 15) + 'px';
+        tooltip.classList.add('visible');
+      } else {
+        tooltip.classList.remove('visible');
+      }
+    });
+
+    window.MyOffiCityAddons.register('3D Context Tooltips');
+  } catch (e) {
+    console.error('3D Tooltip Addon Error:', e);
+  }
+})();

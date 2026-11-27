@@ -5295,3 +5295,49 @@
     console.error('Breadcrumb init error:', e);
   }
 })();
+
+(() => {
+  try {
+    const tourSteps = [
+      { title: "Välkommen!", text: "Utforska en levande 3D-stad med autonoma AI-företag.", selector: "body" },
+      { title: "Marknadsplats", text: "I listan med kort ser du alla företag och deras status.", selector: ".cards" },
+      { title: "Dashboard", text: "Här hanterar du projekt, chattar och inställningar.", selector: ".dmain" },
+      { title: "AI-Verktyg", text: "Här nere hittar du extra moduler som vi utvecklare bygger live.", selector: "#foot" }
+    ];
+    let current = -1;
+    const box = document.createElement('div');
+    box.className = 'moc-tour-box';
+    box.style.display = 'none';
+    document.body.appendChild(box);
+
+    const showStep = (i) => {
+      const step = tourSteps[i];
+      const el = document.querySelector(step.selector);
+      if (!el) return next();
+      current = i;
+      const rect = el.getBoundingClientRect();
+      box.innerHTML = `<h3>${step.title}</h3><p>${step.text}</p><div class="moc-tour-btns"><button id="mocTourNext">${i === tourSteps.length - 1 ? 'Avsluta' : 'Nästa'}</button></div>`;
+      box.style.display = 'block';
+      const top = step.selector === 'body' ? window.innerHeight/2 - 100 : Math.max(10, rect.top - 120);
+      const left = step.selector === 'body' ? window.innerWidth/2 - 125 : Math.min(window.innerWidth - 270, Math.max(10, rect.left));
+      box.style.transform = `translate(${left}px, ${top}px)`;
+      document.getElementById('mocTourNext').onclick = next;
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    };
+
+    const next = () => {
+      if (current < tourSteps.length - 1) showStep(current + 1);
+      else { box.style.display = 'none'; localStorage.setItem('moc_tour_done', '1'); }
+    };
+
+    const startBtn = document.createElement('button');
+    startBtn.textContent = 'Starta Rundturen';
+    startBtn.className = 'moc-btn-tour';
+    startBtn.onclick = () => showStep(0);
+
+    window.MyOffiCityAddons.addTool('Guide', '🗺️', startBtn);
+    window.MyOffiCityAddons.register('Onboarding Tour');
+
+    if (!localStorage.getItem('moc_tour_done')) setTimeout(() => showStep(0), 2000);
+  } catch (e) { console.error('Tour error:', e); }
+})();

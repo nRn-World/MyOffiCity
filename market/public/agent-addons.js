@@ -9060,3 +9060,32 @@
     console.error('Performance Monitor error:', e);
   }
 })();
+
+(() => {
+  try {
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'display: flex; flex-direction: column; gap: 8px;';
+    
+    const textarea = document.createElement('textarea');
+    textarea.placeholder = 'Skriv dina agent-instruktioner här...';
+    textarea.style.cssText = 'width: 100%; height: 120px; background: #1e293b; color: #f3ecdc; border: 1px solid #334155; border-radius: 4px; padding: 8px; resize: vertical; font-family: monospace;';
+    
+    const btn = document.createElement('button');
+    btn.textContent = 'Spara utkast';
+    btn.style.cssText = 'padding: 6px; background: #d9b46a; color: #0f172a; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;';
+    btn.onclick = () => {
+      localStorage.setItem('moc_agent_draft', textarea.value);
+      alert('Utkast sparat lokalt!');
+    };
+
+    const saved = localStorage.getItem('moc_agent_draft');
+    if (saved) textarea.value = saved;
+
+    wrapper.appendChild(textarea);
+    wrapper.appendChild(btn);
+
+    window.MyOffiCityAddons.addTool('Agent-Draft', '📝', wrapper);
+  } catch (e) {
+    console.error('Agent-Draft error:', e);
+  }
+})();

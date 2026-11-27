@@ -6226,3 +6226,11 @@ canvas {
   color: #94a3b8;
   margin-bottom: 4px;
 }
+
+/* Agent-Draft specific styles */
+.moc-tool-card textarea:focus {
+  outline: 1px solid #d9b46a;
+}
+.moc-tool-card button:hover {
+  background: #c5a35e;
+}

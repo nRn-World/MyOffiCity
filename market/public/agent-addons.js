@@ -10083,3 +10083,37 @@
     console.error('Quota Widget Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const themeControl = document.createElement('div');
+    themeControl.className = 'moc-theme-control';
+    themeControl.innerHTML = `
+      <select id="moc-theme-select">
+        <option value="corporate">Corporate</option>
+        <option value="cyberpunk">Cyberpunk</option>
+        <option value="minimalist">Minimalist</option>
+      </select>
+      <label>Size: <input type="range" id="moc-font-slider" min="0.9" max="1.5" step="0.1" value="1"></label>
+    `;
+
+    document.getElementById('topbar').appendChild(themeControl);
+
+    const themeSelect = document.getElementById('moc-theme-select');
+    const fontSlider = document.getElementById('moc-font-slider');
+
+    themeSelect.addEventListener('change', (e) => {
+      document.body.classList.remove('theme-cyberpunk', 'theme-minimalist', 'theme-corporate');
+      document.body.classList.add(`theme-${e.target.value}`);
+    });
+
+    fontSlider.addEventListener('input', (e) => {
+      document.documentElement.style.setProperty('--moc-font-scale', e.target.value);
+    });
+
+    window.MyOffiCityAddons.addTool('Theme & Font', '🎨', themeControl);
+    window.MyOffiCityAddons.register('ThemeEngine');
+  } catch (e) {
+    console.error('Theme Engine Error:', e);
+  }
+})();

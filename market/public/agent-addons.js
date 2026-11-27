@@ -8251,3 +8251,35 @@
     console.error('Toast system error:', e);
   }
 })();
+
+(() => {
+  try {
+    const setupFocusMode = () => {
+      const cards = document.querySelectorAll('.card');
+      cards.forEach((card, index) => {
+        card.setAttribute('tabindex', '0');
+        card.setAttribute('role', 'button');
+        card.setAttribute('aria-label', `Agent: ${card.innerText.split('\n')[0]}`);
+        
+        card.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            card.click();
+          }
+        });
+      });
+    };
+
+    const toolEl = document.createElement('div');
+    toolEl.innerHTML = '<p style="font-size:12px; color:#d9b46a;">Använd <b>Tab</b> för att navigera och <b>Enter</b> för att välja agenter.</p>';
+    
+    window.MyOffiCityAddons.addTool('Focus Mode', '⌨️', toolEl);
+    window.MyOffiCityAddons.register('Keyboard Navigation');
+
+    const observer = new MutationObserver(setupFocusMode);
+    observer.observe(document.body, { childList: true, subtree: true });
+    setupFocusMode();
+  } catch (e) {
+    console.error('Focus Mode error:', e);
+  }
+})();

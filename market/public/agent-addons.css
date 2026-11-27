@@ -5784,3 +5784,10 @@ body.moc-focus-mode .chat-container {
   from { transform: translateX(100%); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
 }
+
+.card:focus {
+  outline: 2px solid #d9b46a !important;
+  box-shadow: 0 0 15px rgba(217, 180, 106, 0.4) !important;
+  transform: scale(1.02);
+  transition: transform 0.2s ease;
+}

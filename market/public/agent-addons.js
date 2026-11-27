@@ -6386,3 +6386,32 @@
     console.warn('Smart Center Addon Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const container = document.createElement('div');
+    container.innerHTML = `
+      <div style="font-size: 12px; color: #e9d7b0; line-height: 1.6;">
+        <p>Använd globala genvägar för att navigera:</p>
+        <ul style="padding-left: 18px;">
+          <li><strong>Alt + 1</strong>: Marketplace</li>
+          <li><strong>Alt + 2</strong>: City</li>
+          <li><strong>Alt + 3</strong>: Dashboard</li>
+        </ul>
+      </div>
+    `;
+
+    window.addEventListener('keydown', (e) => {
+      if (e.altKey) {
+        if (e.key === '1') { window.location.hash = '#market'; }
+        else if (e.key === '2') { window.location.hash = '#city'; }
+        else if (e.key === '3') { window.location.hash = '#dashboard'; }
+      }
+    });
+
+    window.MyOffiCityAddons.addTool('Quick-Switch', '⌨️', container);
+    window.MyOffiCityAddons.register('Keyboard Shortcuts');
+  } catch (e) {
+    console.warn('Quick-Switch Addon Error:', e);
+  }
+})();

@@ -5108,3 +5108,30 @@
     console.error('Status Badge error:', e);
   }
 })();
+
+(() => {
+  try {
+    const container = document.createElement('div');
+    container.innerHTML = `
+      <div class="moc-quick-actions">
+        <button class="moc-quick-action" onclick="window.dispatchEvent(new CustomEvent('moc-focus', {detail: 1}))">Ctrl+1: Entré</button>
+        <button class="moc-quick-action" onclick="window.dispatchEvent(new CustomEvent('moc-focus', {detail: 2}))">Ctrl+2: Arbetsyta</button>
+        <button class="moc-quick-action" onclick="window.dispatchEvent(new CustomEvent('moc-focus', {detail: 3}))">Ctrl+3: Terrass</button>
+      </div>
+      <p style="font-size:11px; color:#94a3b8; margin-top:8px;">Använd kortkommandon för att navigera i 3D-vyn.</p>
+    `;
+
+    window.MyOffiCityAddons.addTool('Kamerakontroll', '📷', container);
+    window.MyOffiCityAddons.register('Focus-Switching');
+
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && ['1', '2', '3'].includes(e.key)) {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent('moc-focus', { detail: parseInt(e.key) }));
+        console.log(`Navigerar till zon: ${e.key}`);
+      }
+    });
+  } catch (e) {
+    console.error('Focus-Switching error:', e);
+  }
+})();

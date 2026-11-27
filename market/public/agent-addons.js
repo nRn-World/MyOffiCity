@@ -8098,3 +8098,34 @@
     console.error('City View Tools error:', e);
   }
 })();
+
+(() => {
+  try {
+    const updateBreadcrumbs = () => {
+      const topbar = document.getElementById('topbar');
+      if (!topbar) return;
+      
+      let bc = document.getElementById('moc-breadcrumbs');
+      if (!bc) {
+        bc = document.createElement('div');
+        bc.id = 'moc-breadcrumbs';
+        bc.className = 'moc-breadcrumbs';
+        topbar.prepend(bc);
+      }
+      
+      const path = window.location.hash.replace('#/', '') || 'home';
+      const parts = path.split('/');
+      
+      bc.innerHTML = parts.map((p, i) => {
+        const url = '#' + parts.slice(0, i + 1).map(x => '/' + x).join('');
+        return `<a href="${url}">${p.charAt(0).toUpperCase() + p.slice(1)}</a>`;
+      }).join(' <span class="sep">/</span> ');
+    };
+
+    window.addEventListener('hashchange', updateBreadcrumbs);
+    updateBreadcrumbs();
+    window.MyOffiCityAddons.register('Breadcrumb Nav');
+  } catch (e) {
+    console.error('Breadcrumb error:', e);
+  }
+})();

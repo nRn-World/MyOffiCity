@@ -2246,3 +2246,14 @@ body.moc-zen-active canvas {
   background: #d9b46a;
   color: #0f172a;
 }
+
+.cards {
+  transition: all 0.3s ease;
+}
+#agent-sort, #agent-tag-filter {
+  width: 100%;
+  outline: none;
+}
+#agent-sort:focus, #agent-tag-filter:focus {
+  border-color: #f3ecdc;
+}

@@ -3242,3 +3242,29 @@ a.moc-breadcrumb-item:hover {
 .pulse {
   animation: moc-pulse 1.5s infinite;
 }
+
+#moc-mini-map {
+  width: 220px;
+  height: 220px;
+  background: rgba(0,0,0,0.6);
+  border-radius: 8px;
+  padding: 8px;
+  color: #fff;
+  font-family: system-ui, sans-serif;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+#moc-mini-map svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+#moc-mini-map .moc-map-point {
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+#moc-mini-map .moc-map-point:hover {
+  transform: scale(1.2);
+}
+#moc-mini-map text {
+  pointer-events: none;
+}

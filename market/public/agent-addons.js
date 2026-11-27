@@ -4227,3 +4227,49 @@
     console.error('Live‑Status‑modul fel:', e);
   }
 })();
+
+(() => {
+  try {
+    const positions = {
+      tomas: {x:0, y:1.6, z:0},
+      meeting: {x:10, y:1.6, z:5}
+    };
+
+    const mapContainer = document.createElement('div');
+    mapContainer.id = 'moc-mini-map';
+    mapContainer.innerHTML = `
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <rect x="10" y="10" width="180" height="180" fill="#222" stroke="#555" stroke-width="2"/>
+        <circle cx="50" cy="150" r="8" fill="#4ade80" stroke="#fff" stroke-width="1" data-target="tomas" class="moc-map-point"/>
+        <text x="50" y="140" text-anchor="middle" fill="#fff" font-size="10">Tomas</text>
+        <circle cx="150" cy="50" r="8" fill="#f59e0b" stroke="#fff" stroke-width="1" data-target="meeting" class="moc-map-point"/>
+        <text x="150" y="40" text-anchor="middle" fill="#fff" font-size="10">Meeting</text>
+      </svg>
+    `;
+
+    function moveCameraTo(target) {
+      const pos = positions[target];
+      if (!pos) return;
+      if (window.MyOffiCity && typeof window.MyOffiCity.setCameraPosition === 'function') {
+        window.MyOffiCity.setCameraPosition(pos.x, pos.y, pos.z);
+      } else if (window.camera) {
+        window.camera.position.set(pos.x, pos.y, pos.z);
+        if (window.controls) window.controls.update();
+      } else {
+        console.warn('Camera control not available');
+      }
+    }
+
+    mapContainer.querySelectorAll('.moc-map-point').forEach(el => {
+      el.addEventListener('click', () => {
+        const target = el.dataset.target;
+        moveCameraTo(target);
+      });
+    });
+
+    window.MyOffiCityAddons.addTool('MiniMap', '🗺️', mapContainer);
+    window.MyOffiCityAddons.register('MiniMap Navigation');
+  } catch (e) {
+    console.error('MiniMap addon error', e);
+  }
+})();

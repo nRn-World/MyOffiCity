@@ -9266,3 +9266,53 @@
     console.error('Rotation Init Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const nav = document.getElementById('nav');
+    const scrollTopBtn = document.createElement('button');
+    scrollTopBtn.className = 'moc-scroll-top';
+    scrollTopBtn.innerHTML = '↑';
+    scrollTopBtn.title = 'Till toppen';
+    document.body.appendChild(scrollTopBtn);
+
+    let ticking = false;
+    const updateScroll = () => {
+      const scrollY = window.scrollY || document.documentElement.scrollTop;
+      const threshold = 150;
+      
+      if (scrollY > threshold) {
+        scrollTopBtn.classList.add('visible');
+        if (nav) nav.classList.add('moc-nav-sticky');
+      } else {
+        scrollTopBtn.classList.remove('visible');
+        if (nav) nav.classList.remove('moc-nav-sticky');
+      }
+      ticking = false;
+    };
+
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        window.requestAnimationFrame(updateScroll);
+        ticking = true;
+      }
+    }, { passive: true });
+
+    scrollTopBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // Initial check
+    updateScroll();
+
+    const info = document.createElement('div');
+    info.style.fontSize = '12px';
+    info.style.color = '#94a3b8';
+    info.innerHTML = 'Navigeringen fästs högst upp och en knapp visas för snabb återgång till toppen.';
+    
+    window.MyOffiCityAddons.addTool('Smart-Scroll', '📜', info);
+    window.MyOffiCityAddons.register('Smart-Scroll');
+  } catch (e) {
+    console.error('Smart-Scroll Init Error:', e);
+  }
+})();

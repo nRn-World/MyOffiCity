@@ -6415,3 +6415,14 @@
     console.warn('Quick-Switch Addon Error:', e);
   }
 })();
+
+(() => {
+  try {
+    // Registrera den nya hover‑kort‑funktionen så den räknas med i badge‑räkningen.
+    if (window.MyOffiCityAddons && typeof window.MyOffiCityAddons.register === 'function') {
+      window.MyOffiCityAddons.register('Contextual Hover Cards');
+    }
+  } catch (e) {
+    console.warn('Contextual Hover Cards Addon Error:', e);
+  }
+})();

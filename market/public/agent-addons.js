@@ -714,3 +714,48 @@
     console.error('Toast Notification Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const portal = document.createElement('div');
+    portal.id = 'moc-portal-menu';
+    portal.className = 'moc-portal-hidden';
+    portal.innerHTML = `
+      <div class="moc-portal-box">
+        <div class="moc-portal-header">Hoppa till...</div>
+        <div class="moc-portal-list">
+          <div class="moc-portal-item" data-url="#/">Marketplace</div>
+          <div class="moc-portal-item" data-url="#/city">City View</div>
+          <div class="moc-portal-item" data-url="#/dash">Dashboard</div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(portal);
+
+    const toggle = (show) => portal.classList.toggle('moc-portal-hidden', !show);
+
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.key === 'k') {
+        e.preventDefault();
+        toggle(portal.classList.contains('moc-portal-hidden'));
+      }
+      if (e.key === 'Escape') toggle(false);
+    });
+
+    portal.addEventListener('click', (e) => {
+      const item = e.target.closest('.moc-portal-item');
+      if (item) {
+        window.location.hash = item.dataset.url;
+        toggle(false);
+      } else {
+        toggle(false);
+      }
+    });
+
+    window.MyOffiCityAddons.register('Portal Jump Menu');
+    const info = document.createElement('div');
+    info.className = 'moc-toast-info';
+    info.innerHTML = 'Tryck <b>Ctrl+K</b> var som helst för att snabbt navigera mellan vyer.';
+    window.MyOffiCityAddons.addTool('Portal Jump', '🚀', info);
+  } catch (e) {}
+})();

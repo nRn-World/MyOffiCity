@@ -3221,3 +3221,69 @@
     window.MyOffiCityAddons.register('Auto-Save Monitor');
   } catch(e) {}
 })();
+
+(() => {
+  try {
+    const sidebar = document.createElement('div');
+    sidebar.id = 'moc-quickview-sidebar';
+    sidebar.className = 'moc-quickview-sidebar';
+    sidebar.innerHTML = `
+      <div class="moc-quickview-header">
+        <h3>📊 Quick-View</h3>
+        <button class="moc-quickview-close" title="Stäng">✕</button>
+      </div>
+      <div class="moc-quickview-body">
+        <div class="moc-quickview-placeholder">
+          <p>Välj ett objekt i 3D-vyn för att se detaljer här.</p>
+        </div>
+      </div>
+    `;
+    
+    const closeBtn = sidebar.querySelector('.moc-quickview-close');
+    closeBtn.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+    });
+
+    // Simulera objektval för demo (i verkligheten kopplas detta till Three.js raycasting)
+    const demoObjects = [
+      { id: 'obj1', name: 'Byggnad A', type: 'Kontor', status: 'Aktiv', info: '12 anställda, 3 våningar' },
+      { id: 'obj2', name: 'Agent Tomas', type: 'AI', status: 'Arbetar', info: 'Optimerar resurser, 95% effektivitet' },
+      { id: 'obj3', name: 'Träd 42', type: 'Natur', status: 'Växer', info: 'Höjd: 12m, Ålder: 5 år' }
+    ];
+
+    // Klicka på placeholder för att visa demo-data
+    sidebar.querySelector('.moc-quickview-placeholder').addEventListener('click', () => {
+      const obj = demoObjects[Math.floor(Math.random() * demoObjects.length)];
+      sidebar.querySelector('.moc-quickview-body').innerHTML = `
+        <div class="moc-quickview-item">
+          <div class="moc-quickview-item-header">
+            <span class="moc-quickview-item-name">${obj.name}</span>
+            <span class="moc-quickview-item-type">${obj.type}</span>
+          </div>
+          <div class="moc-quickview-item-status">
+            <span class="moc-status-dot ${obj.status === 'Aktiv' || obj.status === 'Arbetar' ? 'active' : 'idle'}"></span>
+            ${obj.status}
+          </div>
+          <div class="moc-quickview-item-info">${obj.info}</div>
+        </div>
+      `;
+      sidebar.classList.add('open');
+    });
+
+    // Lägg till en knapp i docken för att öppna sidebar
+    const toggleBtn = document.createElement('button');
+    toggleBtn.className = 'moc-quickview-toggle';
+    toggleBtn.innerHTML = '📊 Quick-View';
+    toggleBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+    });
+
+    // Lägg till i AI-docken
+    window.MyOffiCityAddons.addTool('Quick-View Sidebar', '📊', toggleBtn);
+    
+    // Lägg till sidebar i DOM
+    document.body.appendChild(sidebar);
+    
+    window.MyOffiCityAddons.register('Quick-View Sidebar');
+  } catch(e) {}
+})();

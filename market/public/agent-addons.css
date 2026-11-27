@@ -6629,3 +6629,42 @@ body {
 .moc-hotkey-overlay li {
   margin-bottom: 4px;
 }
+
+/* Live-Pulse Notification Styles */
+.moc-pulse-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 12px 20px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(217, 180, 106, 0.3);
+  color: #f3ecdc;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  z-index: 9999;
+  animation: moc-slide-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  font-family: sans-serif;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+@keyframes moc-slide-in {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.moc-pulse-toast.fade-out {
+  animation: moc-fade-out 0.5s forwards;
+}
+
+@keyframes moc-fade-out {
+  to { transform: translateY(-20px); opacity: 0; }
+}
+
+.moc-pulse-icon {
+  color: #d9b46a;
+  font-size: 18px;
+}

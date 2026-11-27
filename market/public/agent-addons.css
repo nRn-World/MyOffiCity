@@ -1133,3 +1133,58 @@ COMMIT: feat: add interactive Asset-Inspector tooltip for marketplace cards
 .moc-minimap-wrap:hover {
   border-color: #d9b46a;
 }
+
+.moc-quick-dock {
+  position: fixed;
+  left: 18px;
+  top: 90px;
+  z-index: 945;
+  width: 210px;
+  border-radius: 14px;
+  border: 1px solid rgba(217, 180, 106, 0.45);
+  background: rgba(12, 18, 34, 0.94);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+}
+.moc-quick-dock-handle {
+  padding: 8px 12px;
+  font: 600 12px/1 system-ui, sans-serif;
+  color: #e9d7b0;
+  background: rgba(217, 180, 106, 0.14);
+  cursor: grab;
+  user-select: none;
+  letter-spacing: 0.02em;
+}
+.moc-quick-dock-handle:active { cursor: grabbing; }
+.moc-quick-dock-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+}
+.moc-quick-dock-btn {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  border: 1px solid rgba(217, 180, 106, 0.25);
+  background: rgba(217, 180, 106, 0.08);
+  color: #f3ecdc;
+  font: 500 12px/1.2 system-ui, sans-serif;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.18s ease;
+}
+.moc-quick-dock-btn:hover {
+  background: rgba(217, 180, 106, 0.2);
+  border-color: #d9b46a;
+  transform: translateX(3px);
+}
+.moc-quick-dock-flash {
+  background: #d9b46a !important;
+  color: #0f172a !important;
+}
+.moc-quick-dock-ico { font-size: 15px; }
+.moc-quick-dock-lbl { flex: 1; }

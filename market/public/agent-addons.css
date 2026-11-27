@@ -3567,3 +3567,25 @@ a.moc-breadcrumb-item:hover {
   height: 100% !important;
   transition: all 0.3s ease;
 }
+
+/* Drag‑Drop‑preview‑widget */
+.moc-drag-preview {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  padding: 4px 8px;
+  background: rgba(15, 23, 42, 0.85);
+  color: #f3ecdc;
+  border: 1px solid rgba(217, 180, 106, 0.45);
+  border-radius: 6px;
+  font-size: 13px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  backdrop-filter: blur(4px);
+  transform: translate(-50%, -50%);
+}
+
+/* Stil för verktygs‑checkboxen i dockan */
+#moc-drag-toggle {
+  width: 16px;
+  height: 16px;
+}

@@ -7104,3 +7104,29 @@
     console.error('Marketplace Price Trend Addon Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const toggleFocusMode = () => {
+      const isFocused = document.body.classList.toggle('moc-focus-mode');
+      const btn = document.getElementById('moc-focus-toggle');
+      if (btn) btn.textContent = isFocused ? 'Exit Focus' : 'Focus Mode';
+    };
+
+    const toolEl = document.createElement('div');
+    toolEl.innerHTML = `
+      <button id="moc-focus-toggle" style="width:100%; padding:8px; cursor:pointer; background:#d9b46a; border:none; border-radius:4px; font-weight:bold;">
+        Focus Mode
+      </button>
+      <p style="font-size:11px; color:#94a3b8; margin-top:8px;">
+        Döljer sidopaneler och navigeringsfält för att ge Tomas-chatten fullt utrymme.
+      </p>
+    `;
+    toolEl.querySelector('#moc-focus-toggle').addEventListener('click', toggleFocusMode);
+
+    window.MyOffiCityAddons.addTool('Tomas Focus', '🎯', toolEl);
+    window.MyOffiCityAddons.register('Focus Mode');
+  } catch (e) {
+    console.error('Focus Mode Addon Error:', e);
+  }
+})();

@@ -3785,3 +3785,40 @@ a.moc-breadcrumb-item:hover {
   transition: 0.2s;
 }
 .moc-btn-tour:hover { background: rgba(217, 180, 106, 0.2); }
+
+/* Snapshot Addon Styles */
+.moc-btn-snapshot {
+  width: 100%;
+  padding: 10px;
+  background: linear-gradient(135deg, rgba(217, 180, 106, 0.2), rgba(217, 180, 106, 0.05));
+  border: 1px solid #d9b46a;
+  color: #f3ecdc;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.moc-btn-snapshot:hover {
+  background: rgba(217, 180, 106, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+.moc-snapshot-flash {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: white;
+  z-index: 9999;
+  pointer-events: none;
+  animation: moc-flash-anim 0.4s ease-out forwards;
+}
+@keyframes moc-flash-anim {
+  0% { opacity: 0.8; }
+  100% { opacity: 0; }
+}

@@ -5341,3 +5341,52 @@
     if (!localStorage.getItem('moc_tour_done')) setTimeout(() => showStep(0), 2000);
   } catch (e) { console.error('Tour error:', e); }
 })();
+
+(() => {
+  try {
+    const takeSnapshot = () => {
+      const canvas = document.querySelector('canvas');
+      if (!canvas) {
+        console.warn('Ingen 3D-canvas hittades för snapshot.');
+        return;
+      }
+
+      // Skapa en temporär länk för nedladdning
+      const link = document.createElement('a');
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+      link.download = `MyOffiCity-Snapshot-${timestamp}.png`;
+      
+      // För Three.js-canvas som ofta har preserveDrawingBuffer: false
+      // försöker vi fånga innehållet. Om det blir svart kan användaren behöva klicka snabbt.
+      link.href = canvas.toDataURL('image/png');
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Visuell feedback
+      const flash = document.createElement('div');
+      flash.className = 'moc-snapshot-flash';
+      document.body.appendChild(flash);
+      setTimeout(() => flash.remove(), 400);
+    };
+
+    // Lyssna på tangentbordet (S)
+    window.addEventListener('keydown', (e) => {
+      if (e.key.toLowerCase() === 's' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+        takeSnapshot();
+      }
+    });
+
+    // Skapa UI-knapp
+    const btn = document.createElement('button');
+    btn.className = 'moc-btn-snapshot';
+    btn.innerHTML = '<span>Ta Snapshot (S)</span>';
+    btn.onclick = takeSnapshot;
+
+    window.MyOffiCityAddons.addTool('Snapshot', '📸', btn);
+    window.MyOffiCityAddons.register('Quick-Snapshot');
+  } catch (e) {
+    console.error('Snapshot addon error:', e);
+  }
+})();

@@ -22,6 +22,9 @@ CC0 kräver ingen attribution och inga avgifter. Vi anger källan ändå för sp
 | `person-man.glb` | Man (11 animationer) | https://poly.pizza/m/HMnuH5geEG | texturer 512 px |
 | `streetlight.glb` | Street Light | https://poly.pizza/m/nFwrlcLvM5 | texturer 512 px, varmt ljus |
 | `bench.glb` | Bench | https://poly.pizza/m/jLxjFxFRpw | texturer 512 px |
+| `office-plant.glb` | Houseplant (Monstera, Quaternius) | https://poly.pizza/m/bfLOqIV5uP | kontorsväxt, skalad & markjusterad |
+| `office-plant2.glb` | Houseplant (Palm, Quaternius) | https://poly.pizza/m/dveIJ0xNpX | kontorsväxt, skalad & markjusterad |
+| `office-bookshelf.glb` | Bookcase with Books (Quaternius) | https://poly.pizza/m/tACDGJ4CGW | bokhylla i kontoret, skalad & markjusterad |
 
 ## CC-BY 3.0 (attribution krävs)
 

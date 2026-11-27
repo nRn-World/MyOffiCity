@@ -208,6 +208,78 @@ const Office = (() => {
     p.position.set(0, .28 + h / 2, .022); g.add(p); parent.add(g); return g;
   }
 
+  /* ---------- riktiga CC0 3D-kontorsmöbler (växter & bokhyllor) ---------- */
+  const OFFICE_PROPS = {};
+  let officePropsLoading = false;
+  let PLANTS = [], BOOKSHELVES = [];
+  function normalizePropGlb(sceneObj, targetH) {
+    sceneObj.updateMatrixWorld(true);
+    const b = new T3.Box3().setFromObject(sceneObj);
+    const sz = b.getSize(new T3.Vector3());
+    const c = b.getCenter(new T3.Vector3());
+    const sc = sz.y > 0.001 ? (targetH / sz.y) : 1;
+    const wrap = new T3.Group();
+    const inner = sceneObj;
+    inner.scale.setScalar(sc);
+    inner.position.set(-c.x * sc, -b.min.y * sc, -c.z * sc);
+    inner.traverse(n => {
+      if (n.isMesh) {
+        n.castShadow = true;
+        n.receiveShadow = true;
+      }
+    });
+    wrap.add(inner);
+    wrap.userData.glb = true;
+    return wrap;
+  }
+  function swapOfficeProps() {
+    if (!root) return;
+    if (OFFICE_PROPS.plant || OFFICE_PROPS.plant2) {
+      PLANTS.forEach((p, idx) => {
+        if (p.swapped || !p.g.parent) return;
+        const tpl = (idx % 2 === 1 && OFFICE_PROPS.plant2) ? OFFICE_PROPS.plant2 : (OFFICE_PROPS.plant || OFFICE_PROPS.plant2);
+        if (!tpl) return;
+        const m = tpl.clone(true);
+        m.position.set(p.x, p.y, p.z);
+        m.rotation.y = (idx * 1.37) % (Math.PI * 2);
+        m.scale.setScalar(p.s);
+        m.userData.glb = true;
+        p.g.parent.remove(p.g);
+        root.add(m);
+        p.g = m;
+        p.swapped = true;
+      });
+    }
+    if (OFFICE_PROPS.bookshelf) {
+      BOOKSHELVES.forEach(b => {
+        if (b.swapped || !b.g.parent) return;
+        const m = OFFICE_PROPS.bookshelf.clone(true);
+        m.position.set(b.x, b.y, b.z);
+        m.rotation.y = b.ry;
+        m.userData.glb = true;
+        b.g.parent.remove(b.g);
+        root.add(m);
+        b.g = m;
+        b.swapped = true;
+      });
+    }
+  }
+  function loadOfficeProps() {
+    if (officePropsLoading || !T3.GLTFLoader) return;
+    officePropsLoading = true;
+    const loader = new T3.GLTFLoader();
+    [
+      ['plant', 'models/office-plant.glb?v=1', 1.25],
+      ['plant2', 'models/office-plant2.glb?v=1', 1.35],
+      ['bookshelf', 'models/office-bookshelf.glb?v=1', 1.55],
+    ].forEach(([key, url, h]) => {
+      loader.load(url, gltf => {
+        OFFICE_PROPS[key] = normalizePropGlb(gltf.scene, h);
+        swapOfficeProps();
+      }, undefined, () => { /* behåll reservgeometri om modell saknas */ });
+    });
+  }
+
   /* ---------- möbler ---------- */
   function plant(x, y, z, s = 1) {
     bossObst(x, y, z, .32 * s, .32 * s, 0);
@@ -219,6 +291,8 @@ const Office = (() => {
       l.rotation.set(Math.sin(a) * .45, 0, -Math.cos(a) * .45); l.rotation.y = -a;
     }
     root.add(g);
+    PLANTS.push({ g, x, y, z, s, swapped: false });
+    if (OFFICE_PROPS.plant || OFFICE_PROPS.plant2) swapOfficeProps();
   }
   function cooler(x, y, z) {
     bossObst(x, y, z, .38, .38, 0);
@@ -235,20 +309,51 @@ const Office = (() => {
   function sofa(x, y, z, ry, col = 0x8a6a52) {
     obst(x, y, z, 1.1, .45, ry);
     const g = new T3.Group(); g.position.set(x, y, z); g.rotation.y = ry;
-    const m = M(col); box(2.2, .45, .9, m, 0, .3, 0, g); box(2.2, .7, .25, m, 0, .7, -.35, g);
-    box(.25, .6, .9, m, -1.1, .5, 0, g); box(.25, .6, .9, m, 1.1, .5, 0, g);
-    box(.55, .3, .4, M(0xe58a3a), -.5, .65, -.1, g); root.add(g);
+    const m = M(col, { roughness: .68, metalness: .05 });
+    const legM = M(0x2a2018, { roughness: .4, metalness: .3 });
+    for (const lx of [-.98, .98]) for (const lz of [-.34, .34]) cyl(.03, .022, .14, legM, lx, .07, lz, g, 10);
+    box(2.22, .14, .9, m, 0, .2, 0, g);
+    [-.68, 0, .68].forEach(cx => {
+      box(.66, .2, .78, m, cx, .37, .04, g);
+      box(.66, .48, .2, m, cx, .68, -.32, g);
+    });
+    box(.2, .52, .88, m, -1.04, .48, 0, g); box(.2, .52, .88, m, 1.04, .48, 0, g);
+    const p1 = box(.44, .32, .14, M(0xd88c4a, { roughness: .82 }), -.68, .62, -.14, g); p1.rotation.z = .16; p1.rotation.y = .22;
+    const p2 = box(.42, .3, .14, M(0x4b6a7c, { roughness: .82 }), .72, .6, -.14, g); p2.rotation.z = -.14; p2.rotation.y = -.24;
+    root.add(g);
   }
   function armchair(x, y, z, ry, col = 0x7b5d49) {
     obst(x, y, z, .5, .45, ry);
     const g = new T3.Group(); g.position.set(x, y, z); g.rotation.y = ry;
-    const m = M(col); box(.95, .4, .9, m, 0, .28, 0, g); box(.95, .7, .22, m, 0, .7, -.34, g); box(.2, .55, .9, m, -.5, .5, 0, g); box(.2, .55, .9, m, .5, .5, 0, g); root.add(g);
+    const m = M(col, { roughness: .65, metalness: .06 });
+    const legM = M(0x2a2018, { roughness: .4, metalness: .3 });
+    for (const lx of [-.38, .38]) for (const lz of [-.34, .34]) cyl(.028, .02, .15, legM, lx, .075, lz, g, 10);
+    box(.94, .14, .88, m, 0, .2, 0, g);
+    box(.76, .2, .74, m, 0, .37, .04, g);
+    box(.76, .5, .2, m, 0, .68, -.31, g);
+    box(.16, .5, .86, m, -.44, .47, 0, g); box(.16, .5, .86, m, .44, .47, 0, g);
+    root.add(g);
   }
   function chair(parent, x, z, ry = 0, y = 0) {
     if (parent === root) bossObst(x, y, z, .32, .32, ry);
     const g = new T3.Group(); g.position.set(x, y, z); g.rotation.y = ry;
-    cyl(.3, .3, .04, chairM, 0, .06, 0, g); cyl(.04, .04, .35, metal, 0, .25, 0, g);
-    box(.62, .1, .56, chairM, 0, .46, 0, g); box(.56, .72, .09, chairM, 0, .86, -.3, g); parent.add(g); return g;
+    const chrome = M(0xb8c0cc, { metalness: .82, roughness: .22 });
+    const pad = M(0x2a2e38, { roughness: .62, metalness: .08 });
+    for (let i = 0; i < 5; i++) {
+      const a = i / 5 * Math.PI * 2;
+      const leg = box(.04, .035, .28, chrome, Math.sin(a) * .14, .07, Math.cos(a) * .14, g);
+      leg.rotation.y = a;
+      cyl(.026, .026, .035, dark, Math.sin(a) * .27, .026, Math.cos(a) * .27, g, 8);
+    }
+    cyl(.032, .038, .34, chrome, 0, .24, 0, g, 12);
+    box(.58, .09, .54, pad, 0, .45, .02, g);
+    box(.52, .64, .08, pad, 0, .82, -.26, g);
+    box(.36, .16, .07, pad, 0, 1.18, -.26, g);
+    for (const sx of [-.29, .29]) {
+      box(.04, .22, .04, chrome, sx, .56, -.02, g);
+      box(.06, .035, .3, pad, sx, .68, .04, g);
+    }
+    parent.add(g); return g;
   }
   function bookshelf(x, y, z, ry) {
     bossObst(x, y, z, .92, .24, ry);
@@ -262,6 +367,8 @@ const Office = (() => {
     const cs = [0xd9534f, 0x5b8cff, 0xffc94a, 0x3fb866, 0xa98bff];
     for (let r = 0; r < 3; r++)for (let i = 0; i < 7; i++)box(.1, .28 + rnd(i + r) * .1, .26, M(cs[(i + r) % 5]), -.68 + i * .22, .20 + r * .46 + .04, .02, g);
     root.add(g);
+    BOOKSHELVES.push({ g, x, y, z, ry, swapped: false });
+    if (OFFICE_PROPS.bookshelf) swapOfficeProps();
   }
   function rack(x, y, z) {
     bossObst(x, y, z, .38, .32, 0);
@@ -1718,13 +1825,33 @@ const Office = (() => {
     const lk = o.bossGender === 'f' ? { skin: 0xefc6a6, shirt: 0x3b2a5c, pants: 0x2b2240, hair: 0x6b3e22, hairStyle: 'long' } : { skin: 0xe0b090, shirt: 0x1f2a5c, pants: 0x1f2a5c, hair: 0x3a2a22, tie: 0xd62b3a, hairStyle: 'short' };
     seated(root, { id: 'boss', name: o.boss || 'Boss', title: o.bossTitle || 'Owner', color: '#ffc94a', kind: 'lead' }, x, y, z, 's', w, [{ x: -.5, t: 'chart', a: .2 }, { x: .6, t: 'dash', a: -.2 }], lk);
   }
-  // Frigör GPU-resurser från förra bygget. Delade material (ljus, bilar, partiklar)
-  // och den gemensamma glödtexturen får leva vidare.
+  // Frigör GPU-resurser från förra bygget. Delade material, geometrier och texturer
+  // från cachade 3D-mallar (OAKS, CIVIL, CARPACK, BIKES, HUMAN_GLBS, GK, CityAssets) får leva vidare.
   function disposeTree(obj) {
-    const keep = new Set([beamMat, coneMat, glowMat, tailMat].filter(Boolean));
-    const keepTex = new Set([FLAME_TEX, GT, ...FACE_CACHE.values()].filter(Boolean));
+    const keepGeo = new Set([BEAM_GEO, CONE_GEO, ...(GK ? [...GK.geos, ...GK.thin, ...GK.thin8] : [])].filter(Boolean));
+    const keep = new Set([beamMat, coneMat, glowMat, tailMat, gpMat, dark, metal, wood, woodD, chairM, white, trim].filter(Boolean));
+    const keepTex = new Set([FLAME_TEX, GT, LAWN, TAXI_TEX, GK && GK.tex, ...FACE_CACHE.values()].filter(Boolean));
+    const protect = (node) => {
+      if (!node || typeof node.traverse !== 'function') return;
+      node.traverse(x => {
+        if (x.geometry) keepGeo.add(x.geometry);
+        const ms = Array.isArray(x.material) ? x.material : [x.material];
+        ms.forEach(m => {
+          if (!m) return;
+          keep.add(m);
+          ['map', 'emissiveMap', 'normalMap', 'roughnessMap', 'metalnessMap', 'alphaMap'].forEach(k => { if (m[k]) keepTex.add(m[k]); });
+        });
+      });
+    };
+    OAKS.forEach(protect);
+    if (CIVIL) Object.values(CIVIL).forEach(v => protect(v && v.g));
+    if (CARPACK) Object.values(CARPACK).forEach(v => protect(v && v.g));
+    BIKES.forEach(v => protect(v && v.g));
+    Object.values(HUMAN_GLBS).forEach(v => protect(v && v.scene));
+    Object.values(OFFICE_PROPS).forEach(protect);
+    obj.traverse(o => { if (o.userData && o.userData.glb) o.traverse(x => { if (x.geometry) keepGeo.add(x.geometry); }); });
     obj.traverse(o => {
-      if (o.geometry) o.geometry.dispose();
+      if (o.geometry && !keepGeo.has(o.geometry)) o.geometry.dispose();
       const mats = Array.isArray(o.material) ? o.material : [o.material];
       mats.forEach(m => {
         if (!m || keep.has(m)) return;
@@ -1739,7 +1866,7 @@ const Office = (() => {
     if (root) { disposeTree(root); scene.remove(root); }
     glassMat = null;
     root = new T3.Group(); scene.add(root);
-    TREES = []; PEDS = []; loadCarPack(); loadBike(); loadCivil(); loadOak(); screens = []; leds = []; holos = []; lights = []; cars = []; bikes = []; screenHits = []; cityTex = []; flames = []; OBST = []; BOSS_OBST = [];
+    TREES = []; PEDS = []; PLANTS = []; BOOKSHELVES = []; loadCarPack(); loadBike(); loadCivil(); loadOak(); loadOfficeProps(); screens = []; leds = []; holos = []; lights = []; cars = []; bikes = []; screenHits = []; cityTex = []; flames = []; OBST = []; BOSS_OBST = [];
     cityFaces.forEach(f => f.t.dispose()); cityFaces = CITY_STYLES.map((_, i) => makeCityFace(i)); cityMats = []; cityBeacons = [];
     Object.values(agents).forEach(a => { a.tag.remove(); a.bub.remove(); }); for (const k in agents) delete agents[k];
     packets.forEach(p => p.res()); packets = []; trails = [];

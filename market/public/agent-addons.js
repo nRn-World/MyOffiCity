@@ -8507,3 +8507,40 @@
     console.error('Agent‑Status‑addon error:', e);
   }
 })();
+
+(() => {
+  try {
+    const startTime = Date.now();
+    const topbar = document.getElementById('topbar');
+    if (!topbar) return;
+
+    const timerEl = document.createElement('div');
+    timerEl.style.cssText = 'margin-left:15px; font-size:12px; color:#d9b46a; font-family:monospace;';
+    topbar.appendChild(timerEl);
+
+    const updateTimer = () => {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      const m = Math.floor(elapsed / 60);
+      const s = elapsed % 60;
+      timerEl.textContent = `Deep Work: ${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    };
+    setInterval(updateTimer, 1000);
+
+    const statsContainer = document.createElement('div');
+    statsContainer.innerHTML = '<p>Sessionen pågår...</p>';
+    
+    window.addEventListener('beforeunload', () => {
+      const duration = Math.floor((Date.now() - startTime) / 60000);
+      localStorage.setItem('last_session_duration', duration);
+    });
+
+    const last = localStorage.getItem('last_session_duration');
+    if (last) {
+      statsContainer.innerHTML = `<p>Förra sessionen: <strong>${last} minuter</strong> fokuserat arbete.</p>`;
+    }
+
+    window.MyOffiCityAddons.addTool('Produktivitet', '⏱️', statsContainer);
+  } catch (e) {
+    console.error('Session-timer error:', e);
+  }
+})();

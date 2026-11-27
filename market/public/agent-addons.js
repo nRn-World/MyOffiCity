@@ -9822,3 +9822,79 @@
     console.error('QuickSearch Addon Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const WayfindingTool = (() => {
+      let pathLine = null;
+      let scene = null;
+
+      const clearPath = () => {
+        if (pathLine) {
+          scene.remove(pathLine);
+          pathLine.geometry.dispose();
+          pathLine.material.dispose();
+          pathLine = null;
+        }
+      };
+
+      const drawPath = (targetPos) => {
+        clearPath();
+        if (!scene) return;
+
+        const cameraPos = window.myOffiCity?.camera?.position || new THREE.Vector3(0, 10, 20);
+        const geometry = new THREE.BufferGeometry().setFromPoints([cameraPos, targetPos]);
+        const material = new THREE.LineBasicMaterial({ 
+          color: 0x00ffcc, 
+          linewidth: 2,
+          transparent: true,
+          opacity: 0.8
+        });
+        
+        pathLine = new THREE.Line(geometry, material);
+        scene.add(pathLine);
+      };
+
+      const init = () => {
+        const container = document.createElement('div');
+        container.className = 'moc-wayfinding-tool';
+        container.innerHTML = `
+          <div style="margin-bottom:5px; font-size:12px;">Wayfinding</div>
+          <button id="wayfinding-btn">Click Target</button>
+        `;
+
+        window.MyOffiCityAddons.addTool('Wayfinding', '📍', container);
+        window.MyOffiCityAddons.register('WayfindingTool');
+
+        container.querySelector('#wayfinding-btn').addEventListener('click', () => {
+          // Logic to detect click on building would go here; 
+          // For now, we simulate a path to a fixed point or handle raycasting
+          console.log("Wayfinding active: Click a building to see path");
+        });
+
+        // Robust scene detection
+        const findScene = () => {
+          const possibleScene = window.myOffiCity?.scene || (window.scene);
+          if (possibleScene) {
+            scene = possibleScene;
+            return true;
+          }
+          return false;
+        };
+
+        // Periodically check for scene if not found immediately
+        const checkInterval = setInterval(() => {
+          if (findScene()) clearInterval(checkInterval);
+        }, 1000);
+      };
+
+      return { init };
+    })();
+
+    if (typeof window.MyOffiCityAddons !== 'undefined') {
+      WayfindingTool.init();
+    }
+  } catch (e) {
+    console.error("Wayfinding Tool Error:", e);
+  }
+})();

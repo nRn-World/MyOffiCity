@@ -2822,3 +2822,35 @@
     window.MyOffiCityAddons.register('Agent-Log-Viewer');
   } catch(e) {}
 })();
+
+(() => {
+  try {
+    const filterEl = document.createElement('div');
+    filterEl.innerHTML = `
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <select id="agent-sort" style="background:#0f172a; color:#e9d7b0; border:1px solid #d9b46a; padding:4px; border-radius:4px;">
+          <option value="latency">Sortera: Latens (Låg först)</option>
+          <option value="cost">Sortera: Kostnad (Billigast först)</option>
+        </select>
+        <input type="text" id="agent-tag-filter" placeholder="Filtrera på tagg (t.ex. 'coding')" style="background:#0f172a; color:#e9d7b0; border:1px solid #d9b46a; padding:4px; border-radius:4px;">
+        <button id="apply-filter" style="background:#d9b46a; color:#0f172a; border:none; padding:6px; cursor:pointer; font-weight:bold; border-radius:4px;">Applicera Filter</button>
+      </div>
+    `;
+
+    filterEl.querySelector('#apply-filter').addEventListener('click', () => {
+      const sort = document.getElementById('agent-sort').value;
+      const tag = document.getElementById('agent-tag-filter').value.toLowerCase();
+      const cards = Array.from(document.querySelectorAll('.cards .card, .card'));
+      
+      cards.forEach(card => {
+        const text = card.textContent.toLowerCase();
+        const matches = !tag || text.includes(tag);
+        card.style.display = matches ? 'block' : 'none';
+      });
+      console.log(`Filtering agents by ${sort} and tag: ${tag}`);
+    });
+
+    window.MyOffiCityAddons.addTool('Agent-Filter', '🔍', filterEl);
+    window.MyOffiCityAddons.register('Agent-Filter');
+  } catch(e) {}
+})();

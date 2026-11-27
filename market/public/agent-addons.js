@@ -5520,3 +5520,44 @@
     console.error('Agent Health Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const uiTool = document.createElement('div');
+    uiTool.className = 'moc-ui-controls';
+    uiTool.style.cssText = 'display:flex;flex-direction:column;gap:10px;padding:5px;';
+    
+    uiTool.innerHTML = `
+      <p style="font-size:11px;color:#94a3b8;margin-bottom:4px;">Anpassa kontorets visuella stil:</p>
+      <button class="moc-ui-btn" id="toggleGlass">✨ Glassmorphism: Av</button>
+      <button class="moc-ui-btn" id="toggleFocus">🧘 Fokusläge: Av</button>
+      <div style="height:1px;background:rgba(217,180,106,0.2);margin:5px 0;"></div>
+      <p style="font-size:10px;color:#64748b;font-style:italic;">Tips: Fokusläge tonar ner UI när du inte interagerar med det.</p>
+    `;
+
+    let glassOn = false;
+    let focusOn = false;
+
+    const btnGlass = uiTool.querySelector('#toggleGlass');
+    const btnFocus = uiTool.querySelector('#toggleFocus');
+
+    btnGlass.onclick = () => {
+      glassOn = !glassOn;
+      document.body.classList.toggle('moc-glass-enabled', glassOn);
+      btnGlass.textContent = `✨ Glassmorphism: ${glassOn ? 'På' : 'Av'}`;
+      btnGlass.style.borderColor = glassOn ? '#d9b46a' : 'rgba(217,180,106,0.3)';
+    };
+
+    btnFocus.onclick = () => {
+      focusOn = !focusOn;
+      document.body.classList.toggle('moc-focus-enabled', focusOn);
+      btnFocus.textContent = `🧘 Fokusläge: ${focusOn ? 'På' : 'Av'}`;
+      btnFocus.style.borderColor = focusOn ? '#d9b46a' : 'rgba(217,180,106,0.3)';
+    };
+
+    window.MyOffiCityAddons.addTool('Design Center', '🎨', uiTool);
+    window.MyOffiCityAddons.register('UI-Enhancer');
+  } catch (e) {
+    console.error('Design Center Error:', e);
+  }
+})();

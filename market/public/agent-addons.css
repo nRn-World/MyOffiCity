@@ -5537,3 +5537,46 @@ body.moc-focus-mode .chat-container {
 .moc-qf-cat.active {
   background: rgba(217, 180, 106, 0.5);
 }
+
+/* Theme Switcher Variables */
+:root[data-theme="light"] {
+  --bg-primary: #f3f3f3;
+  --text-main: #111;
+  --accent-color: #d9b46a;
+}
+:root[data-theme="dark"] {
+  --bg-primary: #111;
+  --text-main: #f3f3f3;
+  --accent-color: #d9b46a;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-primary: #111;
+    --text-main: #f3f3f3;
+    --accent-color: #d9b46a;
+  }
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg-primary: #f3f3f3;
+    --text-main: #111;
+    --accent-color: #d9b46a;
+  }
+}
+
+/* Theme Switcher Button Styles */
+.theme-switcher-btn {
+  margin-left: 8px;
+  padding: 4px 8px;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.theme-switcher-btn:hover {
+  opacity: 0.8;
+}

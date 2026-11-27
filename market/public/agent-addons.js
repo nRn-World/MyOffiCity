@@ -9545,3 +9545,64 @@
     createThemePanel();
   } catch (e) { console.error('Theme Engine Error:', e); }
 })();
+
+(() => {
+  try {
+    const STORAGE_KEY = 'moc_scratchpad_content';
+    
+    const createScratchpad = () => {
+      const overlay = document.createElement('div');
+      overlay.id = 'moc-scratchpad-overlay';
+      overlay.innerHTML = `
+        <div id="moc-scratchpad-header">
+          <span style="font-weight:bold">📝 Quick Notes</span>
+          <button id="close-scratchpad" style="background:none;border:none;color:#d9b46a;cursor:pointer;">✕</button>
+        </div>
+        <textarea id="moc-scratchpad-textarea" placeholder="Skriv ner snabba tankar här..."></textarea>
+      `;
+      document.body.appendChild(overlay);
+
+      const textarea = overlay.querySelector('#moc-scratchpad-textarea');
+      const closeBtn = overlay.querySelector('#close-scratchpad');
+      const toggleBtn = document.createElement('button');
+      toggleBtn.className = 'moc-scratchpad-btn';
+      toggleBtn.innerHTML = '📝';
+      document.body.appendChild(toggleBtn);
+
+      const toggle = () => {
+        overlay.classList.toggle('open');
+      };
+
+      toggleBtn.onclick = toggle;
+      closeBtn.onclick = toggle;
+
+      // Load initial content
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) textarea.value = saved;
+
+      // Auto-save on input
+      textarea.oninput = () => {
+        localStorage.setItem(STORAGE_KEY, textarea.value);
+      };
+
+      // Keyboard shortcut: Ctrl+Shift+N
+      window.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'n') {
+          e.preventDefault();
+          toggle();
+        }
+      });
+
+      window.MyOffiCityAddons.addTool('Quick Notes', '📝', toggleBtn);
+      window.MyOffiCityAddons.register('QuickNoteScratchpad');
+    };
+
+    if (document.readyState === 'complete') {
+      createScratchpad();
+    } else {
+      window.addEventListener('load', createScratchpad);
+    }
+  } catch (e) {
+    console.error('Scratchpad Error:', e);
+  }
+})();

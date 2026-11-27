@@ -6675,3 +6675,25 @@
     }
   } catch (e) { console.error('Status Error:', e); }
 })();
+
+(() => {
+  try {
+    const logContainer = document.createElement('div');
+    logContainer.style.cssText = 'font-family: monospace; font-size: 11px; max-height: 200px; overflow-y: auto; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 4px;';
+    
+    const addLog = (msg) => {
+      const entry = document.createElement('div');
+      entry.style.marginBottom = '4px';
+      entry.innerHTML = `<span style="color:#d9b46a">[${(performance.now()/1000).toFixed(2)}s]</span> ${msg}`;
+      logContainer.prepend(entry);
+    };
+
+    addLog('System initierat...');
+    addLog('Agent-nätverk anslutet.');
+
+    if (window.MyOffiCityAddons) {
+      window.MyOffiCityAddons.addTool('Agent-logg', '📜', logContainer);
+      window.MyOffiCityAddons.register('Activity Logger');
+    }
+  } catch (e) { console.error('Logg-fel:', e); }
+})();

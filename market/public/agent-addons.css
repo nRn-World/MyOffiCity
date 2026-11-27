@@ -337,3 +337,51 @@ body.moc-compact-ui .cards > div { padding: 12px !important; }
   border-left: 2px solid #d9b46a;
   background: rgba(255, 255, 255, 0.02);
 }
+
+:root {
+  --moc-accent: #d9b46a;
+  --moc-accent-glow: rgba(217, 180, 106, 0.3);
+}
+
+/* Dynamic Accent Overrides */
+.moc-addon-badge, .moc-dock-btn, .moc-tool-title, .moc-chip-btn {
+  border-color: var(--moc-accent) !important;
+}
+.moc-tool-title {
+  color: var(--moc-accent) !important;
+}
+.moc-addon-badge::before {
+  background: var(--moc-accent) !important;
+  box-shadow: 0 0 10px var(--moc-accent-glow) !important;
+}
+.moc-dock-dot {
+  background: var(--moc-accent) !important;
+  box-shadow: 0 0 8px var(--moc-accent-glow) !important;
+}
+
+/* Ultra Glass Mode */
+body.moc-ultra-glass .cards > div, 
+body.moc-ultra-glass .dsb,
+body.moc-ultra-glass .moc-dock-btn,
+body.moc-ultra-glass #topbar {
+  backdrop-filter: blur(24px) saturate(160%) !important;
+  background: rgba(10, 15, 28, 0.55) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Global Typography & Smoothness */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+.cards > div {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+}
+.cards > div:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+  border-color: var(--moc-accent) !important;
+}

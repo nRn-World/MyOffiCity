@@ -3390,3 +3390,13 @@ a.moc-breadcrumb-item:hover {
 .moc-cheat-content li { display: flex; justify-content: space-between; margin: 8px 0; }
 .moc-cheat-content span { font-weight: bold; color: #d9b46a; }
 .moc-cheat-content button { width: 100%; margin-top: 16px; padding: 8px; cursor: pointer; }
+
+/* Pulse animation for active agent cards */
+@keyframes agentPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(255,255,255,0.5); }
+  50%  { box-shadow: 0 0 0 8px rgba(255,255,255,0); }
+  100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+}
+.pulse {
+  animation: agentPulse 1.5s infinite;
+}

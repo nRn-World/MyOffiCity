@@ -6813,3 +6813,33 @@ body {
   0%, 100% { transform: scale(1); opacity: 1; }
   50% { transform: scale(1.4); opacity: 0.6; }
 }
+
+.moc-layout-configurator {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(217, 180, 106, 0.3);
+  padding: 12px;
+  border-radius: 12px;
+  color: #f3ecdc;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+}
+.moc-layout-btn {
+  background: rgba(217, 180, 106, 0.15);
+  border: 1px solid rgba(217, 180, 106, 0.4);
+  color: #f3ecdc;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin: 4px;
+  transition: all 0.2s ease;
+  font-size: 12px;
+}
+.moc-layout-btn:hover {
+  background: rgba(217, 180, 106, 0.3);
+  border-color: #d9b46a;
+}
+.moc-layout-btn.active {
+  background: #d9b46a;
+  color: #0f172a;
+  border-color: #f3ecdc;
+}

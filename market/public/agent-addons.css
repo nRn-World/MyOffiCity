@@ -3935,3 +3935,74 @@ a.moc-breadcrumb-item:hover {
 .moc-diag-container {
   padding: 2px;
 }
+
+/* UI & Design Enhancements */
+:root {
+  --moc-glass-bg: rgba(15, 23, 42, 0.75);
+  --moc-glass-border: rgba(217, 180, 106, 0.25);
+}
+
+.moc-ui-btn {
+  background: rgba(217, 180, 106, 0.08);
+  border: 1px solid rgba(217, 180, 106, 0.3);
+  color: #f3ecdc;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.moc-ui-btn:hover {
+  background: rgba(217, 180, 106, 0.15);
+  border-color: #d9b46a;
+}
+
+/* Glassmorphism Mode */
+body.moc-glass-enabled .dash,
+body.moc-glass-enabled .dsb,
+body.moc-glass-enabled .dmain,
+body.moc-glass-enabled .cards,
+body.moc-glass-enabled .bar {
+  background: var(--moc-glass-bg) !important;
+  backdrop-filter: blur(14px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(160%) !important;
+  border: 1px solid var(--moc-glass-border) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45) !important;
+}
+
+/* Focus Mode */
+body.moc-focus-enabled #nav,
+body.moc-focus-enabled #topbar,
+body.moc-focus-enabled .dsb,
+body.moc-focus-enabled #foot {
+  opacity: 0.15;
+  filter: grayscale(0.5) blur(1px);
+  pointer-events: none;
+  transition: opacity 0.6s ease, filter 0.6s ease;
+}
+
+body.moc-focus-enabled #nav:hover,
+body.moc-focus-enabled #topbar:hover,
+body.moc-focus-enabled .dsb:hover,
+body.moc-focus-enabled #foot:hover {
+  opacity: 1;
+  filter: none;
+  pointer-events: auto;
+}
+
+/* Global Typography Polish */
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.cards {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.cards:hover {
+  transform: translateY(-4px);
+}

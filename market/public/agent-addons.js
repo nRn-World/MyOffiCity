@@ -7793,3 +7793,82 @@
     console.error('AI Chat Addon Error:', e);
   }
 })();
+
+(() => {
+  try {
+    // Skapa overlay‑elementet
+    const overlay = document.createElement('div');
+    overlay.className = 'moc-quick-filter-overlay';
+    overlay.innerHTML = `
+      <div class="moc-qf-panel">
+        <input type="text" class="moc-qf-input" placeholder="Sök agenter..." autocomplete="off" />
+        <div class="moc-qf-categories">
+          <button class="moc-qf-cat active" data-cat="all">Alla</button>
+          <button class="moc-qf-cat" data-cat="ai">AI</button>
+          <button class="moc-qf-cat" data-cat="3d">3D</button>
+          <button class="moc-qf-cat" data-cat="office">Office</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    const input = overlay.querySelector('.moc-qf-input');
+    const catButtons = overlay.querySelectorAll('.moc-qf-cat');
+    let activeCat = 'all';
+
+    const toggleOverlay = (forceShow) => {
+      const shouldShow = typeof forceShow === 'boolean' ? forceShow : overlay.style.display !== 'flex';
+      overlay.style.display = shouldShow ? 'flex' : 'none';
+      if (shouldShow) {
+        input.value = '';
+        input.focus();
+        filterItems();
+      }
+    };
+
+    const filterItems = () => {
+      const term = input.value.trim().toLowerCase();
+      // Försök att matcha vanliga kort‑klasser i Marketplace
+      const selector = '.card, .agent-card, .agent, .moc-card';
+      document.querySelectorAll(selector).forEach(el => {
+        const text = el.textContent.toLowerCase();
+        const matchesTerm = !term || text.includes(term);
+        const matchesCat = activeCat === 'all' || el.dataset.category === activeCat;
+        el.style.display = matchesTerm && matchesCat ? '' : 'none';
+      });
+    };
+
+    // Händelser
+    input.addEventListener('input', filterItems);
+    catButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        catButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeCat = btn.dataset.cat;
+        filterItems();
+      });
+    });
+
+    document.addEventListener('keydown', e => {
+      if ((e.ctrlKey && e.key === 'k') || (!e.ctrlKey && e.key === '/')) {
+        e.preventDefault();
+        toggleOverlay();
+      }
+      if (e.key === 'Escape' && overlay.style.display === 'flex') {
+        toggleOverlay(false);
+      }
+    });
+
+    // Lägg till en knapp i AI‑tilläggsdockan för manuell öppning
+    const openBtn = document.createElement('button');
+    openBtn.textContent = '🔎 Quick Filter';
+    openBtn.style.padding = '6px 10px';
+    openBtn.style.cursor = 'pointer';
+    openBtn.addEventListener('click', () => toggleOverlay(true));
+
+    window.MyOffiCityAddons.addTool('Quick Filter', '🔎', openBtn);
+    window.MyOffiCityAddons.register('Quick Filter Overlay');
+  } catch (e) {
+    console.error('Quick Filter Addon Error:', e);
+  }
+})();

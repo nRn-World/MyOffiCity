@@ -4390,3 +4390,45 @@
     console.error('Marketplace Filter addon error', e);
   }
 })();
+
+(() => {
+  try {
+    const container = document.createElement('div');
+    container.className = 'moc-notis-container';
+    
+    let notifications = [
+      { id: 1, text: 'Välkommen till MyOffiCity!', read: false },
+      { id: 2, text: 'Tomas har uppdaterat AI-modulerna.', read: false }
+    ];
+
+    const render = () => {
+      const unread = notifications.filter(n => !n.read).length;
+      const dot = document.querySelector('.moc-notis-dot');
+      if (dot) dot.style.display = unread > 0 ? 'block' : 'none';
+      
+      container.innerHTML = notifications.length === 0 ? '<p style="padding:10px;font-size:12px;">Inga notiser</p>' : '';
+      notifications.forEach(n => {
+        const div = document.createElement('div');
+        div.className = `moc-notis-item ${n.read ? 'read' : ''}`;
+        div.innerHTML = `<span>${n.text}</span> ${!n.read ? '<button>Läs</button>' : ''}`;
+        if (!n.read) div.querySelector('button').onclick = () => { n.read = true; render(); };
+        container.appendChild(div);
+      });
+    };
+
+    const icon = document.createElement('div');
+    icon.innerHTML = '🔔<span class="moc-notis-dot"></span>';
+    icon.className = 'moc-notis-icon';
+    icon.onclick = () => container.classList.toggle('active');
+    
+    const topbar = document.getElementById('topbar');
+    if (topbar) {
+      topbar.appendChild(icon);
+      topbar.appendChild(container);
+    }
+
+    window.MyOffiCityAddons.addTool('Notis-Center', '🔔', container);
+    window.MyOffiCityAddons.register('Notis-Center');
+    render();
+  } catch(e) { console.error(e); }
+})();

@@ -5622,3 +5622,57 @@
     console.error('Smart Tips Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const healthEl = document.createElement('div');
+    healthEl.className = 'moc-health-monitor';
+    
+    const updateHealth = () => {
+      const uptime = Math.floor((Date.now() - (window.performance?.timing?.navigationStart || Date.now())) / 1000);
+      const hours = Math.floor(uptime / 3600);
+      const mins = Math.floor((uptime % 3600) / 60);
+      const secs = uptime % 60;
+      
+      healthEl.innerHTML = `
+        <div class="moc-health-row">
+          <span class="moc-health-label">Status:</span>
+          <span class="moc-health-value status-ok"><span class="moc-health-pulse"></span>Operativ</span>
+        </div>
+        <div class="moc-health-row">
+          <span class="moc-health-label">Drifttid:</span>
+          <span class="moc-health-value">${hours}h ${mins}m ${secs}s</span>
+        </div>
+        <div class="moc-health-row">
+          <span class="moc-health-label">Latens:</span>
+          <span class="moc-health-value" id="moc-latency-val">-- ms</span>
+        </div>
+      `;
+    };
+
+    // Real-time latency check
+    const checkLatency = () => {
+      const start = Date.now();
+      fetch(window.location.href, { method: 'HEAD', cache: 'no-cache' })
+        .then(() => {
+          const lat = Date.now() - start;
+          const valEl = document.getElementById('moc-latency-val');
+          if (valEl) {
+            valEl.textContent = `${lat} ms`;
+            valEl.style.color = lat < 150 ? '#4ade80' : (lat < 400 ? '#fbbf24' : '#f87171');
+          }
+        })
+        .catch(() => {});
+    };
+
+    updateHealth();
+    setInterval(updateHealth, 1000);
+    setInterval(checkLatency, 15000);
+    setTimeout(checkLatency, 2000);
+
+    window.MyOffiCityAddons.addTool('Systemhälsa', '🛡️', healthEl);
+    window.MyOffiCityAddons.register('Health Monitor');
+  } catch (e) {
+    console.warn('Health Monitor Addon Error:', e);
+  }
+})();

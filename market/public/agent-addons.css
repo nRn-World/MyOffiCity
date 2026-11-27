@@ -4923,3 +4923,33 @@ body, #app, .dash, .cards {
   border-radius: 4px; color: var(--moc-text);
 }
 #moc-cmd-list li:hover { background: var(--moc-accent); color: #000; }
+
+.moc-search-wrapper {
+  position: relative;
+  margin: 10px 0;
+  display: flex;
+  align-items: center;
+}
+#moc-live-search {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--moc-accent);
+  background: rgba(0,0,0,0.05);
+  color: var(--moc-text);
+}
+#moc-clear-search {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--moc-accent);
+  font-weight: bold;
+}
+#moc-no-match {
+  padding: 20px;
+  text-align: center;
+  color: var(--moc-accent);
+  font-style: italic;
+}

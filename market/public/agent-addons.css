@@ -4415,3 +4415,58 @@ body {
 .moc-timer-btn:hover {
   background: rgba(217, 180, 106, 0.4);
 }
+
+/* Fix for missing dock dot animation and system health styles */
+.moc-dock-dot {
+  width: 8px;
+  height: 8px;
+  background: #4ade80;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.6);
+  animation: moc-pulse 2s infinite;
+}
+
+@keyframes moc-pulse {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  50% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.7; }
+}
+
+.moc-health-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+  padding: 4px;
+}
+
+.moc-health-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: #e9d7b0;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+}
+
+.moc-status-ok { color: #4ade80; font-weight: bold; }
+.moc-status-warn { color: #fbbf24; font-weight: bold; }
+
+.moc-action-btn {
+  width: 100%;
+  padding: 8px;
+  background: rgba(217, 180, 106, 0.15);
+  border: 1px solid rgba(217, 180, 106, 0.4);
+  color: #f3ecdc;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.moc-action-btn:hover {
+  background: rgba(217, 180, 106, 0.25);
+  border-color: #d9b46a;
+}

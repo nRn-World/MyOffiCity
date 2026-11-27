@@ -9366,3 +9366,60 @@
     console.error('Addon Init Error:', e);
   }
 })();
+
+(() => {
+  try {
+    /* ---------- Help Modal Widget ---------- */
+    const helpBtn = document.createElement('button');
+    helpBtn.textContent = '❓ Hjälp';
+    helpBtn.style.padding = '6px 12px';
+    helpBtn.style.fontSize = '13px';
+    helpBtn.style.cursor = 'pointer';
+    helpBtn.style.border = 'none';
+    helpBtn.style.borderRadius = '6px';
+    helpBtn.style.background = 'rgba(217,180,106,0.1)';
+    helpBtn.style.color = '#d9b46a';
+    helpBtn.style.transition = 'background 0.2s ease';
+    helpBtn.addEventListener('mouseover', () => {
+      helpBtn.style.background = 'rgba(217,180,106,0.2)';
+    });
+    helpBtn.addEventListener('mouseout', () => {
+      helpBtn.style.background = 'rgba(217,180,106,0.1)';
+    });
+
+    /* Modal structure */
+    const modalOverlay = document.createElement('div');
+    modalOverlay.className = 'moc-modal';
+    modalOverlay.style.display = 'none';
+
+    const modalContent = document.createElement('div');
+    modalContent.className = 'moc-modal-content';
+    modalContent.innerHTML = `
+      <h2>Hjälp & FAQ</h2>
+      <p>Här hittar du svar på vanliga frågor och en kort guide för att komma igång med MyOffiCity.</p>
+      <ul>
+        <li><b>Hur navigerar jag?</b> Använd musen eller tangentbordet för att flytta runt i 3D‑världen.</li>
+        <li><b>Hur öppnar jag chatt?</b> Klicka på chat‑ikonen längst ner till höger.</li>
+        <li><b>Hur skapar jag en ny AI‑tillägg?</b> Använd verktygsfältet i AI‑tilläggs‑dock.</li>
+      </ul>
+      <button class="moc-modal-close">Stäng</button>
+    `;
+
+    modalOverlay.appendChild(modalContent);
+    document.body.appendChild(modalOverlay);
+
+    /* Toggle modal visibility */
+    const toggleModal = () => {
+      modalOverlay.style.display = modalOverlay.style.display === 'none' ? 'flex' : 'none';
+    };
+
+    helpBtn.addEventListener('click', toggleModal);
+    modalContent.querySelector('.moc-modal-close').addEventListener('click', toggleModal);
+
+    /* Register the widget */
+    window.MyOffiCityAddons.addTool('Help', '❓', helpBtn);
+    window.MyOffiCityAddons.register('Help');
+  } catch (e) {
+    console.error('Help Modal Addon Error:', e);
+  }
+})();

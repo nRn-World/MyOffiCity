@@ -9231,3 +9231,38 @@
     console.error('Keyboard Shortcut Init Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const container = document.createElement('div');
+    container.innerHTML = '<p style="margin:0; font-size:12px;">Klicka och dra i 3D-rutorna för att rotera objektet.</p>';
+    
+    let isDragging = false;
+    let startX = 0;
+    let rotation = 0;
+
+    document.addEventListener('mousedown', (e) => {
+      if (e.target.closest('.tc-box')) {
+        isDragging = true;
+        startX = e.clientX;
+      }
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const box = document.querySelector('.tc-box');
+      if (!box) return;
+      const delta = e.clientX - startX;
+      rotation += delta * 0.5;
+      box.style.transform = `rotateY(${rotation}deg)`;
+      startX = e.clientX;
+    });
+
+    document.addEventListener('mouseup', () => isDragging = false);
+
+    window.MyOffiCityAddons.addTool('3D Rotation', '🔄', container);
+    window.MyOffiCityAddons.register('Drag-to-Rotate');
+  } catch (e) {
+    console.error('Rotation Init Error:', e);
+  }
+})();

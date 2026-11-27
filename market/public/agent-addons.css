@@ -6359,3 +6359,12 @@ canvas {
   border-radius: 4px;
   font-family: monospace;
 }
+
+.tc-box {
+  cursor: grab;
+  transition: transform 0.1s linear;
+  transform-style: preserve-3d;
+}
+.tc-box:active {
+  cursor: grabbing;
+}

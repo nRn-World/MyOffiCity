@@ -6329,3 +6329,60 @@
     console.warn('Help Center Addon Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const container = document.createElement('div');
+    container.className = 'moc-smart-center';
+    
+    container.innerHTML = `
+      <div class="moc-status-row">
+        <span>Neural Last:</span>
+        <div class="moc-progress-bg"><div id="moc-neural-load" class="moc-progress-bar" style="width: 42%"></div></div>
+      </div>
+      <div class="moc-status-grid">
+        <div class="moc-status-item"><span class="moc-dot online"></span> Tomas (TL)</div>
+        <div class="moc-status-item"><span class="moc-dot busy"></span> Design-AI</div>
+        <div class="moc-status-item"><span class="moc-dot online"></span> Dev-Agent</div>
+        <div class="moc-status-item"><span class="moc-dot online"></span> City-Bot</div>
+      </div>
+      <div class="moc-actions-gap">
+        <button class="moc-action-btn" id="moc-btn-optimize">Optimera Vy</button>
+        <button class="moc-action-btn" id="moc-btn-ping">Ping Teamet</button>
+      </div>
+    `;
+
+    // Simulated neural activity updates
+    const updateLoad = () => {
+      const bar = container.querySelector('#moc-neural-load');
+      if (bar) {
+        const val = Math.floor(Math.random() * 40) + 20;
+        bar.style.width = val + '%';
+      }
+    };
+    const interval = setInterval(updateLoad, 4000);
+
+    container.querySelector('#moc-btn-optimize').onclick = () => {
+      const btn = container.querySelector('#moc-btn-optimize');
+      const old = btn.textContent;
+      btn.textContent = 'Körs...';
+      btn.disabled = true;
+      setTimeout(() => { 
+        btn.textContent = old; 
+        btn.disabled = false;
+        updateLoad();
+      }, 1500);
+    };
+    
+    container.querySelector('#moc-btn-ping').onclick = () => {
+      const btn = container.querySelector('#moc-btn-ping');
+      btn.textContent = 'Pinging...';
+      setTimeout(() => { btn.textContent = 'Ping Teamet'; }, 2000);
+    };
+
+    window.MyOffiCityAddons.addTool('Kommando-center', '🕹️', container);
+    window.MyOffiCityAddons.register('Smart Command Center');
+  } catch (e) {
+    console.warn('Smart Center Addon Error:', e);
+  }
+})();

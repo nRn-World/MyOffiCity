@@ -3109,3 +3109,62 @@
     }
   } catch(e) {}
 })();
+
+(() => {
+  try {
+    const bar = document.createElement('div');
+    bar.className = 'moc-reading-progress';
+    bar.innerHTML = '<div class="moc-reading-progress-fill"></div>';
+    document.body.appendChild(bar);
+
+    let activeBox = null;
+    let ticking = false;
+
+    function updateProgress() {
+      if (!activeBox) {
+        bar.classList.remove('active');
+        return;
+      }
+      const rect = activeBox.getBoundingClientRect();
+      const scrollable = activeBox.scrollHeight - activeBox.clientHeight;
+      if (scrollable <= 0) {
+        bar.classList.remove('active');
+        return;
+      }
+      const progress = Math.min(1, Math.max(0, activeBox.scrollTop / scrollable));
+      bar.style.setProperty('--progress', progress);
+      bar.classList.add('active');
+      ticking = false;
+    }
+
+    function onScroll() {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(updateProgress);
+      }
+    }
+
+    function observeBoxes() {
+      const boxes = document.querySelectorAll('.tc-box');
+      boxes.forEach(box => {
+        box.addEventListener('scroll', onScroll, { passive: true });
+        box.addEventListener('mouseenter', () => {
+          activeBox = box;
+          updateProgress();
+        });
+        box.addEventListener('mouseleave', () => {
+          if (activeBox === box) {
+            activeBox = null;
+            bar.classList.remove('active');
+          }
+        });
+      });
+    }
+
+    observeBoxes();
+    const observer = new MutationObserver(() => observeBoxes());
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    window.MyOffiCityAddons.register('Reading Progress Bar');
+  } catch(e) {}
+})();

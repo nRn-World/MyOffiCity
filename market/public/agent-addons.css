@@ -466,3 +466,53 @@ body {
   height: 30px;
   display: block;
 }
+
+/* Ambient Sound Controller Styles */
+.moc-ambient-ctrl {
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  border: 1px solid rgba(217, 180, 106, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 5px;
+}
+.moc-ambient-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.moc-ambient-toggle {
+  background: rgba(217, 180, 106, 0.2);
+  color: #f3ecdc;
+  border: 1px solid rgba(217, 180, 106, 0.4);
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 105px;
+  text-align: center;
+}
+.moc-ambient-toggle:hover {
+  background: rgba(217, 180, 106, 0.35);
+  border-color: #d9b46a;
+}
+.moc-ambient-vol {
+  flex: 1;
+  height: 4px;
+  cursor: pointer;
+  accent-color: #d9b46a;
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
+}
+.moc-ambient-label {
+  font-size: 11px;
+  color: #e9d7b0;
+  opacity: 0.6;
+  text-align: center;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}

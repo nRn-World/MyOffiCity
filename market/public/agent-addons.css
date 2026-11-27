@@ -1444,3 +1444,209 @@ COMMIT: feat: add interactive Asset-Inspector tooltip for marketplace cards
     min-width: 70px;
   }
 }
+
+.moc-fav-container {
+  padding: 10px;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.moc-fav-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(217, 180, 106, 0.2);
+}
+
+.moc-fav-title {
+  font-weight: 700;
+  color: #f3ecdc;
+  font-size: 14px;
+}
+
+.moc-fav-count {
+  font-size: 12px;
+  color: #d9b46a;
+  font-weight: 600;
+}
+
+.moc-fav-list {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-bottom: 12px;
+}
+
+.moc-fav-empty {
+  color: #94a3b8;
+  font-size: 12px;
+  text-align: center;
+  padding: 20px 10px;
+  font-style: italic;
+}
+
+.moc-fav-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  background: rgba(217, 180, 106, 0.05);
+  border-radius: 6px;
+  border: 1px solid rgba(217, 180, 106, 0.15);
+}
+
+.moc-fav-item-name {
+  font-weight: 600;
+  color: #f3ecdc;
+  font-size: 13px;
+}
+
+.moc-fav-item-price {
+  font-size: 11px;
+  color: #4ade80;
+  font-weight: 500;
+}
+
+.moc-fav-remove {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.moc-fav-remove:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.moc-fav-compare-btn {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(217, 180, 106, 0.4);
+  background: rgba(217, 180, 106, 0.1);
+  color: #f3ecdc;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.moc-fav-compare-btn:hover:not(:disabled) {
+  background: rgba(217, 180, 106, 0.2);
+  border-color: #d9b46a;
+}
+
+.moc-fav-compare-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.moc-fav-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(217, 180, 106, 0.3);
+  color: #94a3b8;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.moc-fav-btn:hover {
+  border-color: #d9b46a;
+  transform: scale(1.1);
+}
+
+.moc-fav-btn.active {
+  color: #d9b46a;
+  background: rgba(217, 180, 106, 0.2);
+  border-color: #d9b46a;
+}
+
+.moc-fav-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.moc-fav-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+.moc-fav-content {
+  position: relative;
+  background: #0f172a;
+  border: 1px solid rgba(217, 180, 106, 0.3);
+  border-radius: 12px;
+  width: 90%;
+  max-width: 800px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.moc-fav-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid rgba(217, 180, 106, 0.2);
+}
+
+.moc-fav-modal-header h3 {
+  margin: 0;
+  color: #f3ecdc;
+  font-size: 18px;
+}
+
+.moc-fav-close {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.moc-fav-close:hover {
+  color: #f3ecdc;
+}
+
+.moc-fav-table-wrapper {
+  padding: 20px;
+  overflow-x: auto;
+}
+
+.moc-fav-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.moc-fav-table th,

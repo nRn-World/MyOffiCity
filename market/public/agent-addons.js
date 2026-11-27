@@ -3035,3 +3035,77 @@
     window.MyOffiCityAddons.register('Global Search (Cmd+K)');
   } catch(e) {}
 })();
+
+(() => {
+  try {
+    if (window.MyOffiCityAddons) {
+      const tooltip = document.createElement('div');
+      tooltip.className = 'moc-agent-tooltip';
+      tooltip.innerHTML = `
+        <div class="moc-tooltip-header">
+          <span class="moc-tooltip-title">Agent Status</span>
+          <span class="moc-tooltip-status">Aktiv</span>
+        </div>
+        <div class="moc-tooltip-graph">
+          <canvas id="moc-activity-canvas" width="120" height="40"></canvas>
+        </div>
+        <div class="moc-tooltip-info">
+          <div class="moc-info-row">
+            <span class="moc-info-label">Senaste uppdatering:</span>
+            <span class="moc-info-value" id="moc-last-update">Just nu</span>
+          </div>
+          <div class="moc-info-row">
+            <span class="moc-info-label">Aktivitet:</span>
+            <span class="moc-info-value" id="moc-activity-level">Hög</span>
+          </div>
+        </div>
+      `;
+      
+      // Draw activity graph
+      const canvas = tooltip.querySelector('#moc-activity-canvas');
+      const ctx = canvas.getContext('2d');
+      const data = [20, 35, 45, 60, 55, 70, 85, 90, 75, 65, 80, 95];
+      const maxVal = Math.max(...data);
+      const barWidth = canvas.width / data.length;
+      
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      data.forEach((val, i) => {
+        const barHeight = (val / maxVal) * (canvas.height - 5);
+        const x = i * barWidth;
+        const y = canvas.height - barHeight;
+        
+        // Gradient for bars
+        const gradient = ctx.createLinearGradient(0, y, 0, canvas.height);
+        gradient.addColorStop(0, '#d9b46a');
+        gradient.addColorStop(1, '#8b6914');
+        
+        ctx.fillStyle = gradient;
+        ctx.fillRect(x + 1, y, barWidth - 2, barHeight);
+      });
+      
+      // Add hover effect to cards
+      const cards = document.querySelectorAll('.cards');
+      cards.forEach(card => {
+        card.addEventListener('mouseenter', (e) => {
+          const rect = card.getBoundingClientRect();
+          tooltip.style.left = `${rect.left + rect.width / 2}px`;
+          tooltip.style.top = `${rect.top - 10}px`;
+          tooltip.classList.add('visible');
+          
+          // Update last update time
+          const now = new Date();
+          const timeStr = now.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+          tooltip.querySelector('#moc-last-update').textContent = timeStr;
+        });
+        
+        card.addEventListener('mouseleave', () => {
+          tooltip.classList.remove('visible');
+        });
+      });
+      
+      document.body.appendChild(tooltip);
+      window.MyOffiCityAddons.addTool('Agent Status Tooltip', '📊', tooltip);
+      window.MyOffiCityAddons.register('Agent Status Tooltip');
+    }
+  } catch(e) {}
+})();

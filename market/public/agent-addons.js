@@ -7533,3 +7533,84 @@
     console.error('Agent Config Addon Error:', e);
   }
 })();
+
+(() => {
+  try {
+    // Neighborhood Map Addon
+    const initNeighborhoodMap = () => {
+      const container = document.createElement('div');
+      container.className = 'moc-neighborhood-map';
+      // Map image (placeholder)
+      const img = document.createElement('img');
+      img.src = 'https://images.unsplash.com/photo-1503264116251-35a8f0c9b5f2?auto=format&fit=crop&w=800&q=60';
+      img.alt = 'Neighborhood Map';
+      container.appendChild(img);
+
+      // Hotspot data
+      const hotspots = [
+        { x: 30, y: 40, name: 'Central Park' },
+        { x: 70, y: 20, name: 'Tech Hub' },
+        { x: 50, y: 80, name: 'Historic District' }
+      ];
+
+      hotspots.forEach((h) => {
+        const spot = document.createElement('div');
+        spot.className = 'moc-neighborhood-hotspot';
+        spot.style.left = `${h.x}%`;
+        spot.style.top = `${h.y}%`;
+        spot.title = h.name;
+        spot.addEventListener('click', () => {
+          alert(`Du klickade på: ${h.name}`);
+        });
+        container.appendChild(spot);
+      });
+
+      // Zoom controls
+      const zoomIn = document.createElement('button');
+      zoomIn.textContent = '+';
+      zoomIn.className = 'moc-zoom-btn';
+      zoomIn.title = 'Zooma in';
+      const zoomOut = document.createElement('button');
+      zoomOut.textContent = '-';
+      zoomOut.className = 'moc-zoom-btn';
+      zoomOut.title = 'Zooma ut';
+      const zoomContainer = document.createElement('div');
+      zoomContainer.className = 'moc-zoom-controls';
+      zoomContainer.appendChild(zoomIn);
+      zoomContainer.appendChild(zoomOut);
+      container.appendChild(zoomContainer);
+
+      let scale = 1;
+      const updateScale = () => {
+        img.style.transform = `scale(${scale})`;
+      };
+      zoomIn.addEventListener('click', () => {
+        scale = Math.min(scale + 0.2, 2);
+        updateScale();
+      });
+      zoomOut.addEventListener('click', () => {
+        scale = Math.max(scale - 0.2, 1);
+        updateScale();
+      });
+
+      // Add to AI dock
+      window.MyOffiCityAddons.addTool('Stadsdelskarta', '🗺️', container);
+      window.MyOffiCityAddons.register('Neighborhood Map Addon');
+    };
+
+    // Ensure MyOffiCityAddons is ready
+    if (window.MyOffiCityAddons && typeof window.MyOffiCityAddons.addTool === 'function') {
+      initNeighborhoodMap();
+    } else {
+      // Wait for the addon system to initialize
+      const checkInterval = setInterval(() => {
+        if (window.MyOffiCityAddons && typeof window.MyOffiCityAddons.addTool === 'function') {
+          clearInterval(checkInterval);
+          initNeighborhoodMap();
+        }
+      }, 200);
+    }
+  } catch (e) {
+    console.error('Neighborhood Map Addon Error:', e);
+  }
+})();

@@ -8129,3 +8129,33 @@
     console.error('Breadcrumb error:', e);
   }
 })();
+
+(() => {
+  try {
+    const menu = document.createElement('div');
+    menu.id = 'moc-context-menu';
+    menu.className = 'moc-ctx-menu';
+    menu.style.display = 'none';
+    document.body.appendChild(menu);
+
+    document.addEventListener('contextmenu', (e) => {
+      const target = e.target.closest('.dmain');
+      if (!target) return;
+      
+      e.preventDefault();
+      menu.style.top = `${e.clientY}px`;
+      menu.style.left = `${e.clientX}px`;
+      menu.innerHTML = `
+        <div class="moc-ctx-item" onclick="alert('Inspekterar objekt...')">🔍 Inspektera</div>
+        <div class="moc-ctx-item" onclick="alert('Redigerar egenskaper...')">⚙️ Redigera</div>
+        <div class="moc-ctx-item" onclick="alert('Agent tilldelad!')">👤 Tilldela Agent</div>
+      `;
+      menu.style.display = 'block';
+    });
+
+    document.addEventListener('click', () => menu.style.display = 'none');
+    window.MyOffiCityAddons.register('Context Menu');
+  } catch (e) {
+    console.error('Context menu error:', e);
+  }
+})();

@@ -6926,3 +6926,97 @@
     window.MyOffiCityAddons.register('Keyboard-Navigation');
   } catch (e) { console.error('Keyboard-Nav Error:', e); }
 })();
+
+(() => {
+  try {
+    // Check if we are in the city view
+    const isCityView = () => window.location.hash === '#/city' || window.location.hash.startsWith('#/city');
+
+    // Create the radial menu container
+    const menu = document.createElement('div');
+    menu.id = 'moc-quick-action-menu';
+    menu.style.display = 'none';
+    menu.innerHTML = `
+      <div class="moc-qam-center">
+        <span class="moc-qam-icon">⚡</span>
+      </div>
+      <div class="moc-qam-item" data-action="inspect" title="Inspektera">🔍</div>
+      <div class="moc-qam-item" data-action="move" title="Flytta">✋</div>
+      <div class="moc-qam-item" data-action="rotate" title="Rotera">🔄</div>
+      <div class="moc-qam-item" data-action="delete" title="Radera">🗑️</div>
+      <div class="moc-qam-item" data-action="info" title="Info">ℹ️</div>
+    `;
+    document.body.appendChild(menu);
+
+    // Position the menu at the click coordinates
+    const showMenu = (x, y) => {
+      if (!isCityView()) return;
+      
+      // Prevent menu from going off-screen
+      const rect = menu.getBoundingClientRect();
+      const margin = 10;
+      let left = x;
+      let top = y;
+
+      if (left + 150 > window.innerWidth) left = window.innerWidth - 150 - margin;
+      if (top + 150 > window.innerHeight) top = window.innerHeight - 150 - margin;
+      if (left < margin) left = margin;
+      if (top < margin) top = margin;
+
+      menu.style.left = left + 'px';
+      menu.style.top = top + 'px';
+      menu.style.display = 'block';
+      menu.classList.add('moc-qam-active');
+    };
+
+    const hideMenu = () => {
+      menu.style.display = 'none';
+      menu.classList.remove('moc-qam-active');
+    };
+
+    // Event Listeners
+    document.addEventListener('contextmenu', (e) => {
+      if (isCityView()) {
+        e.preventDefault();
+        showMenu(e.clientX, e.clientY);
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!menu.contains(e.target)) {
+        hideMenu();
+      }
+    });
+
+    // Handle actions
+    menu.querySelectorAll('.moc-qam-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const action = item.dataset.action;
+        // Dispatch a custom event so the main 3D engine can listen for it
+        window.dispatchEvent(new CustomEvent('moc:quick-action', { detail: { action } }));
+        hideMenu();
+      });
+    });
+
+    // Register the tool
+    const toolEl = document.createElement('div');
+    toolEl.innerHTML = `
+      <p style="font-size:12px; color:#94a3b8; margin:0 0 8px 0;">
+        Högerklicka i 3D-vyn för att öppna snabba åtgärder.
+      </p>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <span class="moc-qam-legend">🔍 Inspektera</span>
+        <span class="moc-qam-legend">✋ Flytta</span>
+        <span class="moc-qam-legend">🔄 Rotera</span>
+        <span class="moc-qam-legend">🗑️ Radera</span>
+      </div>
+    `;
+    
+    window.MyOffiCityAddons.addTool('Quick-Action Meny', '⚡', toolEl);
+    window.MyOffiCityAddons.register('Quick-Action Menu');
+
+  } catch (e) {
+    console.error('Quick-Action Menu Error:', e);
+  }
+})();

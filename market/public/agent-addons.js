@@ -5561,3 +5561,64 @@
     console.error('Design Center Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const tips = [
+      { icon: '🌅', text: 'Börja dagen med att prioritera dina 3 viktigaste uppgifter.', action: 'Öppna dagbok' },
+      { icon: '☕', text: 'Ta en kort paus för att ladda om hjärnan.', action: 'Pausa 5 min' },
+      { icon: '📊', text: 'Kolla dina senaste rapporter för insikter.', action: 'Visa statistik' },
+      { icon: '🤝', text: 'Skicka ett meddelande till en kollega för samordning.', action: 'Öppna chatt' },
+      { icon: '🎯', text: 'Fokusera på en uppgift i 25 min (Pomodoro).', action: 'Starta timer' },
+      { icon: '📝', text: 'Uppdatera dina anteckningar om pågående projekt.', action: 'Öppna anteckningar' },
+      { icon: '🚀', text: 'Testa en ny funktion i MyOffiCity idag!', action: 'Utforska' },
+      { icon: '🧘', text: 'Andas djupt 3 gånger innan nästa uppgift.', action: 'Andningsövning' }
+    ];
+
+    const getTip = () => {
+      const hour = new Date().getHours();
+      if (hour < 6) return tips[7]; // Sena nätter
+      if (hour < 12) return tips[0]; // Morgon
+      if (hour < 14) return tips[1]; // Lunch
+      if (hour < 18) return tips[2]; // Eftermiddag
+      return tips[3]; // Kväll
+    };
+
+    const tipEl = document.createElement('div');
+    tipEl.className = 'moc-smart-tip';
+    
+    const renderTip = () => {
+      const tip = getTip();
+      tipEl.innerHTML = `
+        <div class="moc-tip-header">
+          <span class="moc-tip-icon">${tip.icon}</span>
+          <span class="moc-tip-title">Smart Tip</span>
+        </div>
+        <p class="moc-tip-text">${tip.text}</p>
+        <button class="moc-tip-action">${tip.action}</button>
+      `;
+      
+      const btn = tipEl.querySelector('.moc-tip-action');
+      btn.onclick = () => {
+        // Simulera en smart åtgärd
+        btn.textContent = '✓ Utfört!';
+        btn.disabled = true;
+        setTimeout(() => {
+          btn.textContent = tip.action;
+          btn.disabled = false;
+          renderTip(); // Visa nytt tip
+        }, 2000);
+      };
+    };
+
+    renderTip();
+    
+    // Uppdatera tip var 30:e minut
+    setInterval(renderTip, 30 * 60 * 1000);
+
+    window.MyOffiCityAddons.addTool('Smarta Tips', '💡', tipEl);
+    window.MyOffiCityAddons.register('Smart Tips');
+  } catch (e) {
+    console.error('Smart Tips Error:', e);
+  }
+})();

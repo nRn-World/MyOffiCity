@@ -6317,3 +6317,36 @@ canvas {
     display: none; /* Dölj på små skärmar för att inte krocka med menyn */
   }
 }
+
+/* Agent Status Indicators */
+.moc-status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  position: relative;
+}
+
+.moc-status-dot::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  animation: moc-pulse 2s infinite;
+}
+
+.moc-status-online { background: #4ade80; }
+.moc-status-online::after { background: #4ade80; }
+
+.moc-status-busy { background: #f87171; }
+.moc-status-busy::after { background: #f87171; }
+
+.moc-status-idle { background: #fbbf24; }
+.moc-status-idle::after { background: #fbbf24; }
+
+@keyframes moc-pulse {
+  0% { transform: scale(1); opacity: 0.7; }
+  70% { transform: scale(2.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 0; }
+}

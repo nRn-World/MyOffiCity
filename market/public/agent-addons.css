@@ -6010,3 +6010,16 @@ body.moc-focus-mode .chat-container {
   margin-bottom: 5px;
   font-size: 13px;
 }
+
+.moc-sparkline {
+  margin-top: 8px;
+  padding: 4px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  opacity: 0.7;
+}
+.moc-sparkline canvas {
+  display: block;
+}

@@ -2986,3 +2986,52 @@
     }, 3000);
   } catch(e) {}
 })();
+
+(() => {
+  try {
+    const overlay = document.createElement('div');
+    overlay.id = 'moc-search-overlay';
+    overlay.innerHTML = `
+      <div class="moc-search-modal">
+        <input type="text" id="moc-search-input" placeholder="Sök efter vy (Market, City, Dash)..." autocomplete="off">
+        <div id="moc-search-results"></div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    const input = overlay.querySelector('#moc-search-input');
+    const results = overlay.querySelector('#moc-search-results');
+    const routes = [
+      { name: 'Marketplace', hash: '#/' },
+      { name: 'City View', hash: '#/city' },
+      { name: 'Dashboard', hash: '#/dash' }
+    ];
+
+    const toggle = (show) => {
+      overlay.style.display = show ? 'flex' : 'none';
+      if (show) input.focus();
+    };
+
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        toggle(true);
+      }
+      if (e.key === 'Escape') toggle(false);
+    });
+
+    input.addEventListener('input', (e) => {
+      const val = e.target.value.toLowerCase();
+      results.innerHTML = '';
+      routes.filter(r => r.name.toLowerCase().includes(val)).forEach(r => {
+        const div = document.createElement('div');
+        div.textContent = r.name;
+        div.onclick = () => { window.location.hash = r.hash; toggle(false); };
+        results.appendChild(div);
+      });
+    });
+
+    overlay.onclick = (e) => { if (e.target === overlay) toggle(false); };
+    window.MyOffiCityAddons.register('Global Search (Cmd+K)');
+  } catch(e) {}
+})();

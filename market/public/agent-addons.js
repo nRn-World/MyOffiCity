@@ -2754,3 +2754,45 @@
     window.MyOffiCityAddons.register('Keyboard-shortcuts');
   } catch(e) { console.error('Shortcut error:', e); }
 })();
+
+(() => {
+  try {
+    const container = document.createElement('div');
+    container.style.cssText = 'font-family:monospace; font-size:11px; color:#d9b46a;';
+    
+    const stats = document.createElement('div');
+    stats.innerHTML = 'FPS: --<br>Minne: -- MB';
+    
+    const btn = document.createElement('button');
+    btn.textContent = 'Optimera Cache';
+    btn.style.cssText = 'margin-top:8px; width:100%; cursor:pointer; background:rgba(217,180,106,0.1); border:1px solid #d9b46a; color:#f3ecdc; padding:4px; border-radius:4px;';
+    btn.onclick = () => {
+      if (window.caches) {
+        caches.keys().then(names => names.forEach(n => caches.delete(n)));
+        alert('Cache rensad!');
+      }
+    };
+    
+    container.appendChild(stats);
+    container.appendChild(btn);
+    
+    let lastTime = performance.now();
+    let frames = 0;
+    function update() {
+      frames++;
+      const now = performance.now();
+      if (now - lastTime >= 1000) {
+        const fps = Math.round((frames * 1000) / (now - lastTime));
+        const mem = window.performance.memory ? Math.round(window.performance.memory.usedJSHeapSize / 1048576) : 'N/A';
+        stats.innerHTML = `FPS: ${fps}<br>Minne: ${mem} MB`;
+        frames = 0;
+        lastTime = now;
+      }
+      requestAnimationFrame(update);
+    }
+    update();
+    
+    window.MyOffiCityAddons.addTool('Prestanda', '⚡', container);
+    window.MyOffiCityAddons.register('Performance-Monitor');
+  } catch(e) {}
+})();

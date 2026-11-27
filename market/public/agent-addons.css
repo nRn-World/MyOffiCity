@@ -1028,3 +1028,86 @@ COMMIT: feat: add interactive Asset-Inspector tooltip for marketplace cards
   font-size: 13px;
   color: #f3ecdc;
 }
+
+.moc-filter-widget {
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(217, 180, 106, 0.4);
+  border-radius: 12px;
+  padding: 16px;
+  color: #f3ecdc;
+  font-family: system-ui, -apple-system, sans-serif;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+  margin-top: 10px;
+}
+
+.moc-filter-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.moc-filter-icon {
+  font-size: 16px;
+}
+
+.moc-filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.moc-chip {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(217, 180, 106, 0.3);
+  background: rgba(217, 180, 106, 0.1);
+  color: #e9d7b0;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.moc-chip:hover {
+  background: rgba(217, 180, 106, 0.2);
+  border-color: rgba(217, 180, 106, 0.5);
+}
+
+.moc-chip.active {
+  background: #d9b46a;
+  color: #0f172a;
+  border-color: #d9b46a;
+  font-weight: 600;
+}
+
+.moc-filter-sort {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+.moc-filter-sort select {
+  flex: 1;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(217, 180, 106, 0.3);
+  background: rgba(15, 23, 42, 0.8);
+  color: #f3ecdc;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.moc-filter-count {
+  font-size: 12px;
+  color: #98a5bd;
+  text-align: center;
+  padding-top: 8px;
+  border-top: 1px solid rgba(217, 180, 106, 0.2);
+}

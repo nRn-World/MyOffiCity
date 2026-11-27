@@ -7393,3 +7393,58 @@
     console.error('Focus Toggle Addon Error:', e);
   }
 })();
+
+(() => {
+  try {
+    // Helper: create a simple card element
+    const createCard = (title, value, icon) => {
+      const card = document.createElement('div');
+      card.className = 'moc-dashboard-card';
+      const hdr = document.createElement('div');
+      hdr.className = 'moc-dashboard-header';
+      hdr.innerHTML = `<span class="moc-dashboard-icon">${icon}</span><span>${title}</span>`;
+      const val = document.createElement('div');
+      val.className = 'moc-dashboard-value';
+      val.textContent = value;
+      card.appendChild(hdr);
+      card.appendChild(val);
+      return card;
+    };
+
+    // Build the Dashboard widget content
+    const dashboardEl = document.createElement('div');
+    dashboardEl.className = 'moc-dashboard-container';
+
+    // Example placeholder data – kan ersättas med riktiga API‑anrop senare
+    const stats = [
+      { title: 'Aktiva användare', value: Math.floor(Math.random() * 1200) + 300, icon: '👥' },
+      { title: 'Pågående möten', value: Math.floor(Math.random() * 20) + 1, icon: '📅' },
+      { title: 'Öppna ärenden', value: Math.floor(Math.random() * 50) + 5, icon: '🛠️' },
+      { title: 'Totala order', value: Math.floor(Math.random() * 5000) + 1000, icon: '🛒' }
+    ];
+
+    stats.forEach(s => {
+      const card = createCard(s.title, s.value, s.icon);
+      dashboardEl.appendChild(card);
+    });
+
+    // Add a refresh button
+    const refreshBtn = document.createElement('button');
+    refreshBtn.className = 'moc-dashboard-refresh';
+    refreshBtn.textContent = '🔄 Uppdatera';
+    refreshBtn.addEventListener('click', () => {
+      // Simulera ny data
+      dashboardEl.querySelectorAll('.moc-dashboard-card').forEach((card, i) => {
+        const newVal = Math.floor(Math.random() * (i === 0 ? 1200 : i === 1 ? 20 : i === 2 ? 50 : 5000)) + (i === 0 ? 300 : i === 1 ? 1 : i === 2 ? 5 : 1000);
+        card.querySelector('.moc-dashboard-value').textContent = newVal;
+      });
+    });
+    dashboardEl.appendChild(refreshBtn);
+
+    // Register the widget in the AI‑addons dock
+    window.MyOffiCityAddons.addTool('Dashboard', '📊', dashboardEl);
+    window.MyOffiCityAddons.register('Dashboard Widget');
+  } catch (e) {
+    console.error('Dashboard Addon Error:', e);
+  }
+})();

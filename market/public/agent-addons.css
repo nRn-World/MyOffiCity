@@ -2186,3 +2186,32 @@ body.moc-zen-active canvas {
   display: flex;
   align-items: center;
 }
+
+/* Keyboard Shortcut Tool Styles */
+.moc-shortcut-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 0;
+}
+.moc-shortcut-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: #f3ecdc;
+}
+.moc-shortcut-item kbd {
+  display: inline-block;
+  background: rgba(217, 180, 106, 0.15);
+  border: 1px solid rgba(217, 180, 106, 0.4);
+  border-bottom-width: 3px;
+  color: #d9b46a;
+  padding: 2px 8px;
+  border-radius: 5px;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 700;
+  min-width: 28px;
+  text-align: center;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.5);
+}

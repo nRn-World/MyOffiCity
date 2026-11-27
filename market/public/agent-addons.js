@@ -8159,3 +8159,72 @@
     console.error('Context menu error:', e);
   }
 })();
+
+(() => {
+  try {
+    const perfEl = document.createElement('div');
+    perfEl.id = 'moc-perf-monitor';
+    perfEl.className = 'moc-perf-monitor';
+    perfEl.innerHTML = `
+      <div class="moc-perf-row">
+        <span class="moc-perf-label">FPS</span>
+        <span class="moc-perf-value" id="moc-fps">--</span>
+      </div>
+      <div class="moc-perf-row">
+        <span class="moc-perf-label">Minne</span>
+        <span class="moc-perf-value" id="moc-mem">--</span>
+      </div>
+    `;
+    document.body.appendChild(perfEl);
+
+    let frames = 0;
+    let lastTime = performance.now();
+    let fps = 0;
+
+    function updateFPS() {
+      const now = performance.now();
+      frames++;
+      if (now - lastTime >= 1000) {
+        fps = Math.round(frames * 1000 / (now - lastTime));
+        frames = 0;
+        lastTime = now;
+        const fpsEl = document.getElementById('moc-fps');
+        if (fpsEl) {
+          fpsEl.textContent = fps;
+          fpsEl.className = 'moc-perf-value ' + (fps >= 50 ? 'good' : fps >= 30 ? 'warn' : 'bad');
+        }
+      }
+      requestAnimationFrame(updateFPS);
+    }
+
+    function updateMemory() {
+      const memEl = document.getElementById('moc-mem');
+      if (memEl && performance.memory) {
+        const usedMB = (performance.memory.usedJSHeapSize / 1048576).toFixed(1);
+        const totalMB = (performance.memory.totalJSHeapSize / 1048576).toFixed(1);
+        memEl.textContent = `${usedMB}/${totalMB} MB`;
+        const usage = performance.memory.usedJSHeapSize / performance.memory.totalJSHeapSize;
+        memEl.className = 'moc-perf-value ' + (usage < 0.5 ? 'good' : usage < 0.8 ? 'warn' : 'bad');
+      } else if (memEl) {
+        memEl.textContent = 'N/A';
+      }
+    }
+
+    function checkCityView() {
+      const isCity = window.location.hash === '#/city' || window.location.hash.startsWith('#/city');
+      perfEl.style.display = isCity ? 'block' : 'none';
+    }
+
+    window.addEventListener('hashchange', checkCityView);
+    checkCityView();
+
+    requestAnimationFrame(updateFPS);
+    setInterval(updateMemory, 2000);
+    updateMemory();
+
+    window.MyOffiCityAddons.addTool('Prestanda-mätare', '📊', perfEl);
+    window.MyOffiCityAddons.register('Performance Monitor');
+  } catch (e) {
+    console.error('Performance monitor error:', e);
+  }
+})();

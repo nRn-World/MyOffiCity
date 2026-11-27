@@ -4525,3 +4525,70 @@ body {
   color: #d9b46a;
   text-decoration: underline;
 }
+
+/* Smart Command Center Styles */
+.moc-smart-center {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 4px 0;
+}
+.moc-status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: #e9d7b0;
+  margin-bottom: 4px;
+}
+.moc-progress-bg {
+  width: 60%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(217, 180, 106, 0.2);
+}
+.moc-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #d9b46a, #f3ecdc);
+  transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.moc-status-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 8px;
+  border-radius: 6px;
+}
+.moc-status-item {
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #ccc;
+}
+.moc-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.moc-dot.online { 
+  background: #4ade80; 
+  box-shadow: 0 0 6px rgba(74, 222, 128, 0.6); 
+}
+.moc-dot.busy { 
+  background: #fbbf24; 
+  box-shadow: 0 0 4px rgba(251, 191, 36, 0.4);
+}
+.moc-actions-gap {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+.moc-actions-gap .moc-action-btn {
+  flex: 1;
+  white-space: nowrap;
+}

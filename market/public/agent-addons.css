@@ -4855,3 +4855,12 @@ body {
   border-bottom: 1px solid rgba(217, 180, 106, 0.2);
   padding-bottom: 4px;
 }
+
+.moc-tool-card input:focus {
+  outline: none;
+  border-color: #f3ecdc;
+}
+.moc-tool-card li:hover {
+  color: #d9b46a;
+  text-decoration: line-through;
+}

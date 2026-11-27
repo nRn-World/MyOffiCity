@@ -6697,3 +6697,34 @@
     }
   } catch (e) { console.error('Logg-fel:', e); }
 })();
+
+(() => {
+  try {
+    const container = document.createElement('div');
+    const input = document.createElement('input');
+    const list = document.createElement('ul');
+    
+    input.placeholder = 'Skriv en snabb uppgift...';
+    input.style.cssText = 'width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #d9b46a; background: #0f172a; color: #f3ecdc; margin-bottom: 8px; box-sizing: border-box;';
+    list.style.cssText = 'list-style: none; padding: 0; margin: 0; font-size: 12px;';
+
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && input.value.trim()) {
+        const li = document.createElement('li');
+        li.style.cssText = 'padding: 4px 0; border-bottom: 1px solid rgba(217,180,106,0.1); cursor: pointer;';
+        li.textContent = `○ ${input.value}`;
+        li.onclick = () => li.remove();
+        list.appendChild(li);
+        input.value = '';
+      }
+    });
+
+    container.appendChild(input);
+    container.appendChild(list);
+
+    if (window.MyOffiCityAddons) {
+      window.MyOffiCityAddons.addTool('Snabb-att-göra', '📝', container);
+      window.MyOffiCityAddons.register('Quick Task Tracker');
+    }
+  } catch (e) { console.error('Task Error:', e); }
+})();

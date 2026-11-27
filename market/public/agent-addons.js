@@ -5953,3 +5953,65 @@
     console.warn('Live Activity Feed addon error:', e);
   }
 })();
+
+(() => {
+  try {
+    const addResetTool = () => {
+      const container = document.createElement('div');
+      container.style.display = 'flex';
+      container.style.gap = '6px';
+      container.style.flexWrap = 'wrap';
+      container.style.alignItems = 'center';
+
+      const presets = [
+        {name:'Top View',pos:[0,50,0],tgt:[0,0,0]},
+        {name:'Street Level',pos:[0,5,20],tgt:[0,0,0]},
+        {name:'Focus on Selection',pos:null,tgt:null}
+      ];
+
+      const btn = (label)=>{const b=document.createElement('button');b.textContent=label;b.style.padding='4px 8px';b.style.fontSize='12px';b.style.borderRadius='4px';b.style.border='1px solid rgba(217,180,106,0.5)';b.style.background='rgba(15,23,42,0.8)';b.style.color='#f3ecdc';b.style.cursor='pointer';b.style.transition='background 0.2s';b.onmouseover=()=>b.style.background='rgba(20,32,61,0.9)';b.onmouseout=()=>b.style.background='rgba(15,23,42,0.8)';return b};
+
+      const animate = (cam,ctrl,startPos,startTgt,endPos,endTgt,dur=800)=>{
+        const st=performance.now();
+        const ease=t=>1-Math.pow(1-t,3);
+        const sp=new THREE.Vector3(...startPos), ep=new THREE.Vector3(...endPos);
+        const stgt=new THREE.Vector3(...startTgt), etgt=new THREE.Vector3(...endTgt);
+        const f=()=>{const now=performance.now(),t=Math.min((now-st)/dur,1),e=ease(t);cam.position.lerpVectors(sp,ep,e);ctrl.target.lerpVectors(stgt,etgt,e);ctrl.update();if(t<1)requestAnimationFrame(f);};
+        f();
+      };
+
+      const toast=(msg)=>{
+        const t=document.createElement('div');t.className='moc-toast';t.textContent=msg;document.body.appendChild(t);
+        requestAnimationFrame(()=>t.classList.add('show'));
+        setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),300);},2000);
+      };
+
+      presets.forEach(p=>{
+        const b=btn(p.name);
+        b.onclick=()=>{
+          const cam=window.myOffiCity?.camera||window.myOffiCityApp?.camera;
+          const ctrl=window.myOffiCity?.controls||window.myOffiCityApp?.controls;
+          if(!cam||!ctrl){toast('Kamera eller kontroller saknas');return;}
+          const sp=[cam.position.x,cam.position.y,cam.position.z];
+          const st=[ctrl.target.x,ctrl.target.y,ctrl.target.z];
+          let ep,et;
+          if(p.name==='Focus on Selection'){
+            const sel=window.myOffiCity?.selectedObject||window.myOffiCityApp?.selectedObject;
+            if(!sel||!sel.position){toast('Ingen objekt valt');return;}
+            ep=[sel.position.x,sel.position.y+5,sel.position.z+10];
+            et=[sel.position.x,sel.position.y,sel.position.z];
+          }else{ep=p.pos;et=p.tgt;}
+          animate(cam,ctrl,sp,st,ep,et);
+          toast(`Reset till ${p.name}`);
+        };
+        container.appendChild(b);
+      });
+
+      window.MyOffiCityAddons.addTool('Reset View','🔄',container);
+      window.MyOffiCityAddons.register('Reset View Tool');
+    };
+
+    const init=()=>{if(window.THREE&&(window.myOffiCity?.camera||window.myOffiCityApp?.camera))addResetTool();else setTimeout(init,500);};
+    init();
+  } catch(e){console.warn('Reset View addon error:',e);}
+})();

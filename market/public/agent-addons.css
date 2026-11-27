@@ -3400,3 +3400,24 @@ a.moc-breadcrumb-item:hover {
 .pulse {
   animation: agentPulse 1.5s infinite;
 }
+
+/* Breadcrumb navigation in Marketplace topbar */
+#moc-breadcrumb {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: #f3ecdc;
+  margin-left: 12px;
+}
+#moc-breadcrumb a {
+  color: #d9b46a;
+  text-decoration: none;
+  margin-right: 4px;
+}
+#moc-breadcrumb a:hover {
+  text-decoration: underline;
+}
+#moc-breadcrumb span {
+  margin-right: 4px;
+  color: #a3a3a3;
+}

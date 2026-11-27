@@ -7240,3 +7240,80 @@
     console.error('3D Tooltip Addon Error:', e);
   }
 })();
+
+(() => {
+  try {
+    // Helper to create status UI (circle + latency text)
+    const createStatusUI = () => {
+      const container = document.createElement('div');
+      container.id = 'moc-status-pulse';
+      container.title = 'AI‑agenter & nätverkslatens';
+      container.style.display = 'inline-flex';
+      container.style.alignItems = 'center';
+      container.style.gap = '4px';
+      container.style.fontSize = '12px';
+      container.style.color = '#d9b46a';
+      container.style.cursor = 'default';
+
+      const circle = document.createElement('span');
+      circle.className = 'moc-pulse-circle';
+      container.appendChild(circle);
+
+      const latency = document.createElement('span');
+      latency.className = 'moc-pulse-latency';
+      latency.textContent = '…ms';
+      container.appendChild(latency);
+
+      return { container, circle, latency };
+    };
+
+    // ---- Insert into #topbar (visible everywhere) ----
+    const topbar = document.getElementById('topbar');
+    if (!topbar) throw new Error('Topbar element not found');
+    const { container: topbarEl, circle: topCircle, latency: topLatency } = createStatusUI();
+    topbar.appendChild(topbarEl);
+
+    // ---- Also expose as a dock tool (optional) ----
+    const { container: toolEl, circle: toolCircle, latency: toolLatency } = createStatusUI();
+    window.MyOffiCityAddons.addTool('Status Pulse', '⚡', toolEl);
+
+    // ---- Update routine -------------------------------------------------
+    const updateStatus = async () => {
+      // Measure latency via a lightweight HEAD request
+      const start = performance.now();
+      try {
+        await fetch('/', { method: 'HEAD', cache: 'no-store' });
+        const ms = Math.round(performance.now() - start);
+        topLatency.textContent = `${ms}ms`;
+        toolLatency.textContent = `${ms}ms`;
+
+        // Set colour based on latency
+        const status = ms < 100 ? 'good' : ms < 300 ? 'moderate' : 'bad';
+        topCircle.dataset.status = status;
+        toolCircle.dataset.status = status;
+      } catch (e) {
+        topLatency.textContent = '✖';
+        toolLatency.textContent = '✖';
+        topCircle.dataset.status = 'bad';
+        toolCircle.dataset.status = 'bad';
+      }
+
+      // Show number of active AI‑modules (agents)
+      const agents = (window.MyOffiCityAddons && window.MyOffiCityAddons.modules)
+        ? window.MyOffiCityAddons.modules.length
+        : 0;
+      topbarEl.dataset.agents = agents;
+      toolEl.dataset.agents = agents;
+    };
+
+    // Initial run + periodic refresh
+    updateStatus();
+    const interval = setInterval(updateStatus, 5000);
+    window.addEventListener('beforeunload', () => clearInterval(interval));
+
+    // Register feature for badge counter
+    window.MyOffiCityAddons.register('Status Pulse');
+  } catch (e) {
+    console.error('Status Pulse Addon Error:', e);
+  }
+})();

@@ -1579,3 +1579,181 @@
     }
   } catch (e) {}
 })();
+
+(() => {
+  try {
+    const MAX_COMPARE = 3;
+    const selected = new Set();
+    let modalEl = null;
+    let overlayEl = null;
+
+    const getAgentData = (card) => {
+      const name = card.querySelector('.card-title, h3, h2, [class*="name"]')?.textContent?.trim() || 'Okänd Agent';
+      const price = card.querySelector('[class*="price"], .price, [data-price]')?.textContent?.trim() || '—';
+      const rating = card.querySelector('[class*="rating"], .stars, [data-rating]')?.textContent?.trim() || '—';
+      const features = Array.from(card.querySelectorAll('.feature, li, [class*="feature"]')).map(f => f.textContent.trim()).filter(Boolean);
+      const desc = card.querySelector('.card-desc, p, [class*="desc"]')?.textContent?.trim() || '';
+      return { name, price, rating, features, desc };
+    };
+
+    const createCompareBtn = (card) => {
+      if (card.querySelector('.moc-compare-btn')) return;
+      const btn = document.createElement('button');
+      btn.className = 'moc-compare-btn';
+      btn.textContent = '⚖️ Jämför';
+      btn.title = 'Markera för jämförelse';
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const cardId = card.dataset.id || card.id || card.querySelector('h3, h2, .card-title')?.textContent;
+        if (selected.has(cardId)) {
+          selected.delete(cardId);
+          card.classList.remove('moc-compare-selected');
+          btn.classList.remove('active');
+        } else {
+          if (selected.size >= MAX_COMPARE) {
+            alert(`Du kan jämföra max ${MAX_COMPARE} agenter. Avmarkera en först.`);
+            return;
+          }
+          selected.add(cardId);
+          card.classList.add('moc-compare-selected');
+          btn.classList.add('active');
+        }
+        updateCompareBar();
+      });
+      card.appendChild(btn);
+    };
+
+    const updateCompareBar = () => {
+      let bar = document.getElementById('mocCompareBar');
+      if (!bar) {
+        bar = document.createElement('div');
+        bar.id = 'mocCompareBar';
+        bar.className = 'moc-compare-bar';
+        document.body.appendChild(bar);
+      }
+      if (selected.size === 0) {
+        bar.style.display = 'none';
+        return;
+      }
+      bar.style.display = 'flex';
+      bar.innerHTML = `
+        <span class="moc-compare-count">${selected.size}/${MAX_COMPARE} markerade</span>
+        <button class="moc-compare-open" ${selected.size < 2 ? 'disabled' : ''}>Öppna jämförelse</button>
+        <button class="moc-compare-clear">Rensa</button>
+      `;
+      bar.querySelector('.moc-compare-open').addEventListener('click', openCompareModal);
+      bar.querySelector('.moc-compare-clear').addEventListener('click', () => {
+        selected.clear();
+        document.querySelectorAll('.moc-compare-selected').forEach(c => c.classList.remove('moc-compare-selected'));
+        document.querySelectorAll('.moc-compare-btn.active').forEach(b => b.classList.remove('active'));
+        updateCompareBar();
+      });
+    };
+
+    const openCompareModal = () => {
+      const cards = Array.from(document.querySelectorAll('.card')).filter(c => {
+        const id = c.dataset.id || c.id || c.querySelector('h3, h2, .card-title')?.textContent;
+        return selected.has(id);
+      });
+      if (cards.length < 2) return;
+
+      const agents = cards.map(getAgentData);
+      const maxFeatures = Math.max(...agents.map(a => a.features.length), 0);
+
+      let rows = '';
+      for (let i = 0; i < maxFeatures; i++) {
+        rows += `<tr><td class="moc-cmp-label">Funktion ${i + 1}</td>`;
+        agents.forEach(a => {
+          rows += `<td>${a.features[i] || '—'}</td>`;
+        });
+        rows += '</tr>';
+      }
+
+      const modal = document.createElement('div');
+      modal.className = 'moc-compare-modal';
+      modal.innerHTML = `
+        <div class="moc-compare-overlay" id="mocCompareOverlay"></div>
+        <div class="moc-compare-content">
+          <div class="moc-compare-header">
+            <h3>⚖️ Jämför AI-Agenter</h3>
+            <button class="moc-compare-close" id="mocCompareClose">✕</button>
+          </div>
+          <div class="moc-compare-table-wrap">
+            <table class="moc-compare-table">
+              <thead>
+                <tr>
+                  <th class="moc-cmp-label"></th>
+                  ${agents.map(a => `<th>${a.name}</th>`).join('')}
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="moc-cmp-label">Pris</td>
+                  ${agents.map(a => `<td class="moc-cmp-price">${a.price}</td>`).join('')}
+                </tr>
+                <tr>
+                  <td class="moc-cmp-label">Betyg</td>
+                  ${agents.map(a => `<td class="moc-cmp-rating">${a.rating}</td>`).join('')}
+                </tr>
+                <tr>
+                  <td class="moc-cmp-label">Beskrivning</td>
+                  ${agents.map(a => `<td class="moc-cmp-desc">${a.desc}</td>`).join('')}
+                </tr>
+                ${rows}
+              </tbody>
+            </table>
+          </div>
+          <div class="moc-compare-footer">
+            <button class="moc-compare-close-btn" id="mocCompareCloseBtn">Stäng</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      modalEl = modal;
+      overlayEl = modal.querySelector('#mocCompareOverlay');
+
+      const close = () => {
+        if (modalEl) {
+          modalEl.remove();
+          modalEl = null;
+          overlayEl = null;
+          document.removeEventListener('keydown', escHandler);
+        }
+      };
+
+      const escHandler = (e) => {
+        if (e.key === 'Escape') close();
+      };
+
+      modal.querySelector('#mocCompareClose').addEventListener('click', close);
+      modal.querySelector('#mocCompareCloseBtn').addEventListener('click', close);
+      overlayEl.addEventListener('click', close);
+      document.addEventListener('keydown', escHandler);
+    };
+
+    const init = () => {
+      const cards = document.querySelectorAll('.card');
+      cards.forEach(createCompareBtn);
+      updateCompareBar();
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+
+    const observer = new MutationObserver(() => {
+      const newCards = document.querySelectorAll('.card:not(.moc-compare-initialized)');
+      newCards.forEach(card => {
+        card.classList.add('moc-compare-initialized');
+        createCompareBtn(card);
+      });
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    if (window.MyOffiCityAddons) {
+      window.MyOffiCityAddons.register('Jämför AI-Agenter');
+    }
+  } catch (e) {}
+})();

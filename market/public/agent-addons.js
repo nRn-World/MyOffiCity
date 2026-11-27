@@ -9201,3 +9201,33 @@
     console.error('Agent Status Init Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const chatInput = document.querySelector('input[type="text"], textarea'); // Justera selektor baserat på faktisk DOM
+    
+    document.addEventListener('keydown', (e) => {
+      // Ctrl+K för att fokusera chatten
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        const chat = document.querySelector('#chat-input') || document.querySelector('.chat-box input');
+        if (chat) chat.focus();
+      }
+      
+      // Esc för att stänga/avfokusera
+      if (e.key === 'Escape') {
+        document.activeElement.blur();
+      }
+    });
+
+    const info = document.createElement('div');
+    info.style.fontSize = '12px';
+    info.style.color = '#94a3b8';
+    info.innerHTML = 'Använd <b>Ctrl+K</b> för att fokusera chatten och <b>Esc</b> för att återgå till 3D-vyn.';
+    
+    window.MyOffiCityAddons.addTool('Tangentbordsgenvägar', '⌨️', info);
+    window.MyOffiCityAddons.register('Keyboard Shortcuts');
+  } catch (e) {
+    console.error('Keyboard Shortcut Init Error:', e);
+  }
+})();

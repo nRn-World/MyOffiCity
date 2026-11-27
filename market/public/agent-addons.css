@@ -6350,3 +6350,12 @@ canvas {
   70% { transform: scale(2.5); opacity: 0; }
   100% { transform: scale(1); opacity: 0; }
 }
+
+/* Keyboard shortcut helper styles */
+.moc-tool-card b {
+  color: #d9b46a;
+  background: rgba(217, 180, 106, 0.1);
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-family: monospace;
+}

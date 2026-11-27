@@ -3687,3 +3687,42 @@ a.moc-breadcrumb-item:hover {
   outline: none;
   border-color: #4ade80;
 }
+
+/* High Contrast Theme */
+.high-contrast {
+  background-color: #000 !important;
+  color: #fff !important;
+}
+.high-contrast a {
+  color: #ff0 !important;
+}
+.high-contrast #topbar,
+.high-contrast .bar,
+.high-contrast .dash,
+.high-contrast .dsb,
+.high-contrast .dmain,
+.high-contrast .cards {
+  background-color: #111 !important;
+  color: #fff !important;
+}
+.high-contrast .moc-theme-toggle {
+  background: #222 !important;
+  color: #ff0 !important;
+}
+.high-contrast .moc-theme-toggle:hover {
+  background: #333 !important;
+}
+
+/* Default toggle styling (applies when not high-contrast) */
+.moc-theme-toggle {
+  margin-left: 8px;
+  padding: 4px 6px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background: rgba(217,180,106,0.2);
+  color: #f3ecdc;
+}
+.moc-theme-toggle:hover {
+  background: rgba(217,180,106,0.3);
+}

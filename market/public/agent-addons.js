@@ -2691,3 +2691,31 @@
     initDrag();
   } catch(e) {}
 })();
+
+(() => {
+  try {
+    const topbar = document.querySelector('#topbar') || document.body;
+    const breadcrumb = document.createElement('div');
+    breadcrumb.id = 'moc-breadcrumb';
+    breadcrumb.className = 'moc-breadcrumb';
+    
+    const updateBreadcrumbs = () => {
+      const hash = window.location.hash.replace('#/', '') || 'Hem';
+      const parts = hash.split('/');
+      breadcrumb.innerHTML = parts.map((p, i) => 
+        `<span class="moc-bc-item">${p.charAt(0).toUpperCase() + p.slice(1)}</span>`
+      ).join('<span class="moc-bc-sep">/</span>');
+    };
+
+    window.addEventListener('hashchange', updateBreadcrumbs);
+    updateBreadcrumbs();
+    
+    if (topbar.firstChild) {
+      topbar.insertBefore(breadcrumb, topbar.firstChild);
+    } else {
+      topbar.appendChild(breadcrumb);
+    }
+
+    window.MyOffiCityAddons.register('Breadcrumb-navigering');
+  } catch(e) {}
+})();

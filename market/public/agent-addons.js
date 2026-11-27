@@ -6489,3 +6489,70 @@
     console.warn('Performance Monitor Error:', e);
   }
 })();
+
+(() => {
+  try {
+    if (document.getElementById('mocSmartScrollBtn')) return;
+
+    const btn = document.createElement('button');
+    btn.id = 'mocSmartScrollBtn';
+    btn.className = 'moc-smart-scroll-btn';
+    btn.setAttribute('aria-label', 'Till toppen');
+    
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 44 44');
+    svg.setAttribute('class', 'moc-progress-svg');
+    
+    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('cx', '22');
+    circle.setAttribute('cy', '22');
+    circle.setAttribute('r', '19');
+    circle.setAttribute('class', 'moc-progress-circle');
+    
+    const arrow = document.createElement('span');
+    arrow.className = 'moc-scroll-arrow';
+    arrow.innerHTML = '&#8593;';
+
+    btn.appendChild(svg);
+    btn.appendChild(arrow);
+    document.body.appendChild(btn);
+
+    const radius = 19;
+    const circumference = 2 * Math.PI * radius;
+    circle.style.strokeDasharray = `${circumference}`;
+    circle.style.strokeDashoffset = `${circumference}`;
+
+    let ticking = false;
+    const updateScroll = () => {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const scrollPercent = docHeight > 0 ? scrollTop / docHeight : 0;
+      
+      const offset = circumference - (scrollPercent * circumference);
+      circle.style.strokeDashoffset = offset;
+
+      if (scrollTop > 300) {
+        btn.classList.add('visible');
+      } else {
+        btn.classList.remove('visible');
+      }
+      ticking = false;
+    };
+
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        window.requestAnimationFrame(updateScroll);
+        ticking = true;
+      }
+    }, { passive: true });
+
+    btn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    updateScroll();
+    window.MyOffiCityAddons.register('Smart Scroll-to-Top');
+  } catch (e) {
+    console.warn('Smart Scroll Error:', e);
+  }
+})();

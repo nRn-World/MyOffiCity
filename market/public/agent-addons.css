@@ -3589,3 +3589,36 @@ a.moc-breadcrumb-item:hover {
   width: 16px;
   height: 16px;
 }
+
+/* Quick‑Action Toolbar */
+.moc-quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px;
+  background: rgba(15,23,42,0.7);
+  border-radius: 6px;
+  margin: 8px 0;
+}
+.moc-quick-action {
+  background: rgba(217,180,106,0.15);
+  border: none;
+  color: #f3ecdc;
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: background 0.2s;
+}
+.moc-quick-action:hover {
+  background: rgba(217,180,106,0.25);
+}
+.moc-quick-action.pin {
+  background: rgba(74,222,128,0.15);
+}
+.moc-quick-action.pin:hover {
+  background: rgba(74,222,128,0.25);
+}

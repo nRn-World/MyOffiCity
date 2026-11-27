@@ -627,3 +627,90 @@
     console.error('Ambient Sound Error:', e);
   }
 })();
+
+(() => {
+  try {
+    // Create toast container if it doesn't exist
+    let toastContainer = document.getElementById('mocToastContainer');
+    if (!toastContainer) {
+      toastContainer = document.createElement('div');
+      toastContainer.id = 'mocToastContainer';
+      document.body.appendChild(toastContainer);
+    }
+
+    // Function to show toast notification
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = `moc-toast moc-toast-${type}`;
+      toast.innerHTML = `
+        <span class="moc-toast-icon">${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span>
+        <span class="moc-toast-message">${message}</span>
+      `;
+      
+      toastContainer.appendChild(toast);
+      
+      // Animate in
+      requestAnimationFrame(() => {
+        toast.classList.add('moc-toast-visible');
+      });
+      
+      // Auto remove after 3 seconds
+      setTimeout(() => {
+        toast.classList.remove('moc-toast-visible');
+        setTimeout(() => {
+          if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+          }
+        }, 300);
+      }, 3000);
+    }
+
+    // Add click handler to all .tc-box elements
+    document.querySelectorAll('.tc-box').forEach(box => {
+      if (box.dataset.mocToastBound) return;
+      box.dataset.mocToastBound = 'true';
+      
+      box.addEventListener('click', async (e) => {
+        // Only handle clicks on the box itself or its copy button
+        if (e.target.closest('.tc-copy-btn') || e.target === box) {
+          const text = box.textContent || box.innerText;
+          
+          try {
+            await navigator.clipboard.writeText(text);
+            showToast('Kopierat till urklipp!', 'success');
+          } catch (err) {
+            // Fallback for older browsers
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+              document.execCommand('copy');
+              showToast('Kopierat till urklipp!', 'success');
+            } catch (err2) {
+              showToast('Kunde inte kopiera', 'error');
+            }
+            document.body.removeChild(textarea);
+          }
+        }
+      });
+    });
+
+    // Register the module
+    window.MyOffiCityAddons.register('Smart Copy Toast Notifications');
+    
+    // Add a small info tool to the dock
+    const infoDiv = document.createElement('div');
+    infoDiv.className = 'moc-toast-info';
+    infoDiv.innerHTML = `
+      <div class="moc-toast-info-title">📋 Kopiera-smart</div>
+      <div class="moc-toast-info-text">Klicka på API-nycklar eller ID:n för att kopiera med visuell feedback</div>
+    `;
+    window.MyOffiCityAddons.addTool('Kopiera-smart', '📋', infoDiv);
+    
+  } catch (e) {
+    console.error('Toast Notification Error:', e);
+  }
+})();

@@ -4874,3 +4874,105 @@
     console.error('Zen‑addon error:', e);
   }
 })();
+
+(() => {
+  try {
+    // Skapa ett verktyg i AI‑dockan för att slå på/av drag‑och‑släpp‑läget
+    const container = document.createElement('div');
+    container.style.display = 'flex';
+    container.style.alignItems = 'center';
+    container.style.gap = '6px';
+    container.style.padding = '4px 0';
+
+    const label = document.createElement('label');
+    label.textContent = 'Drag‑Drop‑preview';
+    label.style.cursor = 'pointer';
+    label.style.userSelect = 'none';
+
+    const toggle = document.createElement('input');
+    toggle.type = 'checkbox';
+    toggle.id = 'moc-drag-toggle';
+    toggle.style.cursor = 'pointer';
+
+    label.htmlFor = toggle.id;
+    container.appendChild(toggle);
+    container.appendChild(label);
+
+    // Lägg till verktyget i dockan
+    window.MyOffiCityAddons.addTool('Drag‑Drop‑preview', '🖐️', container);
+    window.MyOffiCityAddons.register('Drag‑Drop‑preview');
+
+    // Intern state
+    let enabled = false;
+    let previewEl = null;
+    let currentModel = null;
+
+    // Skapa en flytande preview‑element
+    function createPreview(text) {
+      const el = document.createElement('div');
+      el.className = 'moc-drag-preview';
+      el.textContent = text;
+      document.body.appendChild(el);
+      return el;
+    }
+
+    // Flytta preview‑elementet med musen
+    function onMouseMove(e) {
+      if (previewEl) {
+        previewEl.style.left = e.clientX + 12 + 'px';
+        previewEl.style.top = e.clientY + 12 + 'px';
+      }
+    }
+
+    // Hantera släpp på 3D‑vyn (#app)
+    function onMouseUp(e) {
+      if (!enabled) return;
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+      if (previewEl) {
+        previewEl.remove();
+        previewEl = null;
+      }
+      const dropTarget = e.target.closest('#app');
+      if (dropTarget && currentModel) {
+        // Skicka en custom‑event som kan fångas av befintlig 3‑D‑kod
+        window.dispatchEvent(new CustomEvent('previewModel', {
+          detail: { modelId: currentModel }
+        }));
+      }
+      currentModel = null;
+    }
+
+    // Initiera drag‑start när användaren trycker ner på ett marketplace‑objekt
+    function onMouseDown(e) {
+      if (!enabled) return;
+      const item = e.target.closest('[data-model-id]');
+      if (!item) return;
+      const modelId = item.getAttribute('data-model-id');
+      const name = item.getAttribute('data-model-name') || item.textContent.trim() || 'Objekt';
+      currentModel = modelId;
+      previewEl = createPreview('🔍 ' + name);
+      previewEl.style.left = e.clientX + 12 + 'px';
+      previewEl.style.top = e.clientY + 12 + 'px';
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+    }
+
+    // Aktivera / inaktivera lyssnare när checkboxen ändras
+    toggle.addEventListener('change', (e) => {
+      enabled = e.target.checked;
+      if (enabled) {
+        document.addEventListener('mousedown', onMouseDown);
+      } else {
+        document.removeEventListener('mousedown', onMouseDown);
+        if (previewEl) {
+          previewEl.remove();
+          previewEl = null;
+        }
+        currentModel = null;
+      }
+    });
+  } catch (e) {
+    console.error('Drag‑Drop‑preview‑addon error:', e);
+  }
+})();

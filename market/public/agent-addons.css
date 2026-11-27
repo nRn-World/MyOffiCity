@@ -2656,3 +2656,31 @@ a.moc-breadcrumb-item:hover {
   background: rgba(217, 180, 106, 0.25);
   border-color: #d9b46a;
 }
+
+.moc-heatmap-info {
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(217, 180, 106, 0.4);
+  border-radius: 8px;
+  padding: 12px;
+  color: #f3ecdc;
+  font-size: 13px;
+  backdrop-filter: blur(10px);
+}
+
+.moc-heatmap-title {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #d9b46a;
+}
+
+.moc-heatmap-desc {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-bottom: 8px;
+}
+
+.moc-heatmap-stats {
+  font-size: 12px;
+  color: #4ade80;
+  font-weight: 500;
+}

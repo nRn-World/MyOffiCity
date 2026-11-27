@@ -9030,3 +9030,33 @@
     console.error('Breadcrumb error:', e);
   }
 })();
+
+(() => {
+  try {
+    const container = document.createElement('div');
+    container.style.cssText = 'padding: 8px; font-family: monospace; font-size: 11px; color: #4ade80;';
+    const fpsDisplay = document.createElement('div');
+    container.appendChild(fpsDisplay);
+
+    let lastTime = performance.now();
+    let frames = 0;
+    let fps = 0;
+
+    function update() {
+      const now = performance.now();
+      frames++;
+      if (now - lastTime >= 1000) {
+        fps = Math.round((frames * 1000) / (now - lastTime));
+        fpsDisplay.textContent = `FPS: ${fps} | MEM: ${Math.round(performance.memory?.usedJSHeapSize / 1048576 || 0)}MB`;
+        frames = 0;
+        lastTime = now;
+      }
+      requestAnimationFrame(update);
+    }
+    update();
+
+    window.MyOffiCityAddons.addTool('Prestanda', '⚡', container);
+  } catch (e) {
+    console.error('Performance Monitor error:', e);
+  }
+})();

@@ -4826,3 +4826,51 @@
     console.error('Agent Timeline addon error:', e);
   }
 })();
+
+(() => {
+  try {
+    // Vänta på att DOM är klar
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initZen);
+    } else {
+      initZen();
+    }
+
+    function initZen() {
+      const topbar = document.getElementById('topbar');
+      if (!topbar) return;
+
+      // Skapa Zen‑knappen
+      const zenBtn = document.createElement('button');
+      zenBtn.className = 'moc-zen-btn';
+      zenBtn.title = 'Zen‑läge: döljer UI för fullt fokus';
+      zenBtn.innerHTML = '🧘‍♂️';
+      zenBtn.style.cssText = `
+        margin-left: 8px;
+        padding: 4px 8px;
+        background: rgba(15,23,42,0.8);
+        color: #f3ecdc;
+        border: 1px solid rgba(217,180,106,0.45);
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        line-height: 1;
+        transition: background 0.2s ease, border-color 0.2s ease;
+      `;
+
+      // Klick‑handler: toggle Focus Mode
+      zenBtn.addEventListener('click', () => {
+        document.body.classList.toggle('focus-mode');
+      });
+
+      topbar.appendChild(zenBtn);
+
+      // Registrera i AI‑dockan så att den räknas som ett aktivt verktyg
+      const dockClone = zenBtn.cloneNode(true);
+      window.MyOffiCityAddons.addTool('Zen‑läge', '🧘', dockClone);
+      window.MyOffiCityAddons.register('Zen‑läge');
+    }
+  } catch (e) {
+    console.error('Zen‑addon error:', e);
+  }
+})();

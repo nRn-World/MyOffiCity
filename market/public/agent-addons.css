@@ -3268,3 +3268,55 @@ a.moc-breadcrumb-item:hover {
 #moc-mini-map text {
   pointer-events: none;
 }
+
+/* Marketplace‑filter widget */
+.moc-market-filter {
+  padding: 10px;
+  background: rgba(12, 18, 34, 0.92);
+  border-radius: 8px;
+  color: #f3ecdc;
+  max-width: 260px;
+  font-family: system-ui, sans-serif;
+}
+.moc-market-search {
+  width: 100%;
+  padding: 6px 8px;
+  margin-bottom: 6px;
+  border: none;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #f3ecdc;
+}
+.moc-market-search:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.2);
+}
+.moc-market-suggestions {
+  max-height: 120px;
+  overflow-y: auto;
+  margin-bottom: 6px;
+}
+.moc-market-sugg-item {
+  padding: 4px 6px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.moc-market-sugg-item:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+.moc-market-buttons {
+  display: flex;
+  gap: 6px;
+}
+.moc-market-btn {
+  flex: 1;
+  padding: 5px 0;
+  background: rgba(217, 180, 106, 0.2);
+  border: none;
+  border-radius: 4px;
+  color: #f3ecdc;
+  cursor: pointer;
+}
+.moc-market-btn:hover {
+  background: rgba(217, 180, 106, 0.4);
+}

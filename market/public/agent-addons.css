@@ -4470,3 +4470,58 @@ body {
   background: rgba(217, 180, 106, 0.25);
   border-color: #d9b46a;
 }
+
+/* Help Center modal styling */
+.moc-help-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 960;
+  backdrop-filter: blur(4px);
+}
+.moc-help-modal {
+  background: rgba(15,23,42,0.95);
+  color: #e9d7b0;
+  max-width: 600px;
+  width: 90%;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 12px 24px rgba(0,0,0,0.4);
+}
+.moc-help-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: rgba(217,180,106,0.1);
+}
+.moc-help-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #f3ecdc;
+}
+.moc-help-close {
+  background: transparent;
+  border: none;
+  color: #f3ecdc;
+  font-size: 18px;
+  cursor: pointer;
+}
+.moc-help-body {
+  padding: 16px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.moc-help-body ul {
+  padding-left: 20px;
+}
+.moc-help-body li {
+  margin-bottom: 6px;
+}
+.moc-help-body a {
+  color: #d9b46a;
+  text-decoration: underline;
+}

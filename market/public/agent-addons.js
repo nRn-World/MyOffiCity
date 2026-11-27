@@ -4488,3 +4488,71 @@
     console.error(e);
   }
 })();
+
+(() => {
+  try {
+    // Create breadcrumb container
+    const breadcrumb = document.createElement('nav');
+    breadcrumb.id = 'moc-breadcrumb';
+    breadcrumb.className = 'moc-breadcrumb';
+
+    const topbar = document.getElementById('topbar');
+    if (!topbar) return;
+    topbar.appendChild(breadcrumb);
+
+    // Helper to format segment names
+    const formatSegment = (seg) =>
+      seg
+        .replace(/-/g, ' ')
+        .replace(/\b\w/g, (l) => l.toUpperCase());
+
+    // Update breadcrumb based on current location
+    const update = () => {
+      const path = window.location.pathname.split('/').filter(Boolean);
+      breadcrumb.innerHTML = '';
+
+      let accumulated = '';
+      path.forEach((segment, idx) => {
+        accumulated += '/' + segment;
+        const link = document.createElement('a');
+        link.href = accumulated;
+        link.textContent = formatSegment(segment);
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          history.pushState(null, '', accumulated);
+          update();
+        });
+        breadcrumb.appendChild(link);
+
+        if (idx < path.length - 1) {
+          const sep = document.createElement('span');
+          sep.textContent = '>';
+          breadcrumb.appendChild(sep);
+        }
+      });
+
+      // If no path segments, show home
+      if (path.length === 0) {
+        const home = document.createElement('span');
+        home.textContent = 'Home';
+        breadcrumb.appendChild(home);
+      }
+    };
+
+    // Listen for navigation events
+    window.addEventListener('popstate', update);
+    window.addEventListener('hashchange', update);
+
+    // Override pushState to trigger update
+    const originalPushState = history.pushState;
+    history.pushState = function (state, title, url) {
+      originalPushState.apply(this, arguments);
+      update();
+    };
+
+    // Initial render
+    update();
+  } catch (e) {
+    console.error('Breadcrumb addon error:', e);
+  }
+})();

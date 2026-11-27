@@ -5068,3 +5068,43 @@
     console.error('Quick Actions Toolbar error:', e);
   }
 })();
+
+(() => {
+  try {
+    const updateAgentStatuses = async () => {
+      const cards = document.querySelectorAll('.cards .card, .card');
+      if (!cards.length) return;
+
+      try {
+        // Hämtar status från API (förväntar oss en JSON-lista med agent-status)
+        const response = await fetch('/api/agents/status');
+        const data = await response.json(); // [{id: 'agent1', status: 'online'}, ...]
+        
+        cards.forEach(card => {
+          const agentId = card.dataset.agentId;
+          if (!agentId) return;
+          
+          let badge = card.querySelector('.moc-status-badge');
+          if (!badge) {
+            badge = document.createElement('div');
+            badge.className = 'moc-status-badge';
+            card.style.position = 'relative';
+            card.appendChild(badge);
+          }
+
+          const agentData = data.find(a => a.id === agentId) || { status: 'offline' };
+          badge.className = `moc-status-badge status-${agentData.status}`;
+          badge.textContent = agentData.status.charAt(0).toUpperCase() + agentData.status.slice(1);
+        });
+      } catch (e) {
+        console.warn('Kunde inte hämta agent-status, använder fallback.');
+      }
+    };
+
+    window.MyOffiCityAddons.register('Live Status Badge');
+    setInterval(updateAgentStatuses, 30000); // Uppdatera var 30:e sekund
+    updateAgentStatuses();
+  } catch (e) {
+    console.error('Status Badge error:', e);
+  }
+})();

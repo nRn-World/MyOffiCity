@@ -7872,3 +7872,49 @@
     console.error('Quick Filter Addon Error:', e);
   }
 })();
+
+(() => {
+  try {
+    /* Theme Switcher */
+    const THEME_KEY = 'theme';
+    const THEMES = ['auto', 'light', 'dark'];
+
+    const themeBtn = document.createElement('button');
+    themeBtn.className = 'theme-switcher-btn';
+    const iconSpan = document.createElement('span');
+    iconSpan.textContent = '🌓';
+    const textSpan = document.createElement('span');
+    themeBtn.append(iconSpan, textSpan);
+
+    const topbar = document.querySelector('#topbar');
+    if (topbar) topbar.appendChild(themeBtn);
+
+    const applyTheme = (theme) => {
+      const root = document.documentElement;
+      if (theme === 'auto') {
+        root.removeAttribute('data-theme');
+      } else {
+        root.setAttribute('data-theme', theme);
+      }
+      localStorage.setItem(THEME_KEY, theme);
+      textSpan.textContent = theme.charAt(0).toUpperCase() + theme.slice(1);
+    };
+
+    let current = localStorage.getItem(THEME_KEY) || 'auto';
+    applyTheme(current);
+
+    themeBtn.addEventListener('click', () => {
+      let idx = THEMES.indexOf(current);
+      idx = (idx + 1) % THEMES.length;
+      current = THEMES[idx];
+      applyTheme(current);
+    });
+
+    // Update when system preference changes while in auto mode
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+      if (current === 'auto') applyTheme('auto');
+    });
+  } catch (e) {
+    console.error('Theme Switcher Error:', e);
+  }
+})();

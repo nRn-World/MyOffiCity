@@ -5633,3 +5633,27 @@ body.moc-focus-mode .chat-container {
 .mcp-item.active {
   background: rgba(217,180,106,0.2);
 }
+
+.moc-city-toolbar {
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(8px);
+  border-radius: 8px;
+  border: 1px solid rgba(217, 180, 106, 0.3);
+}
+.moc-city-toolbar button {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(217, 180, 106, 0.5);
+  color: #f3ecdc;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+.moc-city-toolbar button:hover {
+  background: rgba(217, 180, 106, 0.3);
+  border-color: #d9b46a;
+}

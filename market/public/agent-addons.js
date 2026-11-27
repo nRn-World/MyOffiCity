@@ -7340,3 +7340,56 @@
     console.error('Agent-Dock Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const OVERLAY_ID = 'tcFocusOverlay';
+    const TOGGLE_CLASS = 'tc-focus';
+
+    const toggleFocus = () => {
+      const tcBox = document.querySelector('.tc-box');
+      if (!tcBox) return;
+
+      const nowFocused = tcBox.classList.toggle(TOGGLE_CLASS);
+      if (nowFocused) {
+        // Create blur overlay if missing
+        let overlay = document.getElementById(OVERLAY_ID);
+        if (!overlay) {
+          overlay = document.createElement('div');
+          overlay.id = OVERLAY_ID;
+          document.body.appendChild(overlay);
+        }
+        // Ensure proper stacking
+        tcBox.style.zIndex = '9999';
+      } else {
+        // Remove overlay
+        const overlay = document.getElementById(OVERLAY_ID);
+        if (overlay) overlay.remove();
+        tcBox.style.zIndex = '';
+      }
+    };
+
+    // Keyboard shortcut Alt+C
+    document.addEventListener('keydown', (e) => {
+      if (e.altKey && (e.key === 'c' || e.key === 'C')) {
+        e.preventDefault();
+        toggleFocus();
+      }
+    });
+
+    // Add a small button in the AI‑addons dock for manual toggle
+    const toolContainer = document.createElement('div');
+    const btn = document.createElement('button');
+    btn.textContent = 'Alt+C – Fokus';
+    btn.style.padding = '4px 8px';
+    btn.style.fontSize = '12px';
+    btn.style.cursor = 'pointer';
+    btn.addEventListener('click', toggleFocus);
+    toolContainer.appendChild(btn);
+
+    window.MyOffiCityAddons.addTool('Focus Toggle', '🔍', toolContainer);
+    window.MyOffiCityAddons.register('Focus Toggle');
+  } catch (e) {
+    console.error('Focus Toggle Addon Error:', e);
+  }
+})();

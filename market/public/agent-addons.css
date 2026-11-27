@@ -5252,3 +5252,26 @@ body.moc-focus-mode .chat-container {
   font-size: 12px;
   opacity: 0.5;
 }
+
+/* Focus Toggle – fullscreen chat with background blur */
+#tcFocusOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  z-index: 9998;
+  pointer-events: none;
+}
+.tc-box.tc-focus {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: #111 !important;
+  color: #eee !important;
+  overflow: auto !important;
+  padding: 12px !important;
+  box-sizing: border-box !important;
+  z-index: 9999 !important;
+  transition: all 0.2s ease;
+}

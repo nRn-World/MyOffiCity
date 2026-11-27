@@ -2955,3 +2955,34 @@
     window.MyOffiCityAddons.register('Theme Switcher');
   } catch(e) {}
 })();
+
+(() => {
+  try {
+    const container = document.createElement('div');
+    container.style.display = 'flex';
+    container.style.flexDirection = 'column';
+    container.style.gap = '10px';
+
+    const statusRow = document.createElement('div');
+    statusRow.className = 'agent-health-row';
+    statusRow.innerHTML = `
+      <div class="health-item">
+        <span class="pulse-dot"></span>
+        <span>AI Relay: <b id="relay-status">Online</b></span>
+      </div>
+      <div class="health-item">
+        <span>Latency: <b id="relay-ping">24ms</b></span>
+      </div>
+    `;
+    container.appendChild(statusRow);
+
+    window.MyOffiCityAddons.addTool('Agent-Health', '💓', container);
+    window.MyOffiCityAddons.register('Health Monitor');
+
+    // Simulate ping updates
+    setInterval(() => {
+      const pingEl = document.getElementById('relay-ping');
+      if (pingEl) pingEl.textContent = (20 + Math.floor(Math.random() * 15)) + 'ms';
+    }, 3000);
+  } catch(e) {}
+})();

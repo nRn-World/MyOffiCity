@@ -3863,3 +3863,60 @@ a.moc-breadcrumb-item:hover {
   0% { opacity: 0; transform: translateY(15px) scale(0.95); }
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
+
+/* Agent Health Indicator */
+.moc-health-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(15, 23, 42, 0.6);
+  border-bottom: 1px solid rgba(217, 180, 106, 0.2);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.moc-health-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #64748b;
+  transition: all 0.3s ease;
+}
+
+.moc-health-dot.online {
+  background: #4ade80;
+  box-shadow: 0 0 8px #4ade80;
+  animation: moc-pulse-green 2s infinite;
+}
+
+.moc-health-dot.offline {
+  background: #f87171;
+  box-shadow: 0 0 8px #f87171;
+}
+
+.moc-health-text {
+  color: #94a3b8;
+}
+
+.online + .moc-health-text {
+  color: #4ade80;
+}
+
+.offline + .moc-health-text {
+  color: #f87171;
+}
+
+@keyframes moc-pulse-green {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(74, 222, 128, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
+}
+
+/* Fix för att indikatorn ska synas bra i .tc-box */
+.tc-box {
+  display: flex;
+  flex-direction: column;
+}

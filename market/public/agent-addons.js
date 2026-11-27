@@ -6159,3 +6159,51 @@
     console.warn('Theme & Typography addon error:', e);
   }
 })();
+
+(() => {
+  try {
+    const container = document.createElement('div');
+    container.className = 'moc-timer-container';
+    
+    let timeLeft = 25 * 60;
+    let timerInterval = null;
+
+    const display = document.createElement('div');
+    display.className = 'moc-timer-display';
+    display.textContent = '25:00';
+    
+    const btn = document.createElement('button');
+    btn.className = 'moc-timer-btn';
+    btn.textContent = 'Starta Fokus';
+    
+    btn.addEventListener('click', () => {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        btn.textContent = 'Starta Fokus';
+      } else {
+        btn.textContent = 'Pausa';
+        timerInterval = setInterval(() => {
+          timeLeft--;
+          const m = Math.floor(timeLeft / 60);
+          const s = timeLeft % 60;
+          display.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+          if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            alert('Fokuspasset är klart! Ta en paus.');
+            timeLeft = 25 * 60;
+            btn.textContent = 'Starta Fokus';
+          }
+        }, 1000);
+      }
+    });
+
+    container.appendChild(display);
+    container.appendChild(btn);
+
+    window.MyOffiCityAddons.addTool('Fokus-timer', '⏱️', container);
+    window.MyOffiCityAddons.register('Productivity Timer');
+  } catch (e) {
+    console.warn('Timer addon error:', e);
+  }
+})();

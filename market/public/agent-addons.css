@@ -1869,3 +1869,19 @@ COMMIT: feat: add interactive Asset-Inspector tooltip for marketplace cards
   color: #94a3b8;
   font-size: 13px;
 }
+
+.moc-a11y-wrap { font-size: 13px; color: #f3ecdc; }
+.moc-a11y-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.moc-a11y-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(217,180,106,0.4); background: rgba(15,23,42,0.8); color: #f3ecdc; cursor: pointer; font-size: 13px; transition: all 0.15s ease; }
+.moc-a11y-btn:hover { border-color: #d9b46a; background: rgba(20,32,61,0.9); }
+.moc-a11y-btn.active { border-color: #4ade80; background: rgba(74,222,128,0.15); }
+.moc-a11y-icon { font-size: 16px; }
+.moc-a11y-status { font-size: 12px; color: #94a3b8; }
+.moc-a11y-panel { margin-top: 8px; padding: 10px; border-radius: 8px; background: rgba(15,23,42,0.6); border: 1px solid rgba(217,180,106,0.2); }
+.moc-a11y-hint { font-size: 11px; color: #94a3b8; margin: 0 0 8px; line-height: 1.4; }
+.moc-a11y-label { font-size: 12px; color: #e9d7b0; min-width: 60px; }
+.moc-a11y-row input[type="range"] { flex: 1; accent-color: #d9b46a; }
+.moc-a11y-row select { flex: 1; background: rgba(15,23,42,0.8); color: #f3ecdc; border: 1px solid rgba(217,180,106,0.3); border-radius: 6px; padding: 4px 8px; font-size: 12px; }
+.moc-read-aloud { margin-left: 8px; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(217,180,106,0.3); background: rgba(217,180,106,0.1); color: #e9d7b0; cursor: pointer; font-size: 12px; opacity: 0; transition: opacity 0.2s ease; }
+.chat-msg:hover .moc-read-aloud, .msg:hover .moc-read-aloud, [class*="message"]:hover .moc-read-aloud { opacity: 1; }
+.moc-read-aloud:hover { background: rgba(217,180,106,0.25); border-color: #d9b46a; }

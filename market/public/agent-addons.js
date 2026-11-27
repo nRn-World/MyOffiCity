@@ -5676,3 +5676,54 @@
     console.warn('Health Monitor Addon Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const uxEl = document.createElement('div');
+    uxEl.className = 'moc-ux-booster';
+    
+    const createToggle = (label, id, callback) => {
+      const row = document.createElement('div');
+      row.className = 'moc-ux-row';
+      row.innerHTML = `
+        <span class="moc-ux-label">${label}</span>
+        <label class="moc-ux-switch">
+          <input type="checkbox" id="${id}">
+          <span class="moc-ux-slider"></span>
+        </label>
+      `;
+      const input = row.querySelector('input');
+      input.addEventListener('change', (e) => callback(e.target.checked));
+      return row;
+    };
+
+    // Glass Mode Toggle
+    uxEl.appendChild(createToggle('Mjukt glas-tema', 'toggle-glass', (val) => {
+      document.body.classList.toggle('moc-glass-active', val);
+      localStorage.setItem('moc-pref-glass', val);
+    }));
+
+    // Focus Mode Toggle
+    uxEl.appendChild(createToggle('Fokusläge (Rent)', 'toggle-focus', (val) => {
+      document.body.classList.toggle('moc-focus-active', val);
+      localStorage.setItem('moc-pref-focus', val);
+    }));
+
+    // Restore preferences
+    setTimeout(() => {
+      if (localStorage.getItem('moc-pref-glass') === 'true') {
+        const el = document.getElementById('toggle-glass');
+        if (el) { el.checked = true; document.body.classList.add('moc-glass-active'); }
+      }
+      if (localStorage.getItem('moc-pref-focus') === 'true') {
+        const el = document.getElementById('toggle-focus');
+        if (el) { el.checked = true; document.body.classList.add('moc-focus-active'); }
+      }
+    }, 200);
+
+    window.MyOffiCityAddons.addTool('UX Booster', '🎨', uxEl);
+    window.MyOffiCityAddons.register('UX Enhancer');
+  } catch (e) {
+    console.warn('UX Booster Error:', e);
+  }
+})();

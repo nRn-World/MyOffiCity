@@ -5485,3 +5485,55 @@ body.moc-focus-mode .chat-container {
 .moc-ai-chat-send:hover {
   background: rgba(217,180,106,0.8);
 }
+
+/* Quick‑Filter overlay – mörkt tema som matchar topbaren */
+.moc-quick-filter-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 990;
+  backdrop-filter: blur(6px);
+}
+.moc-qf-panel {
+  background: rgba(15, 23, 42, 0.96);
+  padding: 20px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 480px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+.moc-qf-input {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 16px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #f3ecdc;
+  border: 1px solid rgba(217, 180, 106, 0.4);
+  border-radius: 4px;
+}
+.moc-qf-input:focus {
+  outline: none;
+  border-color: #d9b46a;
+}
+.moc-qf-categories {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.moc-qf-cat {
+  background: rgba(217, 180, 106, 0.2);
+  border: none;
+  color: #f3ecdc;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.moc-qf-cat:hover,
+.moc-qf-cat.active {
+  background: rgba(217, 180, 106, 0.5);
+}

@@ -7020,3 +7020,87 @@
     console.error('Quick-Action Menu Error:', e);
   }
 })();
+
+(() => {
+  try {
+    /*** Helper: skapa SVG‑sparkline från en array av tal ***/
+    const createSparkline = (values) => {
+      const w = 100, h = 20;
+      const max = Math.max(...values);
+      const min = Math.min(...values);
+      const range = max - min || 1;
+      const points = values.map((v, i) => {
+        const x = (i / (values.length - 1)) * w;
+        const y = h - ((v - min) / range) * h;
+        return `${x},${y}`;
+      }).join(' ');
+      const svgNS = 'http://www.w3.org/2000/svg';
+      const svg = document.createElementNS(svgNS, 'svg');
+      svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+      svg.classList.add('price-sparkline');
+      const poly = document.createElementNS(svgNS, 'polyline');
+      poly.setAttribute('points', points);
+      poly.setAttribute('fill', 'none');
+      poly.setAttribute('stroke', '#d9b46a');
+      poly.setAttribute('stroke-width', '2');
+      svg.appendChild(poly);
+      return svg;
+    };
+
+    /*** Hämta pris‑historik – fallback till slump‑data om API‑anrop misslyckas ***/
+    const fetchPriceHistory = async (agentId) => {
+      try {
+        const resp = await fetch(`/api/price-history?agentId=${encodeURIComponent(agentId)}`);
+        if (!resp.ok) throw new Error('bad response');
+        const data = await resp.json(); // förväntas vara [{price: number, ts: string}, ...]
+        return data.map(d => d.price);
+      } catch (e) {
+        // Generera 10 slumpmässiga pris‑värden som fallback
+        const fallback = Array.from({ length: 10 }, () => Math.round(80 + Math.random() * 40));
+        console.warn(`Kunde inte hämta pris‑historik för ${agentId}, använder fallback‑data`, e);
+        return fallback;
+      }
+    };
+
+    /*** Infoga sparkline i varje kort på marknads‑sidan ***/
+    const injectSparklines = async () => {
+      const cards = document.querySelectorAll('.cards .card');
+      if (!cards.length) return;
+      for (const card of cards) {
+        // Försök hitta ett unikt ID – kan vara data-id eller data-agent-id
+        const agentId = card.dataset.id || card.dataset.agentId || card.getAttribute('data-id');
+        if (!agentId) continue;
+        const prices = await fetchPriceHistory(agentId);
+        const sparkline = createSparkline(prices);
+        // Placera under befintlig pris‑etikett eller längst ner i kortet
+        const priceContainer = card.querySelector('.price') || card;
+        const wrapper = document.createElement('div');
+        wrapper.className = 'price-sparkline-wrapper';
+        wrapper.appendChild(sparkline);
+        priceContainer.appendChild(wrapper);
+      }
+    };
+
+    // Kör när sidan är klar
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', injectSparklines);
+    } else {
+      injectSparklines();
+    }
+
+    /*** Lägg till ett verktyg i AI‑tilläggsdockan som förklarar funktionen ***/
+    const toolEl = document.createElement('div');
+    toolEl.innerHTML = `
+      <p style="font-size:12px; color:#94a3b8; margin:0 0 8px 0;">
+        📈 <strong>Pris‑trend‑sparkline</strong> visar de senaste 10 pris‑punkterna för varje AI‑agent i marknads‑korten.
+      </p>
+      <p style="font-size:11px; color:#c7d2fe;">
+        Data hämtas från <code>/api/price-history</code>. Om API‑anropet misslyckas visas slump‑genererade värden.
+      </p>
+    `;
+    window.MyOffiCityAddons.addTool('Pris‑trend', '📊', toolEl);
+    window.MyOffiCityAddons.register('Marketplace Price Trend Sparkline');
+  } catch (e) {
+    console.error('Marketplace Price Trend Addon Error:', e);
+  }
+})();

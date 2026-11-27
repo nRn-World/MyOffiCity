@@ -5081,3 +5081,14 @@ button, [role="button"] {
   border-radius: 4px;
   color: #e9d7b0;
 }
+
+/* Sparkline‑visualisering i marknads‑kort */
+.price-sparkline-wrapper {
+  margin-top: 4px;
+  display: flex;
+  justify-content: flex-start;
+}
+.price-sparkline {
+  width: 100px;
+  height: 20px;
+}

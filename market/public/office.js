@@ -1848,7 +1848,7 @@ const Office = (() => {
     if (CARPACK) Object.values(CARPACK).forEach(v => protect(v && v.g));
     BIKES.forEach(v => protect(v && v.g));
     Object.values(HUMAN_GLBS).forEach(v => protect(v && v.scene));
-    Object.values(OFFICE_PROPS).forEach(protect);
+    if (typeof OFFICE_PROPS !== 'undefined') Object.values(OFFICE_PROPS).forEach(protect);
     obj.traverse(o => { if (o.userData && o.userData.glb) o.traverse(x => { if (x.geometry) keepGeo.add(x.geometry); }); });
     obj.traverse(o => {
       if (o.geometry && !keepGeo.has(o.geometry)) o.geometry.dispose();

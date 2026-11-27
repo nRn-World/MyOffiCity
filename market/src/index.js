@@ -1906,13 +1906,37 @@ async function createSprint(req, env, user) {
   const agents = teamNames.length ? teamNames : ['Tomas', 'Ebba', 'Manus', 'Laila'];
   const taskTarget = Math.min(12, Math.max(5, Math.round(days * 0.7)));
 
-  // 3. Låt Tomas skapa en konkret backlog (JSON)
+  // 3. Låt Tomas (med Vision om projektet har en live-URL) skapa en skarp, design- och kvalitetsfokuserad backlog (JSON)
   let planned = [];
   try {
+    const hasAddons = treePaths.includes('market/public/agent-addons.js');
+    const liveUrl = hasAddons
+      ? 'https://nrnworld.one/MyOffiCity/#/'
+      : (repoInfo && typeof repoInfo.homepage === 'string' && /^https:\/\/[a-z0-9.-]+/i.test(repoInfo.homepage.trim()) ? repoInfo.homepage.trim() : '');
+    let visualAudit = '';
+    if (liveUrl) {
+      try {
+        const localCfg = await getLocalAiConfig(env);
+        if (localCfg && localCfg.url && env.LOCAL_AI_KEY) {
+          const vaRes = await fetch(localCfg.url + '/visual-audit', {
+            method: 'POST',
+            headers: { Authorization: 'Bearer ' + env.LOCAL_AI_KEY, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: liveUrl, focus: 'Helhetsintryck, modern premium-design, typografi, kontrast, layout och användarvänlighet' }),
+            signal: AbortSignal.timeout(90000),
+          });
+          if (vaRes.ok) {
+            const va = await vaRes.json();
+            if (va && va.ok && va.critique) {
+              visualAudit = `\n\n👁️ LIVE VISUAL AUDIT OF ${liveUrl}:\n${clip(va.critique, 1200)}\nPrioritize fixing the real visual weaknesses seen in the screenshot!`;
+            }
+          }
+        }
+      } catch { /* fallback without vision */ }
+    }
     const ai = await callSprintAi(env, orKey, [
-      { role: 'system', content: 'You are Tomas, an expert AI software team leader. Return ONLY valid JSON: {"tasks":[{"title":"...","details":"...","assignee":"..."}]}. Each task must be a small, concrete coding or documentation deliverable that can be completed in 1-3 files. Write titles and details in Swedish.' },
-      { role: 'user', content: `GitHub repo: ${rawRepo}\nGoal (${days} days): ${goal}\nTeam members: ${agents.join(', ')}\nExisting files:\n${treePaths.join('\n') || '(empty repo)'}\n\nREADME:\n${readme || '(none)'}\n\nCreate ${taskTarget} ordered, concrete tasks as JSON.` },
-    ], 1100);
+      { role: 'system', content: 'You are Tomas, Chief Architect & Senior UI/UX Art Director. Return ONLY valid JSON: {"tasks":[{"title":"...","details":"...","assignee":"..."}]}. GOLDEN RULE: Every single task MUST leave the project strictly better, cleaner, prettier, and more reliable than before — NEVER break working code, NEVER clutter the UI, NEVER invent nonexistent files/APIs, and NEVER plan orphan CSS files. Each task must be a focused, concrete improvement in 1-2 real files from the repo. Prioritize visual polish, typography, contrast, responsive UX, and real high-value features. Write titles and details in Swedish.' + visualAudit },
+      { role: 'user', content: `GitHub repo: ${rawRepo}\nGoal (${days} days): ${goal}\nTeam members: ${agents.join(', ')}\nExisting files:\n${treePaths.join('\n') || '(empty repo)'}\n\nREADME:\n${readme || '(none)'}\n\nCreate ${taskTarget} ordered, concrete, strictly-positive improvement tasks as JSON.` },
+    ], 1100, 'lead');
     const parsed = extractJson(ai.text);
     const arr = Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.tasks) ? parsed.tasks : []);
     planned = arr.filter(x => x && x.title).slice(0, 14).map((x, idx) => ({
@@ -1984,7 +2008,16 @@ async function runSprintStep(env, sprint) {
         } catch { /* */ }
       }
       let visualAudit = '';
-      if (hasAddons) {
+      let auditUrl = hasAddons ? 'https://nrnworld.one/MyOffiCity/#/' : '';
+      if (!auditUrl) {
+        try {
+          const ri = await ghApi(sprint.gh_token, `/repos/${sprint.repo}`);
+          if (ri && typeof ri.homepage === 'string' && /^https:\/\/[a-z0-9.-]+/i.test(ri.homepage.trim())) {
+            auditUrl = ri.homepage.trim();
+          }
+        } catch { /* */ }
+      }
+      if (auditUrl) {
         try {
           const localCfg = await getLocalAiConfig(env);
           if (localCfg && localCfg.url && env.LOCAL_AI_KEY) {
@@ -1995,7 +2028,7 @@ async function runSprintStep(env, sprint) {
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({
-                url: 'https://nrnworld.one/MyOffiCity/#/',
+                url: auditUrl,
                 focus: 'Helhetsintryck, modern premium-design, typografi, kontrast, kort-hierarki, mellanrum och subtila hover-effekter',
               }),
               signal: AbortSignal.timeout(90000),
@@ -2003,8 +2036,8 @@ async function runSprintStep(env, sprint) {
             if (vaRes.ok) {
               const va = await vaRes.json();
               if (va && va.ok && va.critique) {
-                visualAudit = `\n\n👁️ LIVE VISUAL AUDIT (Tomas just inspected a REAL screenshot of https://nrnworld.one/MyOffiCity/#/ with ${va.model || 'gemma4:12b'} Vision):\n${clip(va.critique, 1200)}\nBase your top 3 tasks directly on improving the visual weaknesses you saw in the screenshot!`;
-                await addSprintLog(env, sprint.id, 'Tomas', `👁️ Inspekterade live-hemsidan med Vision (${va.model || 'gemma4:12b'}): ${clip(va.critique.replace(/\s+/g, ' '), 220)}`);
+                visualAudit = `\n\n👁️ LIVE VISUAL AUDIT (Tomas just inspected a REAL screenshot of ${auditUrl} with ${va.model || 'gemma4:12b'} Vision):\n${clip(va.critique, 1200)}\nBase your top 3 tasks directly on improving the visual weaknesses you saw in the screenshot!`;
+                await addSprintLog(env, sprint.id, 'Tomas', `👁️ Inspekterade live-hemsidan (${auditUrl}) med Vision (${va.model || 'gemma4:12b'}): ${clip(va.critique.replace(/\s+/g, ' '), 220)}`);
               }
             }
           }
@@ -2012,7 +2045,7 @@ async function runSprintStep(env, sprint) {
       }
       const addonHint = hasAddons
         ? ` IMPORTANT LIVE ARCHITECTURE & DESIGN-FIRST PRIORITY: The live website (nrnworld.one/MyOffiCity/) loads market/public/agent-addons.css and market/public/agent-addons.js. YOUR #1 MISSION IS TO MAKE THE WEBSITE LOOK VISIBLY MORE PREMIUM, REFINED, AND PROFESSIONAL WITH EVERY UPDATE! Prioritize: (A) Refined visual design in market/public/agent-addons.css — typography, spacing, subtle card elevation/glassmorphism, crisp contrast, smooth hover micro-interactions, polished .card/.cards/.hero/.btn/.foot/.dmain styling; (B) Genuinely useful interactive widgets strictly inside the collapsible "✨ AI-tillägg" drawer via window.MyOffiCityAddons.addTool(title, icon, el) — NEVER clutter #topbar, #nav, or float fixed popups over the page! Real public APIs ONLY: /MyOffiCity/api/ai/quota and /MyOffiCity/api/companies (plus localStorage).${installedList}${visualAudit} Plan 5 DIVERSE, high-impact visual/design polish & utility tasks (at least 3 focused directly on making the UI look noticeably sharper and more cohesive). NEVER duplicate existing addons, NEVER touch #topbar, and NEVER invent nonexistent API endpoints.`
-        : ' Plan 5 DIVERSE, high-impact improvements that genuinely improve the real app/game in this repository. NEVER repeat the same theme over and over, NEVER invent pages that do not exist, and NEVER plan useless orphan CSS files.';
+        : ` GOLDEN RULE FOR EVERY PROJECT: Every update MUST make this app/website visibly cleaner, prettier, faster, or more reliable — NEVER break working functionality, NEVER remove existing features, NEVER repeat old themes, NEVER invent nonexistent pages/APIs, and NEVER create unused orphan CSS/JS files.${visualAudit} Plan 5 DIVERSE, high-impact visual design, UX polish, bugfix, or core feature improvements using exact existing files from the repo.`;
       const ai = await callSprintAi(env, sprint.or_key, [
         { role: 'system', content: 'You are Tomas, Chief Architect & Senior UI/UX Art Director (top-tier brain). Return ONLY valid JSON: {"tasks":[{"title":"...","details":"...","assignee":"..."}]}. Create 5 NEW concrete, diverse, visibly valuable visual design & UX improvement tasks that have NOT been done yet. Write in Swedish.' + addonHint },
         { role: 'user', content: `Repo: ${sprint.repo}\nGoal: ${sprint.goal}\nTeam: ${agents.join(', ')}\nFiles:\n${treePaths.join('\n') || '(empty)'}\n\nAlready done (do NOT repeat these themes):\n${prevTasks.map(x => `- ${x.title}`).join('\n')}\n\nPlan 5 new diverse high-value tasks as JSON.` },
@@ -2116,7 +2149,7 @@ async function runSprintStep(env, sprint) {
       const lp = p.toLowerCase();
       let sc = words.reduce((a, w) => a + (lp.includes(w) ? 3 : 0), 0);
       if (p === 'market/public/agent-addons.js' || p === 'market/public/agent-addons.css') sc += 50;
-      if (/^(readme\.md|package\.json|market\/public\/index\.html|manifest\.json)$/i.test(p)) sc += 2;
+      if (/^(readme\.md|package\.json|index\.html|market\/public\/index\.html|manifest\.json|src\/app\.(tsx|jsx|ts|js)|src\/main\.(tsx|jsx|ts|js)|src\/index\.css|styles?\.css|app\.js|main\.js)$/i.test(p)) sc += 3;
       return { p, sc };
     }).sort((a, b) => b.sc - a.sc).slice(0, 3);
 
@@ -2181,6 +2214,7 @@ replacement lines
 ===END===
 
 Rules:
+- GOLDEN RULE (DO NO HARM): Every change MUST make the project strictly better, cleaner, prettier, or more reliable. NEVER delete existing working features, NEVER break existing layout/routes/imports, and NEVER add visual clutter or placeholder TODOs.
 - Output 1 or 2 real, clean, working changes that make the project genuinely better right away.
 - Keep each new JS module concise (~40-90 lines) wrapped in (() => { try { ... } catch(e) {} })(); and CSS concise (~20-45 lines) so it NEVER gets truncated!
 - Never overwrite/truncate large core files with shorter code.${addonRules}
@@ -2282,7 +2316,7 @@ Rules:
 
     // 4. Bygg och verifiera slutgiltigt filinnehåll (FILE / APPEND / PATCH) + hård syntax-balanskontroll innan något committas
     const checkBalancedSyntax = (path, code) => {
-      if (!/\.(js|mjs|cjs|css)$/i.test(path)) return '';
+      if (!/\.(js|mjs|cjs|jsx|ts|tsx|css)$/i.test(path)) return '';
       const isCss = /\.css$/i.test(path);
       let b = 0, p = 0, k = 0, inS = '', esc = false, inLC = false, inBC = false;
       for (let i = 0; i < code.length; i++) {

@@ -9719,3 +9719,43 @@
     console.error("PulseSystem Error:", e);
   }
 })();
+
+(() => {
+  try {
+    const createHeatmap = () => {
+      const container = document.createElement('div');
+      container.id = 'moc-heatmap-container';
+      container.className = 'moc-heatmap-overlay';
+      
+      // Simulate 3 zones of activity
+      const zones = [
+        { top: '20%', left: '30%', size: '150px', type: 'high-activity' },
+        { top: '60%', left: '70%', size: '200px', type: 'med-activity' },
+        { top: '40%', left: '50%', size: '120px', type: 'high-activity' }
+      ];
+
+      zones.forEach(z => {
+        const zone = document.createElement('div');
+        zone.className = `moc-heatmap-zone ${z.type}`;
+        zone.style.top = z.top;
+        zone.style.left = z.left;
+        zone.style.width = z.size;
+        zone.style.height = z.size;
+        container.appendChild(zone);
+      });
+
+      document.body.appendChild(container);
+      return container;
+    };
+
+    // Ensure the element exists before registering
+    const heatmapEl = createHeatmap();
+    
+    if (window.MyOffiCityAddons) {
+      window.MyOffiCityAddons.addTool('Office Occupancy', '🔥', heatmapEl);
+      window.MyOffiCityAddons.register('HeatmapOverlay');
+    }
+  } catch (e) {
+    console.error('Heatmap initialization failed:', e);
+  }
+})();

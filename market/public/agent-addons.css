@@ -3920,3 +3920,18 @@ a.moc-breadcrumb-item:hover {
   display: flex;
   flex-direction: column;
 }
+
+/* Fix for truncated dock dot and diagnostic tool styles */
+.moc-dock-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.6);
+  flex-shrink: 0;
+  border: none !important;
+}
+
+.moc-diag-container {
+  padding: 2px;
+}

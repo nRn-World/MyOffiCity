@@ -6778,3 +6778,38 @@ body {
   cursor: pointer;
   font-weight: bold;
 }
+
+/* Agent-Sync Status Styles */
+.moc-sync-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(217, 180, 106, 0.3);
+  color: #f3ecdc;
+  font-family: sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.moc-sync-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  position: relative;
+}
+
+.status-online { background-color: #22c55e; box-shadow: 0 0 8px #22c55e; }
+.status-processing { 
+  background-color: #eab308; 
+  animation: moc-pulse 1.5s infinite ease-in-out;
+}
+.status-idle { background-color: #94a3b8; }
+
+@keyframes moc-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 0.6; }
+}

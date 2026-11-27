@@ -5871,3 +5871,85 @@
     console.warn('Command Palette Error:', e);
   }
 })();
+
+(() => {
+  try {
+    // Skapa widget‑elementet
+    const widget = document.createElement('div');
+    widget.className = 'moc-activity-widget';
+    widget.innerHTML = `
+      <h3>🔔 Live‑Activity Feed</h3>
+      <ul class="moc-activity-list"></ul>
+    `;
+    const listEl = widget.querySelector('.moc-activity-list');
+
+    // Registrera i AI‑dockan
+    window.MyOffiCityAddons.addTool('Live‑Activity Feed', '🔔', widget);
+    window.MyOffiCityAddons.register('Live Activity Feed');
+
+    // Om dashboard‑elementet finns, placera en kopia där också
+    const dashTarget = document.querySelector('#dash, .dash, .dmain');
+    if (dashTarget) {
+      const dashClone = widget.cloneNode(true);
+      dashTarget.appendChild(dashClone);
+    }
+
+    // Håll koll på redan visade händelser
+    const knownIds = new Set();
+
+    // Försök med flera sannolika endpoints – ingen av dem får krascha
+    const endpoints = ['/api/events', '/api/activities', '/api/notifications'];
+
+    async function fetchActivities() {
+      for (const url of endpoints) {
+        try {
+          const resp = await fetch(url, { cache: 'no-store' });
+          if (!resp.ok) continue;
+          const data = await resp.json();
+          if (Array.isArray(data)) return data;
+        } catch (_) {
+          // Ignorera fel och testa nästa endpoint
+        }
+      }
+      return [];
+    }
+
+    async function updateFeed() {
+      const activities = await fetchActivities();
+      if (!Array.isArray(activities)) return;
+
+      // Sortera nyast först
+      activities.sort((a, b) => new Date(b.time) - new Date(a.time));
+
+      activities.forEach(act => {
+        const id = act.id ?? `${act.time}-${act.message}`;
+        if (knownIds.has(id)) return;
+        knownIds.add(id);
+
+        const li = document.createElement('li');
+        li.className = 'moc-activity-item';
+        const time = new Date(act.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        li.textContent = `${time} – ${act.message}`;
+
+        // Lägg till med fade‑in‑animation
+        li.style.opacity = '0';
+        listEl.insertBefore(li, listEl.firstChild);
+        requestAnimationFrame(() => {
+          li.style.transition = 'opacity 0.6s ease';
+          li.style.opacity = '1';
+        });
+
+        // Begränsa listlängden
+        if (listEl.children.length > 10) {
+          listEl.removeChild(listEl.lastChild);
+        }
+      });
+    }
+
+    // Init‑körning + polling var 12:e sekund
+    updateFeed();
+    setInterval(updateFeed, 12000);
+  } catch (e) {
+    console.warn('Live Activity Feed addon error:', e);
+  }
+})();

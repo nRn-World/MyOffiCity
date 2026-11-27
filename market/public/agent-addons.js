@@ -9181,3 +9181,23 @@
     console.error('Search Filter Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const statusContainer = document.createElement('div');
+    statusContainer.innerHTML = `
+      <div style="font-size: 12px; color: #94a3b8;">
+        Status-indikatorer är nu aktiva för alla agenter. 
+        <div style="margin-top: 8px; display: flex; gap: 10px; align-items: center;">
+          <span class="moc-status-dot moc-status-online"></span> Online
+          <span class="moc-status-dot moc-status-busy"></span> Upptagen
+          <span class="moc-status-dot moc-status-idle"></span> Inaktiv
+        </div>
+      </div>
+    `;
+    window.MyOffiCityAddons.addTool('Agent Status', '🟢', statusContainer);
+    window.MyOffiCityAddons.register('Agent Status Indicators');
+  } catch (e) {
+    console.error('Agent Status Init Error:', e);
+  }
+})();

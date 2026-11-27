@@ -32,7 +32,7 @@ jobs:
       - name: Syntax check JavaScript & Python files
         run: |
           set -e
-          for f in app.js office.js cityassets.js market/src/index.js market/public/portal.js market/public/office.js market/public/cityassets.js; do
+          for f in app.js office.js cityassets.js local-ai-bridge.js market/src/index.js market/public/portal.js market/public/office.js market/public/cityassets.js market/public/agent-addons.js; do
             if [ -f "$f" ]; then
               echo "Checking $f..."
               node --check "$f"
@@ -42,6 +42,10 @@ jobs:
             echo "Checking server.py..."
             python3 -m py_compile server.py
           fi
+
+      - name: Run regression tests
+        run: |
+          node --test test/regressions.test.js
 
       - name: Auto-merge verified MyOffiCity agent PR
         if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'myofficity/')

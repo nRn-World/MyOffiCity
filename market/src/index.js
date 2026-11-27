@@ -1906,13 +1906,37 @@ async function createSprint(req, env, user) {
   const agents = teamNames.length ? teamNames : ['Tomas', 'Ebba', 'Manus', 'Laila'];
   const taskTarget = Math.min(12, Math.max(5, Math.round(days * 0.7)));
 
-  // 3. Låt Tomas skapa en konkret backlog (JSON)
+  // 3. Låt Tomas (med Vision om projektet har en live-URL) skapa en skarp, design- och kvalitetsfokuserad backlog (JSON)
   let planned = [];
   try {
+    const hasAddons = treePaths.includes('market/public/agent-addons.js');
+    const liveUrl = hasAddons
+      ? 'https://nrnworld.one/MyOffiCity/#/'
+      : (repoInfo && typeof repoInfo.homepage === 'string' && /^https:\/\/[a-z0-9.-]+/i.test(repoInfo.homepage.trim()) ? repoInfo.homepage.trim() : '');
+    let visualAudit = '';
+    if (liveUrl) {
+      try {
+        const localCfg = await getLocalAiConfig(env);
+        if (localCfg && localCfg.url && env.LOCAL_AI_KEY) {
+          const vaRes = await fetch(localCfg.url + '/visual-audit', {
+            method: 'POST',
+            headers: { Authorization: 'Bearer ' + env.LOCAL_AI_KEY, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: liveUrl, focus: 'Helhetsintryck, modern premium-design, typografi, kontrast, layout och användarvänlighet' }),
+            signal: AbortSignal.timeout(90000),
+          });
+          if (vaRes.ok) {
+            const va = await vaRes.json();
+            if (va && va.ok && va.critique) {
+              visualAudit = `\n\n👁️ LIVE VISUAL AUDIT OF ${liveUrl}:\n${clip(va.critique, 1200)}\nPrioritize fixing the real visual weaknesses seen in the screenshot!`;
+            }
+          }
+        }
+      } catch { /* fallback without vision */ }
+    }
     const ai = await callSprintAi(env, orKey, [
-      { role: 'system', content: 'You are Tomas, an expert AI software team leader. Return ONLY valid JSON: {"tasks":[{"title":"...","details":"...","assignee":"..."}]}. Each task must be a small, concrete coding or documentation deliverable that can be completed in 1-3 files. Write titles and details in Swedish.' },
-      { role: 'user', content: `GitHub repo: ${rawRepo}\nGoal (${days} days): ${goal}\nTeam members: ${agents.join(', ')}\nExisting files:\n${treePaths.join('\n') || '(empty repo)'}\n\nREADME:\n${readme || '(none)'}\n\nCreate ${taskTarget} ordered, concrete tasks as JSON.` },
-    ], 1100);
+      { role: 'system', content: 'You are Tomas, Chief Architect & Senior UI/UX Art Director. Return ONLY valid JSON: {"tasks":[{"title":"...","details":"...","assignee":"..."}]}. GOLDEN RULE: Every single task MUST leave the project strictly better, cleaner, prettier, and more reliable than before — NEVER break working code, NEVER clutter the UI, NEVER invent nonexistent files/APIs, and NEVER plan orphan CSS files. Each task must be a focused, concrete improvement in 1-2 real files from the repo. Prioritize visual polish, typography, contrast, responsive UX, and real high-value features. Write titles and details in Swedish.' + visualAudit },
+      { role: 'user', content: `GitHub repo: ${rawRepo}\nGoal (${days} days): ${goal}\nTeam members: ${agents.join(', ')}\nExisting files:\n${treePaths.join('\n') || '(empty repo)'}\n\nREADME:\n${readme || '(none)'}\n\nCreate ${taskTarget} ordered, concrete, strictly-positive improvement tasks as JSON.` },
+    ], 1100, 'lead');
     const parsed = extractJson(ai.text);
     const arr = Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.tasks) ? parsed.tasks : []);
     planned = arr.filter(x => x && x.title).slice(0, 14).map((x, idx) => ({
@@ -1971,11 +1995,59 @@ async function runSprintStep(env, sprint) {
         treePaths = (tr?.tree || []).filter(x => x.type === 'blob' && !/node_modules|\.git\/|\.png$|\.jpg$|\.glb$|\.bin$/i.test(x.path)).map(x => x.path).slice(0, 80);
       } catch { /* */ }
       const hasAddons = treePaths.includes('market/public/agent-addons.js');
+      let installedList = '';
+      if (hasAddons) {
+        try {
+          const af = await ghApi(sprint.gh_token, `/repos/${sprint.repo}/contents/market/public/agent-addons.js?ref=${encodeURIComponent(sprint.work_branch)}`);
+          if (af && af.content) {
+            const rawJs = b64DecodeUtf8(af.content);
+            const names = [...rawJs.matchAll(/(?:addTool|register)\s*\(\s*['"`]([^'"`]{2,60})['"`]/g)].map(m => m[1]);
+            const uniq = [...new Set(names)];
+            if (uniq.length) installedList = `\nALREADY INSTALLED ADDONS (${uniq.length}/10 max — NEVER duplicate these!): ${uniq.join(', ')}.`;
+          }
+        } catch { /* */ }
+      }
+      let visualAudit = '';
+      let auditUrl = hasAddons ? 'https://nrnworld.one/MyOffiCity/#/' : '';
+      if (!auditUrl) {
+        try {
+          const ri = await ghApi(sprint.gh_token, `/repos/${sprint.repo}`);
+          if (ri && typeof ri.homepage === 'string' && /^https:\/\/[a-z0-9.-]+/i.test(ri.homepage.trim())) {
+            auditUrl = ri.homepage.trim();
+          }
+        } catch { /* */ }
+      }
+      if (auditUrl) {
+        try {
+          const localCfg = await getLocalAiConfig(env);
+          if (localCfg && localCfg.url && env.LOCAL_AI_KEY) {
+            const vaRes = await fetch(localCfg.url + '/visual-audit', {
+              method: 'POST',
+              headers: {
+                Authorization: 'Bearer ' + env.LOCAL_AI_KEY,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                url: auditUrl,
+                focus: 'Helhetsintryck, modern premium-design, typografi, kontrast, kort-hierarki, mellanrum och subtila hover-effekter',
+              }),
+              signal: AbortSignal.timeout(90000),
+            });
+            if (vaRes.ok) {
+              const va = await vaRes.json();
+              if (va && va.ok && va.critique) {
+                visualAudit = `\n\n👁️ LIVE VISUAL AUDIT (Tomas just inspected a REAL screenshot of ${auditUrl} with ${va.model || 'gemma4:12b'} Vision):\n${clip(va.critique, 1200)}\nBase your top 3 tasks directly on improving the visual weaknesses you saw in the screenshot!`;
+                await addSprintLog(env, sprint.id, 'Tomas', `👁️ Inspekterade live-hemsidan (${auditUrl}) med Vision (${va.model || 'gemma4:12b'}): ${clip(va.critique.replace(/\s+/g, ' '), 220)}`);
+              }
+            }
+          }
+        } catch { /* fallback to non-vision planning when local PC is off */ }
+      }
       const addonHint = hasAddons
-        ? ' IMPORTANT LIVE ARCHITECTURE: The live website (nrnworld.one/MyOffiCity/) is an AI company marketplace & 3D office portal served from market/public/ that ALWAYS loads market/public/agent-addons.css and market/public/agent-addons.js. Real pages & DOM: #topbar, #nav, #app, #foot, .dash, .dsb, .dmain, .cards, .tc-box, #/ (marketplace), #/city (3D city), #/dash (3D office + Tomas chat). Real public endpoints available: /MyOffiCity/api/ai/quota and /MyOffiCity/api/companies, plus localStorage for user tools. Plan 5 DIVERSE, PRACTICAL, VISIBLY NOTICEABLE UI/UX upgrades, interactive user tools (e.g. Pomodoro timer, quick notes, theme/font controls, live GPU/quota monitor using /MyOffiCity/api/ai/quota, marketplace filters, keyboard shortcuts, smooth animations) built in market/public/agent-addons.js + market/public/agent-addons.css via window.MyOffiCityAddons.addTool(...). STRICTLY FORBIDDEN: NEVER plan tasks requiring nonexistent backend APIs, NEVER invent "virtuella möten", and NEVER plan disconnected root files.'
-        : ' Plan 5 DIVERSE, high-impact improvements that genuinely improve the real app/game in this repository. NEVER repeat the same theme over and over, NEVER invent pages that do not exist, and NEVER plan useless orphan CSS files.';
+        ? ` IMPORTANT LIVE ARCHITECTURE & DESIGN-FIRST PRIORITY: The live website (nrnworld.one/MyOffiCity/) loads market/public/agent-addons.css and market/public/agent-addons.js. YOUR #1 MISSION IS TO MAKE THE WEBSITE LOOK VISIBLY MORE PREMIUM, REFINED, AND PROFESSIONAL WITH EVERY UPDATE! Prioritize: (A) Refined visual design in market/public/agent-addons.css — typography, spacing, subtle card elevation/glassmorphism, crisp contrast, smooth hover micro-interactions, polished .card/.cards/.hero/.btn/.foot/.dmain styling; (B) Genuinely useful interactive widgets strictly inside the collapsible "✨ AI-tillägg" drawer via window.MyOffiCityAddons.addTool(title, icon, el) — NEVER clutter #topbar, #nav, or float fixed popups over the page! Real public APIs ONLY: /MyOffiCity/api/ai/quota and /MyOffiCity/api/companies (plus localStorage).${installedList}${visualAudit} Plan 5 DIVERSE, high-impact visual/design polish & utility tasks (at least 3 focused directly on making the UI look noticeably sharper and more cohesive). NEVER duplicate existing addons, NEVER touch #topbar, and NEVER invent nonexistent API endpoints.`
+        : ` GOLDEN RULE FOR EVERY PROJECT: Every update MUST make this app/website visibly cleaner, prettier, faster, or more reliable — NEVER break working functionality, NEVER remove existing features, NEVER repeat old themes, NEVER invent nonexistent pages/APIs, and NEVER create unused orphan CSS/JS files.${visualAudit} Plan 5 DIVERSE, high-impact visual design, UX polish, bugfix, or core feature improvements using exact existing files from the repo.`;
       const ai = await callSprintAi(env, sprint.or_key, [
-        { role: 'system', content: 'You are Tomas, Chief Architect & AI Team Leader (top-tier brain). Return ONLY valid JSON: {"tasks":[{"title":"...","details":"...","assignee":"..."}]}. Create 5 NEW concrete, diverse, visibly valuable improvement, bugfix, UI/UX or feature tasks that have NOT been done yet. Write in Swedish.' + addonHint },
+        { role: 'system', content: 'You are Tomas, Chief Architect & Senior UI/UX Art Director (top-tier brain). Return ONLY valid JSON: {"tasks":[{"title":"...","details":"...","assignee":"..."}]}. Create 5 NEW concrete, diverse, visibly valuable visual design & UX improvement tasks that have NOT been done yet. Write in Swedish.' + addonHint },
         { role: 'user', content: `Repo: ${sprint.repo}\nGoal: ${sprint.goal}\nTeam: ${agents.join(', ')}\nFiles:\n${treePaths.join('\n') || '(empty)'}\n\nAlready done (do NOT repeat these themes):\n${prevTasks.map(x => `- ${x.title}`).join('\n')}\n\nPlan 5 new diverse high-value tasks as JSON.` },
       ], 900, 'lead');
       const parsed = extractJson(ai.text);
@@ -2077,7 +2149,7 @@ async function runSprintStep(env, sprint) {
       const lp = p.toLowerCase();
       let sc = words.reduce((a, w) => a + (lp.includes(w) ? 3 : 0), 0);
       if (p === 'market/public/agent-addons.js' || p === 'market/public/agent-addons.css') sc += 50;
-      if (/^(readme\.md|package\.json|market\/public\/index\.html|manifest\.json)$/i.test(p)) sc += 2;
+      if (/^(readme\.md|package\.json|index\.html|market\/public\/index\.html|manifest\.json|src\/app\.(tsx|jsx|ts|js)|src\/main\.(tsx|jsx|ts|js)|src\/index\.css|styles?\.css|app\.js|main\.js)$/i.test(p)) sc += 3;
       return { p, sc };
     }).sort((a, b) => b.sc - a.sc).slice(0, 3);
 
@@ -2107,7 +2179,7 @@ async function runSprintStep(env, sprint) {
     const isDesignTask = !isTomasTask && (/^manus\b/i.test(task.assignee || '') || /\b(design|ui|ux|css|tema|färg|grafik|layout|animat|läsbarhet|ikon)\b/i.test((task.title || '') + ' ' + (task.details || '')));
     const workerTier = isTomasTask ? 'lead' : (isDesignTask ? 'design' : 'coder');
     const addonRules = hasAddons
-      ? `\n- LIVE WEBSITE CHANNEL: market/public/agent-addons.js and market/public/agent-addons.css are ALWAYS loaded live on nrnworld.one/MyOffiCity/. Put ALL visible UI/UX features, interactive widgets, animations, or visual enhancements into them using ===APPEND: market/public/agent-addons.js=== and/or ===APPEND: market/public/agent-addons.css===!\n- Using ===APPEND: ...=== automatically preserves ALL existing code — ONLY output your new self-contained (() => { ... })(); IIFE module!\n- REAL DOM & GUARANTEED VISIBILITY: To make any new interactive widget/tool immediately visible on the site without overlapping the 3D office or chat, call window.MyOffiCityAddons.addTool('Short Swedish Title', '✨', yourDomElement) AND window.MyOffiCityAddons.register('Your Feature Name')! Or style real existing elements ONLY: document.body, #topbar, #nav, #app, #foot, .bar, .dash, .dsb, .dmain, .cards.\n- STRICTLY FORBIDDEN: NEVER query nonexistent classes like .office-view, .dashboard-view, .dashboard-section, or .dashboard-item (they do NOT exist and make your widget invisible!). NEVER create disconnected root-level .js/.css files or fake /meeting/ pages.`
+      ? `\n- LIVE WEBSITE CHANNEL & DESIGN-FIRST RULES:\n  * For visual/UI/design polish tasks: refine the live look in ===APPEND: market/public/agent-addons.css=== (or ===PATCH: market/public/agent-addons.css===) targeting real selectors (.card, .cards, .hero, .btn, .foot, .dmain, .dpane, .moc-dock-panel) for crisper typography, spacing, subtle depth, smooth hover micro-interactions, and high-contrast polish! You do NOT need to add a JS widget if the task is purely visual CSS polish.\n  * For interactive tools/widgets: put ALL new UI tools strictly inside the collapsible "✨ AI-tillägg" drawer by calling window.MyOffiCityAddons.addTool('Short Swedish Title', '✨', yourDomElement) using ===APPEND: market/public/agent-addons.js=== and ===APPEND: market/public/agent-addons.css===!\n- HARD ANTI-CLUTTER RULES (violating ANY of these will be automatically BLOCKED):\n  1) NEVER inject elements into #topbar, #nav, .bar, or document.body (NO floating popups, NO extra topbar buttons, NO position:fixed overlays!). Everything goes cleanly inside window.MyOffiCityAddons.addTool(...)!\n  2) NEVER use filter: invert(...) or override body/#topbar/#nav/.bar with !important.\n  3) ONLY fetch real existing endpoints: /MyOffiCity/api/ai/quota or /MyOffiCity/api/companies (NEVER invent fake /api/... URLs that cause 404 errors!).\n  4) NEVER duplicate already-installed tools (Scroll-to-top, Snabbnavigering, Tema & läsbarhet, Snabbkommandon).`
       : `\n- EDITING EXISTING FILES: For any existing medium/large file (> 60 lines), ALWAYS use ===PATCH: path=== with exact <<<FIND / ===REPLACE / >>>END blocks instead of rewriting the whole file! ONLY use exact file paths that actually appear in "Repo files:" — NEVER invent nonexistent paths like Header.tsx.\n- NEVER create orphan .css files unless you also import/wire them into the corresponding .tsx/.jsx/.html file in the SAME response!`;
     const prevFeedback = (task.summary && task.summary.startsWith('TOMAS_FEEDBACK:'))
       ? `\n\n⚠️ TOMAS GRANSKNING AV FÖRRA UTKASTET (RÄTTA ALLA DESSA PUNKTER OCH GÖR EN MYCKET BÄTTRE VERSION):\n${task.summary.replace(/^TOMAS_FEEDBACK:\s*/, '')}`
@@ -2142,6 +2214,7 @@ replacement lines
 ===END===
 
 Rules:
+- GOLDEN RULE (DO NO HARM): Every change MUST make the project strictly better, cleaner, prettier, or more reliable. NEVER delete existing working features, NEVER break existing layout/routes/imports, and NEVER add visual clutter or placeholder TODOs.
 - Output 1 or 2 real, clean, working changes that make the project genuinely better right away.
 - Keep each new JS module concise (~40-90 lines) wrapped in (() => { try { ... } catch(e) {} })(); and CSS concise (~20-45 lines) so it NEVER gets truncated!
 - Never overwrite/truncate large core files with shorter code.${addonRules}
@@ -2217,7 +2290,7 @@ Rules:
         return `[${(f.mode || 'file').toUpperCase()}] FILE: ${f.path} (${f.content.length} B, complete=${f.content.length <= 12000})\n${body}`;
       }).join('\n\n');
       const revRule = hasAddons
-        ? 'Be a pragmatic, constructive Chief Architect (do NOT nitpick working code!). Reply "APPROVE: <short Swedish note>" whenever the code is valid, complete, syntactically clean, and uses real DOM (#topbar, #app, #foot, document.body) OR registers a widget via window.MyOffiCityAddons.addTool(title, icon, el) (note: addTool automatically mounts and renders the widget in the live drawer — NEVER reject a widget for using addTool!). Reply "REJECT: <short Swedish fix instruction>" ONLY if the code is actually broken, truncated, empty, queries nonexistent classes like .office-view/.dashboard-view, or creates disconnected root files.'
+        ? 'Be a pragmatic, design-minded Chief Architect (do NOT nitpick working code!). Reply "APPROVE: <short Swedish note>" whenever the code is valid, complete, syntactically clean, and either (a) refines visual design/CSS in market/public/agent-addons.css targeting real selectors (.card, .cards, .hero, .btn, .foot, .dmain, .dpane, .moc-*), OR (b) registers a clean widget via window.MyOffiCityAddons.addTool(title, icon, el) (note: addTool automatically mounts and renders the widget in the live drawer — NEVER reject a widget for using addTool!). Reply "REJECT: <short Swedish fix instruction>" ONLY if the code is actually broken, truncated, empty, clutters #topbar, uses fake API URLs, or creates disconnected root files.'
         : 'Be a pragmatic, constructive Chief Architect (do NOT nitpick working code!). Reply "APPROVE: <short Swedish note>" whenever the code is valid, complete, compiles cleanly, and improves the project. Reply "REJECT: <short Swedish fix instruction>" ONLY if it is broken, truncated, empty, placeholder-only, has TypeScript/syntax errors, or deletes existing code.';
       const rev = await callSprintAi(env, sprint.or_key, [
         { role: 'system', content: 'You are Tomas, strict Chief Architect & Quality Gatekeeper. Review every code update carefully before it is allowed onto GitHub. ' + revRule },
@@ -2243,7 +2316,7 @@ Rules:
 
     // 4. Bygg och verifiera slutgiltigt filinnehåll (FILE / APPEND / PATCH) + hård syntax-balanskontroll innan något committas
     const checkBalancedSyntax = (path, code) => {
-      if (!/\.(js|mjs|cjs|css)$/i.test(path)) return '';
+      if (!/\.(js|mjs|cjs|jsx|ts|tsx|css)$/i.test(path)) return '';
       const isCss = /\.css$/i.test(path);
       let b = 0, p = 0, k = 0, inS = '', esc = false, inLC = false, inBC = false;
       for (let i = 0; i < code.length; i++) {
@@ -2291,6 +2364,29 @@ Rules:
         await addSprintLog(env, sprint.id, task.assignee, `Skyddsspärr stoppade okopplad rotfil ${cleanPath} – använd market/public/agent-addons.js/css i stället.`);
         if (!/\.css$/i.test(cleanPath)) blockedCodeFile = true;
         continue;
+      }
+      // Skyddsspärr 1b: hårt kvalitets- & anti-skräp-skydd för agent-addons.js/css (förhindrar överfull toppmeny, flytande popups, 404-spam & filter:invert)
+      if (hasAddons && /market\/public\/agent-addons\.(js|css)$/i.test(cleanPath)) {
+        const snip = f.content;
+        const badReasons = [];
+        if (/filter\s*:\s*invert\s*\(/i.test(snip)) badReasons.push('filter:invert förstör mörkt tema');
+        if (/\.css$/i.test(cleanPath) && /position\s*:\s*fixed/i.test(snip)) badReasons.push('position:fixed-popups förbjudna (lägg i addTool-lådan)');
+        if (/\.js$/i.test(cleanPath) && /(getElementById\s*\(\s*['"`](topbar|nav)['"`]|querySelector\s*\(\s*['"`](#topbar|#nav|\.bar)['"`]|document\.body\.appendChild)/i.test(snip)) {
+          badReasons.push('får ej injicera direkt i #topbar/#nav/body – använd window.MyOffiCityAddons.addTool()');
+        }
+        if (/\.js$/i.test(cleanPath)) {
+          const fetches = [...snip.matchAll(/fetch\s*\(\s*['"`]([^'"`]+)['"`]/g)].map(m => m[1]);
+          const badFetch = fetches.find(u => !/^(\/MyOffiCity)?\/api\/(ai\/quota|companies)\b/i.test(u));
+          if (badFetch) badReasons.push(`otillåten/påhittad API-adress (${badFetch}) som ger 404`);
+        }
+        if (f.mode === 'append' && existingLen > 32000) {
+          badReasons.push(`filen är redan ${Math.round(existingLen / 1024)} KB (max 32 KB) – förfina befintlig kod med ===PATCH=== i stället`);
+        }
+        if (badReasons.length) {
+          await addSprintLog(env, sprint.id, 'Tomas', `🛡️ Anti-skräpskydd stoppade negativ ändring i ${cleanPath}: ${badReasons.join('; ')}.`);
+          if (!/\.css$/i.test(cleanPath)) blockedCodeFile = true;
+          continue;
+        }
       }
       let finalContent = f.content;
       if (f.mode === 'append') {

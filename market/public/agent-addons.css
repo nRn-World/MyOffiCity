@@ -3421,3 +3421,23 @@ a.moc-breadcrumb-item:hover {
   margin-right: 4px;
   color: #a3a3a3;
 }
+
+#moc-quick-view {
+  position: fixed;
+  z-index: 9999;
+  background: rgba(15, 23, 42, 0.95);
+  color: #f3ecdc;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #d9b46a;
+  font-size: 12px;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  white-space: nowrap;
+}
+.moc-tool-card {
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(217, 180, 106, 0.2);
+}

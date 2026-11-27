@@ -8064,3 +8064,37 @@
     console.error('Command Palette addon error:', e);
   }
 })();
+
+(() => {
+  try {
+    const container = document.createElement('div');
+    container.className = 'moc-city-toolbar';
+    
+    const btnReset = document.createElement('button');
+    btnReset.textContent = '🔄 Reset';
+    btnReset.onclick = () => {
+      const canvas = document.querySelector('canvas');
+      if (window.resetCamera) window.resetCamera();
+    };
+    
+    const btnSnap = document.createElement('button');
+    btnSnap.textContent = '📸 Snap';
+    btnSnap.onclick = () => {
+      const canvas = document.querySelector('canvas');
+      if (canvas) {
+        const link = document.createElement('a');
+        link.download = 'myofficity-view.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      }
+    };
+    
+    container.appendChild(btnReset);
+    container.appendChild(btnSnap);
+    
+    window.MyOffiCityAddons.addTool('City View Tools', '🏗️', container);
+    window.MyOffiCityAddons.register('City View Tools');
+  } catch (e) {
+    console.error('City View Tools error:', e);
+  }
+})();

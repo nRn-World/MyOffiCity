@@ -1188,3 +1188,54 @@ COMMIT: feat: add interactive Asset-Inspector tooltip for marketplace cards
 }
 .moc-quick-dock-ico { font-size: 15px; }
 .moc-quick-dock-lbl { flex: 1; }
+
+.moc-a11y-panel {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.moc-a11y-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.moc-a11y-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: #e9d7b0;
+}
+.moc-a11y-reset {
+  background: none;
+  border: 1px solid rgba(217, 180, 106, 0.3);
+  color: #d9b46a;
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+.moc-a11y-reset:hover {
+  background: rgba(217, 180, 106, 0.1);
+  border-color: #d9b46a;
+}
+.moc-a11y-control {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.moc-a11y-control label {
+  font-size: 12px;
+  color: #f3ecdc;
+  display: flex;
+  justify-content: space-between;
+}
+.moc-a11y-val {
+  color: #d9b46a;
+  font-weight: 600;
+}
+.moc-a11y-control input[type="range"] {
+  width: 100%;
+  accent-color: #d9b46a;
+  cursor: pointer;
+}

@@ -10024,3 +10024,62 @@
     console.error('Layout Configurator Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const createQuotaWidget = () => {
+      const widget = document.createElement('div');
+      widget.className = 'moc-quota-widget';
+      widget.innerHTML = `
+        <div class="moc-quota-title">
+          <span>GPU & Quota</span>
+          <span id="moc-gpu-load">--%</span>
+        </div>
+        <div class="moc-quota-bar-container">
+          <div id="moc-quota-fill" class="moc-quota-bar-fill" style="width: 0%"></div>
+        </div>
+        <div class="moc-quota-stats">
+          <span id="moc-quota-text">Loading...</span>
+          <svg class="moc-quota-sparkline" id="moc-sparkline" viewBox="0 0 100 30">
+            <path d="M0 15 L100 15" />
+          </svg>
+        </div>
+      `;
+
+      const updateData = async () => {
+        try {
+          const res = await fetch('/api/ai/quota');
+          const data = await res.json();
+          const { remaining, total, gpu_load } = data;
+          
+          const percent = (remaining / total) * 100;
+          document.getElementById('moc-quota-fill').style.width = `${percent}%`;
+          document.getElementById('moc-gpu-load').textContent = `${gpu_load}%`;
+          document.getElementById('moc-quota-text').textContent = `${Math.round(remaining)} / ${total} credits`;
+
+          // Simple Sparkline logic
+          const points = [];
+          for(let i=0; i<=10; i++) {
+            points.push(`${i * 10},${Math.random() * 25 + 5}`);
+          }
+          const path = document.getElementById('moc-sparkline').querySelector('path');
+          path.setAttribute('d', `M ${points.join(' L ')}`);
+        } catch (e) {
+          console.error('Quota fetch failed', e);
+        }
+      };
+
+      updateData();
+      setInterval(updateData, 5000);
+      return widget;
+    };
+
+    if (window.MyOffiCityAddons) {
+      const widget = createQuotaWidget();
+      window.MyOffiCityAddons.addTool('GPU & Quota', '📊', widget);
+      window.MyOffiCityAddons.register('QuotaMonitor');
+    }
+  } catch (e) {
+    console.error('Quota Widget Error:', e);
+  }
+})();

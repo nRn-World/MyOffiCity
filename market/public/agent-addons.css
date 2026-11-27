@@ -3320,3 +3320,48 @@ a.moc-breadcrumb-item:hover {
 .moc-market-btn:hover {
   background: rgba(217, 180, 106, 0.4);
 }
+
+.moc-notis-icon {
+  position: relative;
+  cursor: pointer;
+  padding: 8px;
+  font-size: 18px;
+}
+.moc-notis-dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 8px;
+  height: 8px;
+  background: #ef4444;
+  border-radius: 50%;
+  display: none;
+}
+.moc-notis-container {
+  display: none;
+  position: absolute;
+  top: 50px;
+  right: 20px;
+  width: 250px;
+  background: #0f172a;
+  border: 1px solid #d9b46a;
+  border-radius: 8px;
+  z-index: 1000;
+  padding: 10px;
+}
+.moc-notis-container.active { display: block; }
+.moc-notis-item {
+  padding: 8px;
+  border-bottom: 1px solid #334155;
+  font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+}
+.moc-notis-item.read { opacity: 0.6; }
+.moc-notis-item button {
+  background: #d9b46a;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 10px;
+}

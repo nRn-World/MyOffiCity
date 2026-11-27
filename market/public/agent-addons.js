@@ -419,3 +419,47 @@
     console.error('Design tool error:', e);
   }
 })();
+
+(() => {
+  try {
+    const container = document.createElement('div');
+    container.className = 'moc-note-container';
+
+    const textarea = document.createElement('textarea');
+    textarea.className = 'moc-note-textarea';
+    textarea.placeholder = 'Skriv dina anteckningar här…';
+    textarea.value = localStorage.getItem('mocSmartNote') || '';
+
+    const btnSave = document.createElement('button');
+    btnSave.className = 'moc-note-btn';
+    btnSave.textContent = 'Spara';
+    btnSave.onclick = () => {
+      localStorage.setItem('mocSmartNote', textarea.value);
+      alert('Anteckningar sparade');
+    };
+
+    const btnClear = document.createElement('button');
+    btnClear.className = 'moc-note-btn';
+    btnClear.textContent = 'Rensa';
+    btnClear.onclick = () => {
+      textarea.value = '';
+      localStorage.removeItem('mocSmartNote');
+      alert('Anteckningar rensade');
+    };
+
+    const btnToggle = document.createElement('button');
+    btnToggle.className = 'moc-note-btn';
+    btnToggle.textContent = 'Stäng';
+    btnToggle.onclick = () => container.style.display = 'none';
+
+    container.appendChild(textarea);
+    container.appendChild(btnSave);
+    container.appendChild(btnClear);
+    container.appendChild(btnToggle);
+
+    window.MyOffiCityAddons.addTool('Smart Note', '📝', container);
+    window.MyOffiCityAddons.register('Smart Note');
+  } catch (e) {
+    console.error('Smart Note error:', e);
+  }
+})();

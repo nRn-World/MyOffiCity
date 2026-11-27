@@ -2263,3 +2263,25 @@ body.moc-zen-active canvas {
   accent-color: #d9b46a;
   cursor: pointer;
 }
+
+:root {
+  --bg-color: #0f172a;
+  --text-color: #f3ecdc;
+  --accent: #d9b46a;
+  --border: rgba(217, 180, 106, 0.2);
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease;
+}
+
+.moc-tool-card {
+  border-color: var(--border);
+}
+
+.agent-log-btn {
+  border-color: var(--accent);
+  color: var(--accent);
+}

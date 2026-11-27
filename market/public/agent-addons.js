@@ -9960,3 +9960,67 @@
     console.error('Agent-Sync Widget Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const layoutConfigurator = (() => {
+      const container = document.createElement('div');
+      container.className = 'moc-layout-configurator';
+      container.innerHTML = `
+        <div style="font-size: 11px; margin-bottom: 8px; opacity: 0.8;">Office Layout</div>
+        <div style="display: flex; flex-wrap: wrap;">
+          <button class="moc-layout-btn" id="btn-open">Open Plan</button>
+          <button class="moc-layout-btn" id="btn-pods">Private Pods</button>
+        </div>
+      `;
+
+      const updateLayout = (type) => {
+        const btnOpen = document.getElementById('btn-open');
+        const btnPods = document.getElementById('btn-pods');
+        
+        if (type === 'open') {
+          btnOpen.classList.add('active');
+          btnPods.classList.remove('active');
+          // Logic to toggle 3D objects (simulated via scene update)
+          if (window.MyOffiCityScene) {
+            window.MyOffiCityScene.objects.forEach(obj => {
+              if (obj.name.includes('pod')) obj.visible = false;
+              if (obj.name.includes('desk')) obj.visible = true;
+            });
+            window.MyOffiCityScene.render();
+          }
+        } else {
+          btnPods.classList.add('active');
+          btnOpen.classList.remove('active');
+          if (window.MyOffiCityScene) {
+            window.MyOffiCityScene.objects.forEach(obj => {
+              if (obj.name.includes('pod')) obj.visible = true;
+              if (obj.name.includes('desk')) obj.visible = false;
+            });
+            window.MyOffiCityScene.render();
+          }
+        }
+        
+        // Update UI labels in .tc-box
+        const tcBoxes = document.querySelectorAll('.tc-box');
+        tcBoxes.forEach(box => {
+          if (box.innerText.includes('Layout')) {
+            box.innerText = `Layout: ${type === 'open' ? 'Open Plan' : 'Private Pods'}`;
+          }
+        });
+      };
+
+      document.getElementById('btn-open').onclick = () => updateLayout('open');
+      document.getElementById('btn-pods').onclick = () => updateLayout('pods');
+
+      return container;
+    })();
+
+    if (window.MyOffiCityAddons) {
+      window.MyOffiCityAddons.addTool('Office Layout', '🏢', layoutConfigurator);
+      window.MyOffiCityAddons.register('LayoutConfigurator');
+    }
+  } catch (e) {
+    console.error('Layout Configurator Error:', e);
+  }
+})();

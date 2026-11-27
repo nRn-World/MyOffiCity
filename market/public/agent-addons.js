@@ -1436,3 +1436,64 @@
     console.error('Minimap Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const commands = [
+      { icon: '📊', label: 'Statusrapport', msg: 'Ge en kort statusrapport på alla pågående projekt och teamet.' },
+      { icon: '💾', label: 'Kör backup', msg: 'Kör en full backup av staden och bekräfta när den är klar.' },
+      { icon: '📜', label: 'Visa loggar', msg: 'Visa de senaste 10 loggposterna från systemet.' },
+      { icon: '🚀', label: 'Optimera', msg: 'Förslag på 3 saker vi kan optimera i staden just nu.' }
+    ];
+
+    const dock = document.createElement('div');
+    dock.id = 'mocQuickDock';
+    dock.className = 'moc-quick-dock';
+    dock.innerHTML = '<div class="moc-quick-dock-handle">⚡ Snabbåtgärder</div>';
+
+    const bar = document.createElement('div');
+    bar.className = 'moc-quick-dock-bar';
+    commands.forEach((c) => {
+      const btn = document.createElement('button');
+      btn.className = 'moc-quick-dock-btn';
+      btn.title = c.msg;
+      btn.innerHTML = `<span class="moc-quick-dock-ico">${c.icon}</span><span class="moc-quick-dock-lbl">${c.label}</span>`;
+      btn.addEventListener('click', () => {
+        const input = document.querySelector('#chatInput, .chat-input, textarea[name="message"], #messageInput');
+        if (input) {
+          input.value = c.msg;
+          input.focus();
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          const send = document.querySelector('#sendBtn, .send-btn, button[type="submit"]');
+          if (send) setTimeout(() => send.click(), 120);
+        }
+        btn.classList.add('moc-quick-dock-flash');
+        setTimeout(() => btn.classList.remove('moc-quick-dock-flash'), 400);
+      });
+      bar.appendChild(btn);
+    });
+    dock.appendChild(bar);
+    document.body.appendChild(dock);
+
+    // Dragging
+    const handle = dock.querySelector('.moc-quick-dock-handle');
+    let dragging = false, offX = 0, offY = 0;
+    handle.addEventListener('mousedown', (e) => {
+      dragging = true;
+      const r = dock.getBoundingClientRect();
+      offX = e.clientX - r.left;
+      offY = e.clientY - r.top;
+      dock.style.right = 'auto';
+      dock.style.bottom = 'auto';
+      e.preventDefault();
+    });
+    window.addEventListener('mousemove', (e) => {
+      if (!dragging) return;
+      dock.style.left = (e.clientX - offX) + 'px';
+      dock.style.top = (e.clientY - offY) + 'px';
+    });
+    window.addEventListener('mouseup', () => { dragging = false; });
+
+    window.MyOffiCityAddons.register('Snabbåtgärds-dock');
+  } catch (e) {}
+})();

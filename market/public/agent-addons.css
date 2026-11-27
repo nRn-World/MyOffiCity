@@ -3540,3 +3540,30 @@ a.moc-breadcrumb-item:hover {
 @keyframes moc-fade-in {
   to { opacity: 1; }
 }
+
+/* Zen‑knappens hover‑effekt */
+.moc-zen-btn:hover {
+  background: rgba(20, 32, 61, 0.96);
+  border-color: #d9b46a;
+}
+
+/* Focus‑Mode: döljer UI‑element som kan störa 3D‑vyn */
+.focus-mode #topbar,
+.focus-mode #nav,
+.focus-mode .dash,
+.focus-mode .dsb,
+.focus-mode .cards,
+.focus-mode .moc-dock-btn,
+.focus-mode .sidebar,
+.focus-mode .panel {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+/* Säkerställ att huvud‑appen fyller hela skärmen i Focus‑Mode */
+.focus-mode #app {
+  width: 100% !important;
+  height: 100% !important;
+  transition: all 0.3s ease;
+}

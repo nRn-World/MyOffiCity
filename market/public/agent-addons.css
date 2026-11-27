@@ -4391,3 +4391,27 @@ body {
     font-size: calc(0.85rem * var(--moc-font-scale, 1));
   }
 }
+
+.moc-timer-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+}
+.moc-timer-display {
+  font-family: monospace;
+  font-size: 1.5rem;
+  color: #d9b46a;
+}
+.moc-timer-btn {
+  background: rgba(217, 180, 106, 0.2);
+  border: 1px solid #d9b46a;
+  color: #f3ecdc;
+  padding: 5px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.moc-timer-btn:hover {
+  background: rgba(217, 180, 106, 0.4);
+}

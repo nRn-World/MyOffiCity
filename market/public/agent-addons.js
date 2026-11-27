@@ -5765,3 +5765,109 @@
     console.warn('Weather Widget Error:', e);
   }
 })();
+
+(() => {
+  try {
+    // ---- Kommandon ---------------------------------------------------------
+    const commands = [
+      { title: 'Gå till Stad', action: () => { location.hash = '/city'; } },
+      { title: 'Gå till Dashboard', action: () => { location.hash = '/dash'; } },
+      { title: 'Sök AI‑agent', action: () => { alert('Sökfunktion ej implementerad'); } },
+    ];
+
+    // ---- UI ---------------------------------------------------------------
+    const overlay = document.createElement('div');
+    overlay.className = 'moc-cmd-palette';
+    overlay.innerHTML = `
+      <div class="moc-cmd-box">
+        <input type="text" placeholder="Sök kommandon…" autocomplete="off"/>
+        <ul class="moc-cmd-list"></ul>
+      </div>`;
+    document.body.appendChild(overlay);
+
+    const input = overlay.querySelector('input');
+    const list = overlay.querySelector('ul');
+    let selected = 0;
+
+    const render = () => {
+      const q = input.value.toLowerCase();
+      const filtered = commands.filter(c => c.title.toLowerCase().includes(q));
+      list.innerHTML = '';
+      filtered.forEach((c, i) => {
+        const li = document.createElement('li');
+        li.textContent = c.title;
+        li.className = 'moc-cmd-item' + (i === selected ? ' selected' : '');
+        li.dataset.idx = i;
+        list.appendChild(li);
+      });
+    };
+
+    const openPalette = () => {
+      overlay.style.display = 'flex';
+      input.value = '';
+      selected = 0;
+      render();
+      input.focus();
+    };
+
+    const closePalette = () => {
+      overlay.style.display = 'none';
+    };
+
+    // ---- Händelser ---------------------------------------------------------
+    input.addEventListener('input', () => {
+      selected = 0;
+      render();
+    });
+
+    input.addEventListener('keydown', e => {
+      const items = list.querySelectorAll('li');
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        selected = (selected + 1) % items.length;
+        render();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        selected = (selected - 1 + items.length) % items.length;
+        render();
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        const filtered = commands.filter(c => c.title.toLowerCase().includes(input.value.toLowerCase()));
+        const cmd = filtered[selected];
+        if (cmd) {
+          cmd.action();
+          closePalette();
+        }
+      } else if (e.key === 'Escape') {
+        closePalette();
+      }
+    });
+
+    list.addEventListener('click', e => {
+      if (e.target.tagName === 'LI') {
+        const idx = parseInt(e.target.dataset.idx, 10);
+        const filtered = commands.filter(c => c.title.toLowerCase().includes(input.value.toLowerCase()));
+        const cmd = filtered[idx];
+        if (cmd) {
+          cmd.action();
+          closePalette();
+        }
+      }
+    });
+
+    document.addEventListener('keydown', e => {
+      if (e.ctrlKey && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        openPalette();
+      }
+    });
+
+    // ---- Registrera i dock -------------------------------------------------
+    const toolEl = document.createElement('div');
+    toolEl.textContent = 'Ctrl+K för kommandopalett';
+    window.MyOffiCityAddons.addTool('Kommandopalett', '⌨️', toolEl);
+    window.MyOffiCityAddons.register('Command Palette');
+  } catch (e) {
+    console.warn('Command Palette Error:', e);
+  }
+})();

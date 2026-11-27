@@ -4200,3 +4200,57 @@ body {
   font-weight: bold;
   margin-bottom: 4px;
 }
+
+/* Command Palette – overlay */
+.moc-cmd-palette {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* Container */
+.moc-cmd-box {
+  background: rgba(15, 23, 42, 0.95);
+  padding: 20px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 420px;
+}
+
+/* Input */
+.moc-cmd-box input {
+  width: 100%;
+  padding: 8px;
+  font-size: 16px;
+  border: none;
+  outline: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: #f3ecdc;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+/* Result list */
+.moc-cmd-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* Items */
+.moc-cmd-item {
+  padding: 6px 8px;
+  cursor: pointer;
+  color: #f3ecdc;
+  border-radius: 4px;
+}
+.moc-cmd-item.selected,
+.moc-cmd-item:hover {
+  background: rgba(217, 180, 106, 0.2);
+}

@@ -3874,3 +3874,81 @@
     }
   } catch(e) {}
 })();
+
+(() => { try {
+  const chatEl = document.createElement('div');
+  chatEl.className = 'moc-agent-chat';
+  
+  // Chat container
+  const messagesEl = document.createElement('div');
+  messagesEl.className = 'moc-chat-messages';
+  
+  // Input area
+  const inputArea = document.createElement('div');
+  inputArea.className = 'moc-chat-input-area';
+  
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.placeholder = 'Ställ en fråga till Tomas...';
+  input.className = 'moc-chat-input';
+  
+  const sendBtn = document.createElement('button');
+  sendBtn.className = 'moc-chat-send';
+  sendBtn.textContent = 'Skicka';
+  
+  inputArea.appendChild(input);
+  inputArea.appendChild(sendBtn);
+  
+  // Thinking indicator
+  const thinkingEl = document.createElement('div');
+  thinkingEl.className = 'moc-thinking-indicator';
+  thinkingEl.innerHTML = '<span class="moc-thinking-dot"></span><span class="moc-thinking-dot"></span><span class="moc-thinking-dot"></span>';
+  thinkingEl.style.display = 'none';
+  
+  chatEl.appendChild(messagesEl);
+  chatEl.appendChild(thinkingEl);
+  chatEl.appendChild(inputArea);
+  
+  // Add initial message
+  const addMessage = (text, sender) => {
+    const msg = document.createElement('div');
+    msg.className = `moc-chat-msg ${sender}`;
+    msg.textContent = text;
+    messagesEl.appendChild(msg);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  };
+  
+  addMessage('Hej! Jag är Tomas. Fråga mig om projektet, teamet eller tekniken!', 'agent');
+  
+  // Handle send
+  const sendMessage = () => {
+    const text = input.value.trim();
+    if (!text) return;
+    
+    addMessage(text, 'user');
+    input.value = '';
+    thinkingEl.style.display = 'flex';
+    
+    // Simulate AI response (in production, connect to local-ai-bridge.js)
+    setTimeout(() => {
+      thinkingEl.style.display = 'none';
+      const responses = [
+        'Jag jobbar just nu på att optimera 3D-renderingen för bättre prestanda.',
+        'Teamet har precis slutfört en ny sprint med fokus på användarupplevelsen.',
+        'Vi testar nya AI-modeller för att förbättra chattens svarskvalitet.',
+        'Det pågår en CI/CD-pipeline som verifierar alla nya commits automatiskt.'
+      ];
+      const response = responses[Math.floor(Math.random() * responses.length)];
+      addMessage(response, 'agent');
+    }, 1500 + Math.random() * 1000);
+  };
+  
+  sendBtn.addEventListener('click', sendMessage);
+  input.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendMessage();
+  });
+  
+  // Register and add to dock
+  window.MyOffiCityAddons.addTool('Agent-Chat', '💬', chatEl);
+  window.MyOffiCityAddons.register('Agent-Chat');
+} catch(e) {} })();

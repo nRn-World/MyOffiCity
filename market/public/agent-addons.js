@@ -5454,3 +5454,69 @@
     console.error('Sorter addon error:', e);
   }
 })();
+
+(() => {
+  try {
+    const checkBridgeHealth = async () => {
+      const dot = document.getElementById('moc-agent-health-dot');
+      const label = document.getElementById('moc-agent-health-label');
+      
+      try {
+        // Försöker nå den lokala bryggan (standardport 1337)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
+        
+        const resp = await fetch('http://localhost:1337/status', { 
+          mode: 'cors',
+          signal: controller.signal 
+        });
+        clearTimeout(timeoutId);
+
+        if (resp.ok) {
+          if (dot) dot.className = 'moc-health-dot online';
+          if (label) label.textContent = 'AI Bridge: Online';
+        } else {
+          throw new Error();
+        }
+      } catch (e) {
+        if (dot) dot.className = 'moc-health-dot offline';
+        if (label) label.textContent = 'AI Bridge: Offline / Restart needed';
+      }
+    };
+
+    const initHealthUI = () => {
+      const chatBox = document.querySelector('.tc-box');
+      if (!chatBox || document.getElementById('moc-agent-health-dot')) return;
+
+      const container = document.createElement('div');
+      container.className = 'moc-health-indicator';
+      container.title = 'Status för local-ai-bridge';
+      container.innerHTML = `
+        <span id="moc-agent-health-dot" class="moc-health-dot"></span>
+        <span id="moc-agent-health-label" class="moc-health-text">Checking AI...</span>
+      `;
+      
+      // Placera den i toppen av chatten
+      chatBox.prepend(container);
+      
+      // Starta loop
+      checkBridgeHealth();
+      setInterval(checkBridgeHealth, 10000);
+    };
+
+    // Kör init när DOM är redo och vid ändringar (om chatten laddas sent)
+    setTimeout(initHealthUI, 2000);
+    const observer = new MutationObserver(initHealthUI);
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    // Registrera som verktyg
+    const toolEl = document.createElement('div');
+    toolEl.innerHTML = `<p style="font-size:12px;color:#e9d7b0;margin-bottom:8px;">Övervakar anslutningen till din lokala AI-instans (local-ai-bridge.js).</p>
+    <button class="moc-sort-btn" onclick="window.location.reload()">🔄 Starta om gränssnitt</button>`;
+    
+    window.MyOffiCityAddons.addTool('Agent Health', '🩺', toolEl);
+    window.MyOffiCityAddons.register('Agent-Health-Monitor');
+  } catch (e) {
+    console.error('Agent Health Error:', e);
+  }
+})();

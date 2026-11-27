@@ -6250,3 +6250,70 @@ canvas {
 .moc-dark-mode #moc-breadcrumb {
   filter: invert(1) hue-rotate(180deg);
 }
+
+/* Global Search Styles */
+.moc-search-wrapper {
+  margin-left: 20px;
+  flex: 1;
+  max-width: 280px;
+  display: flex;
+  align-items: center;
+}
+
+.moc-search-inner {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid rgba(217, 180, 106, 0.25);
+  border-radius: 20px;
+  padding: 4px 12px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.moc-search-inner:focus-within {
+  background: rgba(15, 23, 42, 0.7);
+  border-color: #d9b46a;
+  box-shadow: 0 0 12px rgba(217, 180, 106, 0.15);
+  max-width: 320px;
+}
+
+.moc-search-icon {
+  font-size: 14px;
+  margin-right: 8px;
+  opacity: 0.7;
+}
+
+#moc-market-search {
+  background: transparent;
+  border: none;
+  color: #f3ecdc;
+  font-size: 13px;
+  width: 100%;
+  outline: none;
+}
+
+#moc-market-search::placeholder {
+  color: rgba(243, 236, 220, 0.4);
+}
+
+/* Card Filtering Animation */
+.cards .card {
+  transition: opacity 0.3s ease, transform 0.3s ease, filter 0.3s ease;
+  transform-origin: center;
+}
+
+.moc-card-hidden {
+  opacity: 0 !important;
+  transform: scale(0.92) translateY(10px) !important;
+  filter: blur(4px);
+  pointer-events: none;
+}
+
+/* Responsive adjustment for topbar search */
+@media (max-width: 768px) {
+  .moc-search-wrapper {
+    display: none; /* Dölj på små skärmar för att inte krocka med menyn */
+  }
+}

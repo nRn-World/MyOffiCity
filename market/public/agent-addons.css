@@ -4006,3 +4006,59 @@ body {
 .cards:hover {
   transform: translateY(-4px);
 }
+
+.moc-smart-tip {
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(217, 180, 106, 0.08);
+  border: 1px solid rgba(217, 180, 106, 0.2);
+}
+
+.moc-tip-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.moc-tip-icon {
+  font-size: 18px;
+}
+
+.moc-tip-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #d9b46a;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.moc-tip-text {
+  font-size: 13px;
+  color: #e2e8f0;
+  line-height: 1.4;
+  margin: 0 0 10px 0;
+}
+
+.moc-tip-action {
+  width: 100%;
+  padding: 8px;
+  border: none;
+  border-radius: 6px;
+  background: rgba(217, 180, 106, 0.15);
+  color: #d9b46a;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.moc-tip-action:hover:not(:disabled) {
+  background: rgba(217, 180, 106, 0.25);
+  transform: translateY(-1px);
+}
+
+.moc-tip-action:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

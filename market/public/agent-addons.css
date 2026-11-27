@@ -3663,3 +3663,13 @@ a.moc-breadcrumb-item:hover {
   color: #d9b46a;
   margin-bottom: 6px;
 }
+
+.moc-tool-card svg {
+  transition: stroke 0.3s ease;
+}
+.moc-tool-card:hover svg {
+  stroke: #f3ecdc;
+}
+.moc-tool-card path {
+  transition: d 0.5s ease-in-out;
+}

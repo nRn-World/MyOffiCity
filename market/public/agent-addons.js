@@ -6556,3 +6556,77 @@
     console.warn('Smart Scroll Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const STORAGE_KEY = 'moc_ui_prefs';
+    const defaults = { dockOpen: false, compactSidebar: false, glassMode: false };
+    let prefs = { ...defaults };
+
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) prefs = { ...defaults, ...JSON.parse(saved) };
+    } catch (e) { console.warn('Prefs load error', e); }
+
+    const applyPrefs = () => {
+      document.body.classList.toggle('moc-compact-sidebar', prefs.compactSidebar);
+      document.body.classList.toggle('moc-glass-theme', prefs.glassMode);
+      
+      // Auto-open dock if preferred (with slight delay for registry to be ready)
+      if (prefs.dockOpen && window.MyOffiCityAddons && window.MyOffiCityAddons.toggleDock) {
+        setTimeout(() => window.MyOffiCityAddons.toggleDock(true), 800);
+      }
+    };
+
+    const savePrefs = () => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
+      applyPrefs();
+    };
+
+    const createSwitch = (label, key) => {
+      const row = document.createElement('div');
+      row.className = 'moc-settings-row';
+      
+      const lbl = document.createElement('label');
+      lbl.className = 'moc-switch-label';
+      
+      const chk = document.createElement('input');
+      chk.type = 'checkbox';
+      chk.checked = prefs[key];
+      chk.addEventListener('change', (e) => {
+        prefs[key] = e.target.checked;
+        savePrefs();
+      });
+
+      lbl.appendChild(chk);
+      lbl.appendChild(document.createTextNode(' ' + label));
+      row.appendChild(lbl);
+      return row;
+    };
+
+    const container = document.createElement('div');
+    container.className = 'moc-persistence-container';
+    
+    const info = document.createElement('p');
+    info.style.fontSize = '11px';
+    info.style.opacity = '0.7';
+    info.style.marginBottom = '12px';
+    info.textContent = 'Dina val sparas automatiskt i webbläsaren.';
+    
+    container.appendChild(info);
+    container.appendChild(createSwitch('Öppna AI-panel vid start', 'dockOpen'));
+    container.appendChild(createSwitch('Kompakt sidomeny', 'compactSidebar'));
+    container.appendChild(createSwitch('Frostat glas-tema', 'glassMode'));
+
+    // Initial apply
+    applyPrefs();
+
+    // Register tool
+    if (window.MyOffiCityAddons) {
+      window.MyOffiCityAddons.addTool('Inställningar', '⚙️', container);
+      window.MyOffiCityAddons.register('Session Persistence');
+    }
+  } catch (e) {
+    console.error('Persistence Addon Error:', e);
+  }
+})();

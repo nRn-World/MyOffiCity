@@ -2563,3 +2563,26 @@
   window.MyOffiCityAddons.addTool('Agent Quick-View', '👁️', infoEl);
   window.MyOffiCityAddons.register('Agent Quick-View');
 } catch(e) {} })();
+
+(() => {
+  try {
+    const btn = document.createElement('button');
+    btn.className = 'moc-zen-btn';
+    btn.innerHTML = '🧘 Zen-mode';
+    btn.title = 'Dölj sidopaneler och fokusera 3D-vyn';
+
+    let isZen = false;
+    const toggleZen = () => {
+      isZen = !isZen;
+      document.body.classList.toggle('moc-zen-active', isZen);
+      btn.classList.toggle('active', isZen);
+      btn.innerHTML = isZen ? '🚪 Avsluta Zen' : '🧘 Zen-mode';
+    };
+
+    btn.addEventListener('click', toggleZen);
+    
+    // Lägg till knappen i docken
+    window.MyOffiCityAddons.addTool('Fokusläge', '🧘', btn);
+    window.MyOffiCityAddons.register('Zen-mode');
+  } catch(e) {}
+})();

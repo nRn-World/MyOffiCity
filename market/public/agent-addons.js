@@ -9089,3 +9089,37 @@
     console.error('Agent-Draft error:', e);
   }
 })();
+
+(() => {
+  try {
+    const toggleDarkMode = (enabled) => {
+      document.documentElement.classList.toggle('moc-dark-mode', enabled);
+      localStorage.setItem('moc_dark_mode', enabled ? 'true' : 'false');
+    };
+
+    const saved = localStorage.getItem('moc_dark_mode');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (saved === 'true' || (saved === null && prefersDark)) {
+      toggleDarkMode(true);
+    }
+
+    const container = document.createElement('div');
+    container.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 4px 0;';
+    
+    const label = document.createElement('span');
+    label.textContent = 'Nattläge';
+    label.style.fontSize = '13px';
+    
+    const toggle = document.createElement('input');
+    toggle.type = 'checkbox';
+    toggle.checked = document.documentElement.classList.contains('moc-dark-mode');
+    toggle.onchange = (e) => toggleDarkMode(e.target.checked);
+    
+    container.appendChild(label);
+    container.appendChild(toggle);
+    
+    window.MyOffiCityAddons.addTool('Visuellt', '🌙', container);
+  } catch (e) {
+    console.error('Dark Mode error:', e);
+  }
+})();

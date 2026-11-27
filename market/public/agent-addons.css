@@ -5851,3 +5851,24 @@ body.moc-focus-mode .chat-container {
   border-color: #d9b46a;
   transform: translateY(-1px);
 }
+
+/* Agent‑Status‑etikett som svävar ovanför 3D‑agenter */
+.agent-status-label {
+  position: fixed;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.72);
+  color: #f3ecdc;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  transform: translate(-50%, -100%);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  opacity: 0;
+  z-index: 960;
+}
+.agent-status-label.visible {
+  opacity: 1;
+  transform: translate(-50%, -110%);
+}

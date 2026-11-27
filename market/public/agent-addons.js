@@ -1268,3 +1268,171 @@
     console.error('Filter Widget Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const panel = document.createElement('div');
+    panel.className = 'moc-minimap-wrap';
+    
+    const canvas = document.createElement('canvas');
+    canvas.width = 220;
+    canvas.height = 220;
+    canvas.className = 'moc-minimap-canvas';
+    panel.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width;
+    const H = canvas.height;
+    const WORLD_SIZE = 100; // 3D world units mapped to 2D canvas
+
+    // Define key locations in 3D world space (x, z)
+    const locations = [
+      { id: 'center', name: 'Stadscentrum', x: 0, z: 0, color: '#d9b46a' },
+      { id: 'north', name: 'Norrkvarter', x: 0, z: -40, color: '#4ade80' },
+      { id: 'south', name: 'Söderpark', x: 0, z: 40, color: '#60a5fa' },
+      { id: 'east', name: 'Östra Hamnen', x: 40, z: 0, color: '#f87171' },
+      { id: 'west', name: 'Västra Slottet', x: -40, z: 0, color: '#c084fc' }
+    ];
+
+    // Convert 3D world coords to 2D canvas coords
+    const worldToCanvas = (x, z) => {
+      const cx = W / 2 + (x / WORLD_SIZE) * (W / 2);
+      const cy = H / 2 + (z / WORLD_SIZE) * (H / 2);
+      return { x: cx, y: cy };
+    };
+
+    // Convert 2D canvas coords to 3D world coords
+    const canvasToWorld = (cx, cy) => {
+      const x = ((cx - W / 2) / (W / 2)) * WORLD_SIZE;
+      const z = ((cy - H / 2) / (H / 2)) * WORLD_SIZE;
+      return { x, z };
+    };
+
+    // Draw the minimap
+    const drawMap = (cameraPos) => {
+      ctx.clearRect(0, 0, W, H);
+      
+      // Background
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
+      ctx.fillRect(0, 0, W, H);
+
+      // Grid lines
+      ctx.strokeStyle = 'rgba(217, 180, 106, 0.15)';
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= W; i += 22) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i, H);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(0, i);
+        ctx.lineTo(W, i);
+        ctx.stroke();
+      }
+
+      // Draw locations
+      locations.forEach(loc => {
+        const pos = worldToCanvas(loc.x, loc.z);
+        
+        // Glow
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, 8, 0, Math.PI * 2);
+        ctx.fillStyle = loc.color + '33';
+        ctx.fill();
+
+        // Dot
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = loc.color;
+        ctx.fill();
+
+        // Label
+        ctx.fillStyle = '#e9d7b0';
+        ctx.font = '9px system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(loc.name, pos.x, pos.y - 10);
+      });
+
+      // Draw camera position
+      if (cameraPos) {
+        const camPos = worldToCanvas(cameraPos.x, cameraPos.z);
+        
+        // Camera indicator
+        ctx.beginPath();
+        ctx.arc(camPos.x, camPos.y, 6, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+        
+        ctx.beginPath();
+        ctx.arc(camPos.x, camPos.y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = '#d9b46a';
+        ctx.fill();
+      }
+    };
+
+    // Initial draw
+    drawMap(null);
+
+    // Click handler for teleportation
+    canvas.addEventListener('click', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const cx = e.clientX - rect.left;
+      const cy = e.clientY - rect.top;
+      
+      // Find closest location
+      let closest = null;
+      let minDist = Infinity;
+      
+      locations.forEach(loc => {
+        const pos = worldToCanvas(loc.x, loc.z);
+        const dist = Math.hypot(pos.x - cx, pos.y - cy);
+        if (dist < minDist && dist < 15) {
+          minDist = dist;
+          closest = loc;
+        }
+      });
+
+      if (closest) {
+        // Teleport camera to this location
+        const targetPos = canvasToWorld(worldToCanvas(closest.x, closest.z).x, worldToCanvas(closest.x, closest.z).y);
+        
+        // Dispatch custom event for Three.js to handle
+        window.dispatchEvent(new CustomEvent('moc-teleport', {
+          detail: { x: targetPos.x, z: targetPos.z, name: closest.name }
+        }));
+        
+        // Visual feedback
+        canvas.style.borderColor = closest.color;
+        setTimeout(() => { canvas.style.borderColor = ''; }, 300);
+      }
+    });
+
+    // Listen for camera position updates from Three.js
+    window.addEventListener('moc-camera-update', (e) => {
+      drawMap(e.detail);
+    });
+
+    // Start polling for camera position (fallback if no events)
+    let lastCamPos = null;
+    const pollCamera = () => {
+      // Try to get camera from Three.js scene if available
+      if (window.THREE && window.scene && window.camera) {
+        const cam = window.camera;
+        if (cam && cam.position) {
+          const pos = { x: cam.position.x, z: cam.position.z };
+          if (!lastCamPos || Math.hypot(pos.x - lastCamPos.x, pos.z - lastCamPos.z) > 0.5) {
+            lastCamPos = pos;
+            drawMap(pos);
+          }
+        }
+      }
+      requestAnimationFrame(pollCamera);
+    };
+    pollCamera();
+
+    window.MyOffiCityAddons.addTool('Minikarta', '🗺️', panel);
+    window.MyOffiCityAddons.register('Minikarta');
+  } catch (e) {
+    console.error('Minimap Error:', e);
+  }
+})();

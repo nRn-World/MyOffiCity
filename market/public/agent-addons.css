@@ -6023,3 +6023,12 @@ body.moc-focus-mode .chat-container {
 .moc-sparkline canvas {
   display: block;
 }
+
+/* Focus-Zone Dimming */
+canvas {
+  transition: filter 0.4s ease;
+}
+
+.moc-dimmed {
+  filter: brightness(0.3) blur(2px);
+}

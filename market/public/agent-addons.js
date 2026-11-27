@@ -3336,3 +3336,166 @@
     window.MyOffiCityAddons.register('Command Palette');
   } catch(e) {}
 })();
+
+(() => {
+  try {
+    const breadcrumb = {
+      items: [],
+      maxItems: 5,
+      container: null,
+      
+      init() {
+        const topbar = document.getElementById('topbar');
+        if (!topbar) return;
+        
+        this.container = document.createElement('nav');
+        this.container.className = 'moc-breadcrumb';
+        this.container.setAttribute('aria-label', 'Navigering');
+        
+        const homeLink = document.createElement('a');
+        homeLink.href = '#/';
+        homeLink.className = 'moc-breadcrumb-item moc-breadcrumb-home';
+        homeLink.innerHTML = '🏠 Huvud';
+        homeLink.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.reset();
+          window.location.hash = '#/';
+        });
+        
+        this.container.appendChild(homeLink);
+        
+        const separator = document.createElement('span');
+        separator.className = 'moc-breadcrumb-separator';
+        separator.textContent = '›';
+        this.container.appendChild(separator);
+        
+        topbar.insertBefore(this.container, topbar.firstChild);
+        
+        this.trackNavigation();
+        this.render();
+      },
+      
+      trackNavigation() {
+        const hashChange = () => {
+          const hash = window.location.hash || '#/';
+          const path = hash.replace('#', '');
+          
+          if (path === '/' || path === '') {
+            this.reset();
+            return;
+          }
+          
+          const segments = path.split('/').filter(s => s);
+          const currentPath = segments.join('/');
+          
+          const lastItem = this.items[this.items.length - 1];
+          if (lastItem && lastItem.path === currentPath) return;
+          
+          this.items.push({
+            path: currentPath,
+            label: this.getSegmentLabel(segments[segments.length - 1]),
+            timestamp: Date.now()
+          });
+          
+          if (this.items.length > this.maxItems) {
+            this.items.shift();
+          }
+          
+          this.render();
+        };
+        
+        window.addEventListener('hashchange', hashChange);
+        hashChange();
+      },
+      
+      getSegmentLabel(segment) {
+        const labels = {
+          'marketplace': 'Marknadsplats',
+          'city': '3D-Stad',
+          'office': 'Kontor',
+          'dashboard': 'Instrumentpanel',
+          'chat': 'Chatt',
+          'profile': 'Profil',
+          'settings': 'Inställningar',
+          'orders': 'Ordern',
+          'proposals': 'Förslag',
+          'reviews': 'Recensioner'
+        };
+        return labels[segment] || segment.charAt(0).toUpperCase() + segment.slice(1);
+      },
+      
+      reset() {
+        this.items = [];
+        this.render();
+      },
+      
+      goBack() {
+        if (this.items.length > 0) {
+          this.items.pop();
+          const lastItem = this.items[this.items.length - 1];
+          if (lastItem) {
+            window.location.hash = '#' + lastItem.path;
+          } else {
+            window.location.hash = '#/';
+          }
+          this.render();
+        }
+      },
+      
+      render() {
+        if (!this.container) return;
+        
+        const existingItems = this.container.querySelectorAll('.moc-breadcrumb-item:not(.moc-breadcrumb-home)');
+        existingItems.forEach(el => el.remove());
+        
+        const separators = this.container.querySelectorAll('.moc-breadcrumb-separator:not(:first-child)');
+        separators.forEach(el => el.remove());
+        
+        this.items.forEach((item, index) => {
+          const isLast = index === this.items.length - 1;
+          
+          const link = document.createElement(isLast ? 'span' : 'a');
+          link.className = 'moc-breadcrumb-item' + (isLast ? ' moc-breadcrumb-current' : '');
+          link.textContent = item.label;
+          
+          if (!isLast) {
+            link.href = '#' + item.path;
+            link.addEventListener('click', (e) => {
+              e.preventDefault();
+              const targetIndex = this.items.findIndex(i => i.path === item.path);
+              if (targetIndex !== -1) {
+                this.items = this.items.slice(0, targetIndex + 1);
+                window.location.hash = '#' + item.path;
+                this.render();
+              }
+            });
+          }
+          
+          const separator = document.createElement('span');
+          separator.className = 'moc-breadcrumb-separator';
+          separator.textContent = '›';
+          
+          this.container.appendChild(link);
+          this.container.appendChild(separator);
+        });
+        
+        if (this.items.length > 0) {
+          const backBtn = document.createElement('button');
+          backBtn.className = 'moc-breadcrumb-back';
+          backBtn.innerHTML = '← Tillbaka';
+          backBtn.title = 'Gå till föregående nivå';
+          backBtn.addEventListener('click', () => this.goBack());
+          this.container.appendChild(backBtn);
+        }
+      }
+    };
+    
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => breadcrumb.init());
+    } else {
+      breadcrumb.init();
+    }
+    
+    window.MyOffiCityAddons.register('Dynamic Breadcrumb Trail');
+  } catch(e) {}
+})();

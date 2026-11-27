@@ -1923,3 +1923,83 @@ COMMIT: feat: add interactive Asset-Inspector tooltip for marketplace cards
   border-radius: 4px;
 }
 .moc-palette-item:hover { background: rgba(217,180,106,0.1); }
+
+.moc-live-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+  padding: 4px 12px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(217, 180, 106, 0.2);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #e9d7b0;
+  backdrop-filter: blur(4px);
+}
+
+.moc-status-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.moc-status-divider {
+  width: 1px;
+  height: 14px;
+  background: rgba(217, 180, 106, 0.3);
+}
+
+.moc-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #64748b;
+  animation: moc-pulse 2s infinite;
+}
+
+.moc-pulse-green {
+  background: #4ade80;
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.6);
+}
+
+.moc-pulse-red {
+  background: #f87171;
+  box-shadow: 0 0 8px rgba(248, 113, 113, 0.6);
+}
+
+@keyframes moc-pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.moc-load-bar {
+  width: 40px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.moc-load-fill {
+  height: 100%;
+  background: #4ade80;
+  border-radius: 2px;
+  transition: width 0.3s ease, background 0.3s ease;
+}
+
+.moc-load-warning {
+  background: #fbbf24;
+}
+
+.moc-load-critical {
+  background: #f87171;
+  animation: moc-blink 1s infinite;
+}
+
+@keyframes moc-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}

@@ -5155,3 +5155,31 @@ body.moc-focus-mode .chat-container {
 .moc-bc-sep {
   opacity: 0.5;
 }
+
+.moc-3d-tooltip {
+  position: fixed;
+  z-index: 9999;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid #d9b46a;
+  padding: 10px;
+  border-radius: 8px;
+  color: #f3ecdc;
+  font-size: 12px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+}
+.moc-3d-tooltip.visible {
+  opacity: 1;
+}
+.moc-tt-header {
+  font-weight: bold;
+  color: #d9b46a;
+  margin-bottom: 4px;
+  border-bottom: 1px solid rgba(217, 180, 106, 0.3);
+}
+.moc-tt-body div {
+  margin: 2px 0;
+}

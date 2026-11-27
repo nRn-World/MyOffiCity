@@ -9123,3 +9123,61 @@
     console.error('Dark Mode error:', e);
   }
 })();
+
+(() => {
+  try {
+    const topbar = document.getElementById('topbar');
+    if (!topbar) return;
+
+    // Skapa sökfältet
+    const searchContainer = document.createElement('div');
+    searchContainer.className = 'moc-search-wrapper';
+    searchContainer.innerHTML = `
+      <div class="moc-search-inner">
+        <span class="moc-search-icon">🔍</span>
+        <input type="text" id="moc-market-search" placeholder="Sök företag eller kategori..." autocomplete="off">
+      </div>
+    `;
+
+    // Placera i topbar (efter logotypen/nav)
+    topbar.appendChild(searchContainer);
+
+    const input = searchContainer.querySelector('input');
+    
+    input.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase().trim();
+      const cards = document.querySelectorAll('.cards .card');
+      
+      cards.forEach(card => {
+        // Vi söker i hela textinnehållet (namn, beskrivning, taggar)
+        const content = card.textContent.toLowerCase();
+        const isMatch = content.includes(query);
+        
+        if (isMatch) {
+          card.classList.remove('moc-card-hidden');
+          card.style.display = ''; // Återställ display
+        } else {
+          card.classList.add('moc-card-hidden');
+          // Vänta på animationen innan vi sätter display: none
+          setTimeout(() => {
+            if (card.classList.contains('moc-card-hidden')) {
+              card.style.display = 'none';
+            }
+          }, 300);
+        }
+      });
+    });
+
+    // Lägg till en liten info-widget i AI-panelen också
+    const info = document.createElement('div');
+    info.style.fontSize = '12px';
+    info.style.color = '#94a3b8';
+    info.textContent = 'Sökfunktionen är nu aktiv i toppmenyn för att snabbt hitta rätt företag i marketplace.';
+    
+    window.MyOffiCityAddons.addTool('Sökfilter', '🔍', info);
+    window.MyOffiCityAddons.register('Global Search');
+
+  } catch (e) {
+    console.error('Search Filter Error:', e);
+  }
+})();

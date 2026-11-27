@@ -794,3 +794,95 @@ body {
   0%, 100% { box-shadow: none; }
   30% { box-shadow: 0 0 0 3px rgba(217, 180, 106, 0.7); }
 }
+
+.moc-asset-tip {
+  position: fixed;
+  z-index: 9999;
+  min-width: 240px;
+  max-width: 320px;
+  background: rgba(12, 18, 34, 0.96);
+  border: 1px solid rgba(217, 180, 106, 0.45);
+  border-radius: 12px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(12px);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(6px) scale(0.97);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.moc-asset-tip.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+.moc-asset-tip-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(217, 180, 106, 0.22);
+}
+.moc-asset-tip-icon { font-size: 16px; }
+.moc-asset-tip-title {
+  color: #f3ecdc;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.moc-asset-tip-body {
+  padding: 10px 14px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.moc-asset-tip-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  padding: 3px 0;
+}
+.moc-asset-tip-label {
+  font-size: 11px;
+  color: rgba(233, 215, 176, 0.55);
+  white-space: nowrap;
+}
+.moc-asset-tip-val {
+  font-size: 12px;
+  color: #e9d7b0;
+  text-align: right;
+  word-break: break-word;
+}
+.moc-asset-tip-price { color: #4ade80; font-weight: 600; }
+.moc-asset-tip-mono { font-family: monospace; font-size: 11px; }
+.moc-asset-tip-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+.moc-asset-tip-tag {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(217, 180, 106, 0.14);
+  border: 1px solid rgba(217, 180, 106, 0.3);
+  color: #e9d7b0;
+}
+.moc-asset-tip-empty {
+  font-size: 12px;
+  color: rgba(233, 215, 176, 0.45);
+  text-align: center;
+  padding: 8px 0;
+}
+.moc-asset-tip-foot {
+  padding: 6px 14px;
+  border-top: 1px solid rgba(217, 180, 106, 0.18);
+}
+.moc-asset-tip-hint {
+  font-size: 10px;
+  color: rgba(233, 215, 176, 0.4);
+}
+
+SUMMARY: Byggde en interaktiv Asset-Inspector Tooltip som visas när man hoverar över `.cards` i marketplace. Den extraherar och visar detaljerad metadata (namn, beskrivning, pris, skapare, modell-vikt, ID och taggar) i en animerad, flytande tooltip-box som följer muspekaren. Använder MutationObserver för att dynamiskt binda nya kort och registreras i AI-docken.
+COMMIT: feat: add interactive Asset-Inspector tooltip for marketplace cards

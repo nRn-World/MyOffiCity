@@ -5172,3 +5172,41 @@
     console.error('Data-Visualizer error:', e);
   }
 })();
+
+(() => {
+  try {
+    const filterContainer = document.createElement('div');
+    filterContainer.innerHTML = `
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <select id="moc-cat-filter" style="background:#0f172a; color:#f3ecdc; border:1px solid #d9b46a; padding:4px; border-radius:4px;">
+          <option value="all">Alla kategorier</option>
+          <option value="dev">Utveckling</option>
+          <option value="design">Design</option>
+          <option value="ai">AI & Data</option>
+        </select>
+        <input type="text" id="moc-skill-search" placeholder="Sök kompetens..." style="background:#0f172a; color:#f3ecdc; border:1px solid #d9b46a; padding:4px; border-radius:4px;">
+      </div>
+    `;
+
+    const applyFilter = () => {
+      const cat = document.getElementById('moc-cat-filter').value;
+      const skill = document.getElementById('moc-skill-search').value.toLowerCase();
+      const cards = document.querySelectorAll('.agent-card, .card');
+      cards.forEach(card => {
+        const text = card.textContent.toLowerCase();
+        const catMatch = cat === 'all' || text.includes(cat);
+        const skillMatch = text.includes(skill);
+        card.style.display = (catMatch && skillMatch) ? 'block' : 'none';
+        card.style.transition = 'opacity 0.3s ease';
+      });
+    };
+
+    filterContainer.querySelector('#moc-cat-filter').addEventListener('change', applyFilter);
+    filterContainer.querySelector('#moc-skill-search').addEventListener('input', applyFilter);
+
+    window.MyOffiCityAddons.addTool('Quick-Filter', '🔍', filterContainer);
+    window.MyOffiCityAddons.register('Quick-Filter');
+  } catch (e) {
+    console.error('Quick-Filter init error:', e);
+  }
+})();

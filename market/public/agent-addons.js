@@ -7317,3 +7317,26 @@
     console.error('Status Pulse Addon Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const dock = document.createElement('div');
+    dock.className = 'moc-agent-dock';
+    dock.innerHTML = `
+      <div class="moc-dock-header">Agent-Dock</div>
+      <div class="moc-dock-dropzone" ondrop="event.preventDefault()" ondragover="event.preventDefault()">
+        <span class="moc-hint">Dra agenter hit</span>
+      </div>
+    `;
+    document.body.appendChild(dock);
+
+    window.MyOffiCityAddons.register('Agent-Dock');
+    
+    // Tool integration
+    const toolContent = document.createElement('div');
+    toolContent.innerHTML = '<p style="font-size:11px; opacity:0.8;">Hantera dina aktiva AI-agenter och deras konfigurationer härifrån.</p>';
+    window.MyOffiCityAddons.addTool('Agent-Dock', '⚓', toolContent);
+  } catch (e) {
+    console.error('Agent-Dock Error:', e);
+  }
+})();

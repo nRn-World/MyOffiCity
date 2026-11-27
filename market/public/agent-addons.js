@@ -1757,3 +1757,258 @@
     }
   } catch (e) {}
 })();
+
+(() => {
+  try {
+    const FAV_KEY = 'moc_favorites';
+    const getFavs = () => {
+      try { return JSON.parse(localStorage.getItem(FAV_KEY) || '[]'); } catch(e) { return []; }
+    };
+    const saveFavs = (favs) => {
+      localStorage.setItem(FAV_KEY, JSON.stringify(favs));
+    };
+
+    const container = document.createElement('div');
+    container.className = 'moc-fav-container';
+    
+    const header = document.createElement('div');
+    header.className = 'moc-fav-header';
+    header.innerHTML = `<span class="moc-fav-title">⭐ Favoriter & Jämförelse</span><span class="moc-fav-count" id="mocFavCount">0/3</span>`;
+    container.appendChild(header);
+
+    const list = document.createElement('div');
+    list.className = 'moc-fav-list';
+    container.appendChild(list);
+
+    const compareBtn = document.createElement('button');
+    compareBtn.className = 'moc-fav-compare-btn';
+    compareBtn.textContent = 'Jämför valda (0/3)';
+    compareBtn.disabled = true;
+    container.appendChild(compareBtn);
+
+    const renderList = () => {
+      const favs = getFavs();
+      document.getElementById('mocFavCount').textContent = `${favs.length}/3`;
+      list.innerHTML = '';
+      
+      if (favs.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'moc-fav-empty';
+        empty.textContent = 'Inga favoriter ännu. Klicka på ⭐ på en agent-kort.';
+        list.appendChild(empty);
+      } else {
+        favs.forEach(fav => {
+          const item = document.createElement('div');
+          item.className = 'moc-fav-item';
+          item.innerHTML = `
+            <div class="moc-fav-item-info">
+              <div class="moc-fav-item-name">${fav.name}</div>
+              <div class="moc-fav-item-price">${fav.price}</div>
+            </div>
+            <button class="moc-fav-remove" data-id="${fav.id}">✕</button>
+          `;
+          item.querySelector('.moc-fav-remove').addEventListener('click', (e) => {
+            e.stopPropagation();
+            const currentFavs = getFavs().filter(f => f.id !== fav.id);
+            saveFavs(currentFavs);
+            renderList();
+            updateCompareBtn();
+          });
+          list.appendChild(item);
+        });
+      }
+      updateCompareBtn();
+    };
+
+    const updateCompareBtn = () => {
+      const favs = getFavs();
+      compareBtn.textContent = `Jämför valda (${favs.length}/3)`;
+      compareBtn.disabled = favs.length < 2;
+    };
+
+    const showComparison = () => {
+      const favs = getFavs();
+      if (favs.length < 2) return;
+
+      const modal = document.createElement('div');
+      modal.className = 'moc-fav-modal';
+      const overlay = document.createElement('div');
+      overlay.className = 'moc-fav-overlay';
+      const content = document.createElement('div');
+      content.className = 'moc-fav-content';
+      
+      content.innerHTML = `
+        <div class="moc-fav-modal-header">
+          <h3>📊 Jämförelse av Favoriter</h3>
+          <button class="moc-fav-close">✕</button>
+        </div>
+        <div class="moc-fav-table-wrapper">
+          <table class="moc-fav-table">
+            <thead>
+              <tr>
+                <th>Egenskap</th>
+                ${favs.map(f => `<th>${f.name}</th>`).join('')}
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="moc-fav-label">Pris</td>
+                ${favs.map(f => `<td class="moc-fav-price">${f.price}</td>`).join('')}
+              </tr>
+              <tr>
+                <td class="moc-fav-label">Rating</td>
+                ${favs.map(f => `<td class="moc-fav-rating">⭐ ${f.rating || 'N/A'}</td>`).join('')}
+              </tr>
+              <tr>
+                <td class="moc-fav-label">Nyckelfunktion</td>
+                ${favs.map(f => `<td class="moc-fav-desc">${f.feature || 'N/A'}</td>`).join('')}
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      `;
+      
+      modal.appendChild(overlay);
+      modal.appendChild(content);
+      document.body.appendChild(modal);
+
+      const close = () => {
+        modal.remove();
+        document.removeEventListener('keydown', escHandler);
+      };
+      const escHandler = (e) => { if (e.key === 'Escape') close(); };
+      
+      content.querySelector('.moc-fav-close').addEventListener('click', close);
+      overlay.addEventListener('click', close);
+      document.addEventListener('keydown', escHandler);
+    };
+
+    compareBtn.addEventListener('click', showComparison);
+
+    // Attach to cards
+    const attachToCards = () => {
+      const cards = document.querySelectorAll('.card');
+      cards.forEach(card => {
+        if (card.querySelector('.moc-fav-btn')) return;
+        
+        const nameEl = card.querySelector('h3, .card-title, .agent-name');
+        const priceEl = card.querySelector('.price, .card-price, .agent-price');
+        const ratingEl = card.querySelector('.rating, .card-rating, .agent-rating');
+        const descEl = card.querySelector('p, .card-desc, .agent-desc');
+        
+        if (!nameEl) return;
+
+        const name = nameEl.textContent.trim();
+        const price = priceEl ? priceEl.textContent.trim() : 'N/A';
+        const rating = ratingEl ? ratingEl.textContent.trim().replace(/[^0-9.]/g, '') : 'N/A';
+        const feature = descEl ? descEl.textContent.trim().substring(0, 50) + (descEl.textContent.length > 50 ? '...' : '') : 'N/A';
+        
+        const id = name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+
+        const btn = document.createElement('button');
+        btn.className = 'moc-fav-btn';
+        btn.innerHTML = '⭐';
+        btn.title = 'Lägg till som favorit';
+        
+        const updateBtnState = () => {
+          const favs = getFavs();
+          const isFav = favs.some(f => f.id === id);
+          btn.classList.toggle('active', isFav);
+          btn.title = isFav ? 'Ta bort från favoriter' : 'Lägg till som favorit';
+        };
+
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          let favs = getFavs();
+          const existing = favs.find(f => f.id === id);
+          
+          if (existing) {
+            favs = favs.filter(f => f.id !== id);
+          } else {
+            if (favs.length >= 3) {
+              alert('Du kan bara ha 3 favoriter för jämförelse. Ta bort en först.');
+              return;
+            }
+            favs.push({ id, name, price, rating, feature });
+          }
+          
+          saveFavs(favs);
+          updateBtnState();
+          renderList();
+        });
+
+        updateBtnState();
+        card.appendChild(btn);
+      });
+    };
+
+    const init = () => {
+      attachToCards();
+      renderList();
+      if (window.MyOffiCityAddons) {
+        window.MyOffiCityAddons.addTool('Favoriter & Jämförelse', '⭐', container);
+        window.MyOffiCityAddons.register('Favoriter & Jämförelse');
+      }
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+
+    const observer = new MutationObserver(() => {
+      const newCards = document.querySelectorAll('.card:not(.moc-fav-initialized)');
+      newCards.forEach(card => {
+        card.classList.add('moc-fav-initialized');
+        const nameEl = card.querySelector('h3, .card-title, .agent-name');
+        if (!nameEl) return;
+        
+        const name = nameEl.textContent.trim();
+        const id = name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+        
+        const btn = document.createElement('button');
+        btn.className = 'moc-fav-btn';
+        btn.innerHTML = '⭐';
+        
+        const updateBtnState = () => {
+          const favs = getFavs();
+          const isFav = favs.some(f => f.id === id);
+          btn.classList.toggle('active', isFav);
+        };
+
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          let favs = getFavs();
+          const existing = favs.find(f => f.id === id);
+          if (existing) {
+            favs = favs.filter(f => f.id !== id);
+          } else {
+            if (favs.length >= 3) {
+              alert('Du kan bara ha 3 favoriter.');
+              return;
+            }
+            const priceEl = card.querySelector('.price, .card-price');
+            const ratingEl = card.querySelector('.rating, .card-rating');
+            const descEl = card.querySelector('p, .card-desc');
+            favs.push({
+              id,
+              name,
+              price: priceEl ? priceEl.textContent.trim() : 'N/A',
+              rating: ratingEl ? ratingEl.textContent.trim().replace(/[^0-9.]/g, '') : 'N/A',
+              feature: descEl ? descEl.textContent.trim().substring(0, 50) : 'N/A'
+            });
+          }
+          saveFavs(favs);
+          updateBtnState();
+          renderList();
+        });
+
+        updateBtnState();
+        card.appendChild(btn);
+      });
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+
+  } catch(e) {}
+})();

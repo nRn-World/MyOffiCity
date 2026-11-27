@@ -9606,3 +9606,54 @@
     console.error('Scratchpad Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const hotkeyOverlay = document.createElement('div');
+    hotkeyOverlay.className = 'moc-hotkey-overlay';
+    hotkeyOverlay.innerHTML = `
+      <h4>Controls</h4>
+      <ul>
+        <li>WASD - Move</li>
+        <li>Space - Jump/Hover</li>
+        <li>Tab - Cycle Objects</li>
+        <li>H - Toggle Overlay</li>
+      </ul>
+    `;
+    document.body.appendChild(hotkeyOverlay);
+
+    const keys = {};
+    window.addEventListener('keydown', (e) => {
+      keys[e.code] = true;
+      if (e.code === 'KeyH') {
+        hotkeyOverlay.classList.toggle('visible');
+        e.preventDefault();
+      }
+      if (e.code === 'Tab') {
+        e.preventDefault();
+        // Logic to cycle through interactive 3D objects would go here
+        console.log('Cycling interactive objects...');
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      keys[e.code] = false;
+    });
+
+    // Movement Loop (Simulated for 3D context)
+    const moveLoop = () => {
+      if (keys['KeyW']) console.log('Moving Forward');
+      if (keys['KeyS']) console.log('Moving Backward');
+      if (keys['KeyA']) console.log('Moving Left');
+      if (keys['KeyD']) console.log('Moving Right');
+      if (keys['Space']) console.log('Jumping/Hovering');
+      requestAnimationFrame(moveLoop);
+    };
+    moveLoop();
+
+    window.MyOffiCityAddons.addTool('Keyboard Nav', '⌨️', hotkeyOverlay);
+    window.MyOffiCityAddons.register('KeyboardNavigation');
+  } catch (e) {
+    console.error('Hotkey Addon Error:', e);
+  }
+})();

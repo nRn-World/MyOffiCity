@@ -7668,3 +7668,128 @@
     console.error('Wallpaper Addon Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const chatContainer = document.createElement('div');
+    chatContainer.className = 'moc-ai-chat-tool';
+    chatContainer.style.display = 'flex';
+    chatContainer.style.flexDirection = 'column';
+    chatContainer.style.height = '300px';
+    chatContainer.style.border = '1px solid rgba(217,180,106,0.3)';
+    chatContainer.style.borderRadius = '8px';
+    chatContainer.style.background = 'rgba(15,23,42,0.9)';
+    chatContainer.style.padding = '8px';
+    chatContainer.style.boxShadow = '0 4px 12px rgba(0,0,0,0.4)';
+    chatContainer.style.fontFamily = 'system-ui, sans-serif';
+    chatContainer.style.color = '#f3ecdc';
+    chatContainer.style.overflow = 'hidden';
+
+    const messages = document.createElement('div');
+    messages.className = 'moc-ai-chat-messages';
+    messages.style.flex = '1';
+    messages.style.overflowY = 'auto';
+    messages.style.marginBottom = '8px';
+    messages.style.paddingRight = '4px';
+    chatContainer.appendChild(messages);
+
+    const inputRow = document.createElement('div');
+    inputRow.style.display = 'flex';
+    inputRow.style.gap = '4px';
+    const input = document.createElement('textarea');
+    input.className = 'moc-ai-chat-input';
+    input.style.flex = '1';
+    input.style.resize = 'none';
+    input.style.height = '48px';
+    input.style.padding = '6px';
+    input.style.borderRadius = '4px';
+    input.style.border = '1px solid rgba(217,180,106,0.4)';
+    input.style.background = 'rgba(0,0,0,0.2)';
+    input.style.color = '#f3ecdc';
+    input.style.fontSize = '13px';
+    input.style.lineHeight = '1.4';
+    input.placeholder = 'Skriv ett meddelande…';
+    const sendBtn = document.createElement('button');
+    sendBtn.className = 'moc-ai-chat-send';
+    sendBtn.textContent = '✉️';
+    sendBtn.style.padding = '0 12px';
+    sendBtn.style.borderRadius = '4px';
+    sendBtn.style.border = 'none';
+    sendBtn.style.background = 'rgba(217,180,106,0.6)';
+    sendBtn.style.color = '#111';
+    sendBtn.style.cursor = 'pointer';
+    sendBtn.style.fontSize = '16px';
+    sendBtn.style.display = 'flex';
+    sendBtn.style.alignItems = 'center';
+    sendBtn.style.justifyContent = 'center';
+    sendBtn.style.transition = 'background 0.2s';
+    sendBtn.addEventListener('mouseover', () => sendBtn.style.background = 'rgba(217,180,106,0.8)');
+    sendBtn.addEventListener('mouseout', () => sendBtn.style.background = 'rgba(217,180,106,0.6)');
+
+    inputRow.appendChild(input);
+    inputRow.appendChild(sendBtn);
+    chatContainer.appendChild(inputRow);
+
+    const spinner = document.createElement('div');
+    spinner.className = 'moc-ai-chat-spinner';
+    spinner.style.display = 'none';
+    spinner.style.alignSelf = 'center';
+    spinner.style.marginTop = '4px';
+    spinner.style.width = '20px';
+    spinner.style.height = '20px';
+    spinner.style.border = '3px solid rgba(217,180,106,0.4)';
+    spinner.style.borderTop = '3px solid rgba(217,180,106,0.9)';
+    spinner.style.borderRadius = '50%';
+    spinner.style.animation = 'moc-spin 1s linear infinite';
+    chatContainer.appendChild(spinner);
+
+    const addMessage = (text, from) => {
+      const msg = document.createElement('div');
+      msg.style.marginBottom = '6px';
+      msg.style.padding = '6px 8px';
+      msg.style.borderRadius = '6px';
+      msg.style.background = from === 'bot' ? 'rgba(217,180,106,0.15)' : 'rgba(0,0,0,0.3)';
+      msg.style.alignSelf = from === 'bot' ? 'flex-start' : 'flex-end';
+      msg.style.maxWidth = '80%';
+      msg.style.wordWrap = 'break-word';
+      msg.textContent = text;
+      messages.appendChild(msg);
+      messages.scrollTop = messages.scrollHeight;
+    };
+
+    let abortCtrl = null;
+    const sendMessage = async () => {
+      const text = input.value.trim();
+      if (!text) return;
+      addMessage(text, 'user');
+      input.value = '';
+      spinner.style.display = 'block';
+      if (abortCtrl) abortCtrl.abort();
+      abortCtrl = new AbortController();
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text }),
+          signal: abortCtrl.signal
+        });
+        const data = await res.json();
+        addMessage(data.response || 'Ingen svar', 'bot');
+      } catch (e) {
+        if (e.name !== 'AbortError') {
+          addMessage('Fel: ' + e.message, 'bot');
+        }
+      } finally {
+        spinner.style.display = 'none';
+      }
+    };
+
+    sendBtn.addEventListener('click', sendMessage);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+
+    window.MyOffiCityAddons.addTool('AI Chat', '💬', chatContainer);
+    window.MyOffiCityAddons.register('AI Chat Assistant');
+  } catch (e) {
+    console.error('AI Chat Addon Error:', e);
+  }
+})();

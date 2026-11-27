@@ -4273,3 +4273,120 @@
     console.error('MiniMap addon error', e);
   }
 })();
+
+(() => {
+  try {
+    // Skapa huvudbehållare
+    const container = document.createElement('div');
+    container.className = 'moc-market-filter';
+
+    // Sökfält
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = 'Sök tjänster…';
+    input.className = 'moc-market-search';
+    container.appendChild(input);
+
+    // Förslaglista
+    const sugg = document.createElement('div');
+    sugg.className = 'moc-market-suggestions';
+    container.appendChild(sugg);
+
+    // Filterknappar
+    const btnContainer = document.createElement('div');
+    btnContainer.className = 'moc-market-buttons';
+    const popularBtn = document.createElement('button');
+    popularBtn.textContent = 'Populära';
+    popularBtn.className = 'moc-market-btn';
+    const newBtn = document.createElement('button');
+    newBtn.textContent = 'Nya';
+    newBtn.className = 'moc-market-btn';
+    btnContainer.appendChild(popularBtn);
+    btnContainer.appendChild(newBtn);
+    container.appendChild(btnContainer);
+
+    // Lokal lagring för sökhistorik
+    const HISTORY_KEY = 'moc_market_search_history';
+    const MAX_HISTORY = 10;
+
+    const getHistory = () => {
+      try {
+        return JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+      } catch {
+        return [];
+      }
+    };
+
+    const addToHistory = (term) => {
+      if (!term) return;
+      let h = getHistory();
+      h = h.filter(t => t !== term);
+      h.unshift(term);
+      if (h.length > MAX_HISTORY) h.pop();
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(h));
+    };
+
+    const renderSuggestions = (filter = '') => {
+      const list = getHistory().filter(t => t.toLowerCase().includes(filter.toLowerCase()));
+      sugg.innerHTML = '';
+      list.forEach(t => {
+        const item = document.createElement('div');
+        item.textContent = t;
+        item.className = 'moc-sugg-item';
+        item.addEventListener('click', () => {
+          input.value = t;
+          performSearch(t);
+        });
+        sugg.appendChild(item);
+      });
+    };
+
+    const performSearch = (term) => {
+      term = term.trim();
+      if (!term) return;
+      addToHistory(term);
+      renderSuggestions('');
+      const cards = document.querySelectorAll('.card, .service-card, .moc-card');
+      cards.forEach(c => {
+        const txt = c.textContent || '';
+        c.style.display = txt.toLowerCase().includes(term.toLowerCase()) ? '' : 'none';
+      });
+    };
+
+    // Händelser
+    input.addEventListener('input', (e) => {
+      const val = e.target.value.trim();
+      renderSuggestions(val);
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        performSearch(e.target.value);
+        e.target.blur();
+      }
+    });
+
+    popularBtn.addEventListener('click', () => {
+      const cards = document.querySelectorAll('.card, .service-card, .moc-card');
+      cards.forEach(c => {
+        c.style.display = c.dataset.popular === 'true' ? '' : 'none';
+      });
+    });
+
+    newBtn.addEventListener('click', () => {
+      const cards = document.querySelectorAll('.card, .service-card, .moc-card');
+      cards.forEach(c => {
+        c.style.display = c.dataset.new === 'true' ? '' : 'none';
+      });
+    });
+
+    // Initiera förslag
+    renderSuggestions();
+
+    // Registrera i addon‑dockan
+    window.MyOffiCityAddons.addTool('Marketplace Filter', '🔎', container);
+    window.MyOffiCityAddons.register('Marketplace Filter');
+  } catch (e) {
+    console.error('Marketplace Filter addon error', e);
+  }
+})();

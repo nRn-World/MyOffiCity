@@ -1971,8 +1971,20 @@ async function runSprintStep(env, sprint) {
         treePaths = (tr?.tree || []).filter(x => x.type === 'blob' && !/node_modules|\.git\/|\.png$|\.jpg$|\.glb$|\.bin$/i.test(x.path)).map(x => x.path).slice(0, 80);
       } catch { /* */ }
       const hasAddons = treePaths.includes('market/public/agent-addons.js');
+      let installedList = '';
+      if (hasAddons) {
+        try {
+          const af = await ghApi(sprint.gh_token, `/repos/${sprint.repo}/contents/market/public/agent-addons.js?ref=${encodeURIComponent(sprint.work_branch)}`);
+          if (af && af.content) {
+            const rawJs = b64DecodeUtf8(af.content);
+            const names = [...rawJs.matchAll(/(?:addTool|register)\s*\(\s*['"`]([^'"`]{2,60})['"`]/g)].map(m => m[1]);
+            const uniq = [...new Set(names)];
+            if (uniq.length) installedList = `\nALREADY INSTALLED ADDONS (${uniq.length}/10 max — NEVER duplicate these!): ${uniq.join(', ')}.`;
+          }
+        } catch { /* */ }
+      }
       const addonHint = hasAddons
-        ? ' IMPORTANT LIVE ARCHITECTURE: The live website (nrnworld.one/MyOffiCity/) is an AI company marketplace & 3D office portal served from market/public/ that ALWAYS loads market/public/agent-addons.css and market/public/agent-addons.js. Real pages & DOM: #topbar, #nav, #app, #foot, .dash, .dsb, .dmain, .cards, .tc-box, #/ (marketplace), #/city (3D city), #/dash (3D office + Tomas chat). Real public endpoints available: /MyOffiCity/api/ai/quota and /MyOffiCity/api/companies, plus localStorage for user tools. Plan 5 DIVERSE, PRACTICAL, VISIBLY NOTICEABLE UI/UX upgrades, interactive user tools (e.g. Pomodoro timer, quick notes, theme/font controls, live GPU/quota monitor using /MyOffiCity/api/ai/quota, marketplace filters, keyboard shortcuts, smooth animations) built in market/public/agent-addons.js + market/public/agent-addons.css via window.MyOffiCityAddons.addTool(...). STRICTLY FORBIDDEN: NEVER plan tasks requiring nonexistent backend APIs, NEVER invent "virtuella möten", and NEVER plan disconnected root files.'
+        ? ` IMPORTANT LIVE ARCHITECTURE: The live website (nrnworld.one/MyOffiCity/) loads market/public/agent-addons.css and market/public/agent-addons.js. ALL new UI tools MUST live strictly inside the collapsible "✨ AI-tillägg" drawer via window.MyOffiCityAddons.addTool(title, icon, el) — NEVER clutter #topbar, #nav, or float popups over the page! Real public APIs ONLY: /MyOffiCity/api/ai/quota and /MyOffiCity/api/companies (plus localStorage).${installedList} Plan 5 DIVERSE, genuinely useful, non-duplicate tools or refinements (e.g. Pomodoro focus timer, quick scratchpad notes, live GPU/API status card using /MyOffiCity/api/ai/quota, marketplace company directory filter using /MyOffiCity/api/companies, keyboard shortcuts cheatsheet). NEVER duplicate existing addons, NEVER touch #topbar, and NEVER invent nonexistent API endpoints.`
         : ' Plan 5 DIVERSE, high-impact improvements that genuinely improve the real app/game in this repository. NEVER repeat the same theme over and over, NEVER invent pages that do not exist, and NEVER plan useless orphan CSS files.';
       const ai = await callSprintAi(env, sprint.or_key, [
         { role: 'system', content: 'You are Tomas, Chief Architect & AI Team Leader (top-tier brain). Return ONLY valid JSON: {"tasks":[{"title":"...","details":"...","assignee":"..."}]}. Create 5 NEW concrete, diverse, visibly valuable improvement, bugfix, UI/UX or feature tasks that have NOT been done yet. Write in Swedish.' + addonHint },
@@ -2107,7 +2119,7 @@ async function runSprintStep(env, sprint) {
     const isDesignTask = !isTomasTask && (/^manus\b/i.test(task.assignee || '') || /\b(design|ui|ux|css|tema|färg|grafik|layout|animat|läsbarhet|ikon)\b/i.test((task.title || '') + ' ' + (task.details || '')));
     const workerTier = isTomasTask ? 'lead' : (isDesignTask ? 'design' : 'coder');
     const addonRules = hasAddons
-      ? `\n- LIVE WEBSITE CHANNEL: market/public/agent-addons.js and market/public/agent-addons.css are ALWAYS loaded live on nrnworld.one/MyOffiCity/. Put ALL visible UI/UX features, interactive widgets, animations, or visual enhancements into them using ===APPEND: market/public/agent-addons.js=== and/or ===APPEND: market/public/agent-addons.css===!\n- Using ===APPEND: ...=== automatically preserves ALL existing code — ONLY output your new self-contained (() => { ... })(); IIFE module!\n- REAL DOM & GUARANTEED VISIBILITY: To make any new interactive widget/tool immediately visible on the site without overlapping the 3D office or chat, call window.MyOffiCityAddons.addTool('Short Swedish Title', '✨', yourDomElement) AND window.MyOffiCityAddons.register('Your Feature Name')! Or style real existing elements ONLY: document.body, #topbar, #nav, #app, #foot, .bar, .dash, .dsb, .dmain, .cards.\n- STRICTLY FORBIDDEN: NEVER query nonexistent classes like .office-view, .dashboard-view, .dashboard-section, or .dashboard-item (they do NOT exist and make your widget invisible!). NEVER create disconnected root-level .js/.css files or fake /meeting/ pages.`
+      ? `\n- LIVE WEBSITE CHANNEL: Put ALL new UI tools/widgets strictly inside the collapsible "✨ AI-tillägg" drawer by calling window.MyOffiCityAddons.addTool('Short Swedish Title', '✨', yourDomElement) using ===APPEND: market/public/agent-addons.js=== and ===APPEND: market/public/agent-addons.css===!\n- HARD ANTI-CLUTTER RULES (violating ANY of these will be automatically BLOCKED):\n  1) NEVER inject elements into #topbar, #nav, .bar, or document.body (NO floating popups, NO extra topbar buttons, NO position:fixed overlays!). Everything goes cleanly inside window.MyOffiCityAddons.addTool(...)!\n  2) NEVER use filter: invert(...) or override body/#topbar/#nav/.bar with !important.\n  3) ONLY fetch real existing endpoints: /MyOffiCity/api/ai/quota or /MyOffiCity/api/companies (NEVER invent fake /api/... URLs that cause 404 errors!).\n  4) NEVER duplicate already-installed tools (Scroll-to-top, Snabbnavigering, Tema & läsbarhet, Snabbkommandon).`
       : `\n- EDITING EXISTING FILES: For any existing medium/large file (> 60 lines), ALWAYS use ===PATCH: path=== with exact <<<FIND / ===REPLACE / >>>END blocks instead of rewriting the whole file! ONLY use exact file paths that actually appear in "Repo files:" — NEVER invent nonexistent paths like Header.tsx.\n- NEVER create orphan .css files unless you also import/wire them into the corresponding .tsx/.jsx/.html file in the SAME response!`;
     const prevFeedback = (task.summary && task.summary.startsWith('TOMAS_FEEDBACK:'))
       ? `\n\n⚠️ TOMAS GRANSKNING AV FÖRRA UTKASTET (RÄTTA ALLA DESSA PUNKTER OCH GÖR EN MYCKET BÄTTRE VERSION):\n${task.summary.replace(/^TOMAS_FEEDBACK:\s*/, '')}`
@@ -2291,6 +2303,29 @@ Rules:
         await addSprintLog(env, sprint.id, task.assignee, `Skyddsspärr stoppade okopplad rotfil ${cleanPath} – använd market/public/agent-addons.js/css i stället.`);
         if (!/\.css$/i.test(cleanPath)) blockedCodeFile = true;
         continue;
+      }
+      // Skyddsspärr 1b: hårt kvalitets- & anti-skräp-skydd för agent-addons.js/css (förhindrar överfull toppmeny, flytande popups, 404-spam & filter:invert)
+      if (hasAddons && /market\/public\/agent-addons\.(js|css)$/i.test(cleanPath)) {
+        const snip = f.content;
+        const badReasons = [];
+        if (/filter\s*:\s*invert\s*\(/i.test(snip)) badReasons.push('filter:invert förstör mörkt tema');
+        if (/\.css$/i.test(cleanPath) && /position\s*:\s*fixed/i.test(snip)) badReasons.push('position:fixed-popups förbjudna (lägg i addTool-lådan)');
+        if (/\.js$/i.test(cleanPath) && /(getElementById\s*\(\s*['"`](topbar|nav)['"`]|querySelector\s*\(\s*['"`](#topbar|#nav|\.bar)['"`]|document\.body\.appendChild)/i.test(snip)) {
+          badReasons.push('får ej injicera direkt i #topbar/#nav/body – använd window.MyOffiCityAddons.addTool()');
+        }
+        if (/\.js$/i.test(cleanPath)) {
+          const fetches = [...snip.matchAll(/fetch\s*\(\s*['"`]([^'"`]+)['"`]/g)].map(m => m[1]);
+          const badFetch = fetches.find(u => !/^(\/MyOffiCity)?\/api\/(ai\/quota|companies)\b/i.test(u));
+          if (badFetch) badReasons.push(`otillåten/påhittad API-adress (${badFetch}) som ger 404`);
+        }
+        if (f.mode === 'append' && existingLen > 32000) {
+          badReasons.push(`filen är redan ${Math.round(existingLen / 1024)} KB (max 32 KB) – förfina befintlig kod med ===PATCH=== i stället`);
+        }
+        if (badReasons.length) {
+          await addSprintLog(env, sprint.id, 'Tomas', `🛡️ Anti-skräpskydd stoppade negativ ändring i ${cleanPath}: ${badReasons.join('; ')}.`);
+          if (!/\.css$/i.test(cleanPath)) blockedCodeFile = true;
+          continue;
+        }
       }
       let finalContent = f.content;
       if (f.mode === 'append') {

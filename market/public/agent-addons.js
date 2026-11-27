@@ -2202,3 +2202,117 @@
     window.MyOffiCityAddons.register('Aktivitetshistorik');
   } catch(e) {}
 })();
+
+(() => { try {
+  const wrap = document.createElement('div');
+  wrap.className = 'moc-a11y-wrap';
+  wrap.innerHTML = `
+    <div class="moc-a11y-row">
+      <button id="mocA11yToggle" class="moc-a11y-btn" aria-pressed="false" title="Aktivera text-till-tal">
+        <span class="moc-a11y-icon">🔊</span>
+        <span class="moc-a11y-label">Tillgänglighet</span>
+      </button>
+      <span id="mocA11yStatus" class="moc-a11y-status" role="status" aria-live="polite">Av</span>
+    </div>
+    <div id="mocA11yPanel" class="moc-a11y-panel" hidden>
+      <p class="moc-a11y-hint">När aktiverad: knappar & länkar får ARIA-labels, statusmeddelanden läses högt, och "Läs högt"-knappar visas i chat.</p>
+      <div class="moc-a11y-row">
+        <label class="moc-a11y-label">Hastighet</label>
+        <input type="range" id="mocA11yRate" min="0.5" max="2" step="0.1" value="1" aria-label="Tal-hastighet">
+      </div>
+      <div class="moc-a11y-row">
+        <label class="moc-a11y-label">Röst</label>
+        <select id="mocA11yVoice" aria-label="Välj röst"><option value="">System</option></select>
+      </div>
+    </div>
+  `;
+
+  let enabled = false;
+  let voices = [];
+  let currentUtterance = null;
+
+  const toggleBtn = wrap.querySelector('#mocA11yToggle');
+  const statusEl = wrap.querySelector('#mocA11yStatus');
+  const panel = wrap.querySelector('#mocA11yPanel');
+  const rateInput = wrap.querySelector('#mocA11yRate');
+  const voiceSelect = wrap.querySelector('#mocA11yVoice');
+
+  function loadVoices() {
+    if (!('speechSynthesis' in window)) return;
+    voices = window.speechSynthesis.getVoices();
+    voiceSelect.innerHTML = '<option value="">System</option>';
+    voices.forEach((v, i) => {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = v.name + (v.lang === 'sv-SE' ? ' (SV)' : '');
+      voiceSelect.appendChild(opt);
+    });
+  }
+  if ('speechSynthesis' in window) {
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+  }
+
+  function speak(text) {
+    if (!enabled || !('speechSynthesis' in window) || !text) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = parseFloat(rateInput.value) || 1;
+    const vi = parseInt(voiceSelect.value, 10);
+    if (!isNaN(vi) && voices[vi]) u.voice = voices[vi];
+    u.lang = 'sv-SE';
+    currentUtterance = u;
+    window.speechSynthesis.speak(u);
+  }
+
+  function applyAriaLabels() {
+    document.querySelectorAll('button, a, [role="button"]').forEach(el => {
+      if (!el.getAttribute('aria-label')) {
+        const txt = (el.textContent || '').trim().slice(0, 60);
+        if (txt) el.setAttribute('aria-label', txt);
+      }
+    });
+    const topbar = document.getElementById('topbar');
+    if (topbar && !topbar.getAttribute('role')) topbar.setAttribute('role', 'banner');
+    const foot = document.getElementById('foot');
+    if (foot && !foot.getAttribute('role')) foot.setAttribute('role', 'contentinfo');
+  }
+
+  function injectChatReadAloud() {
+    const chatMsgs = document.querySelectorAll('.chat-msg, .msg, [class*="message"]');
+    chatMsgs.forEach(msg => {
+      if (msg.querySelector('.moc-read-aloud')) return;
+      const btn = document.createElement('button');
+      btn.className = 'moc-read-aloud';
+      btn.textContent = '🔊';
+      btn.title = 'Läs högt';
+      btn.setAttribute('aria-label', 'Läs detta meddelande högt');
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        speak(msg.textContent.replace(/🔊/g, '').trim());
+      });
+      msg.appendChild(btn);
+    });
+  }
+
+  function setEnabled(on) {
+    enabled = on;
+    toggleBtn.setAttribute('aria-pressed', String(on));
+    toggleBtn.classList.toggle('active', on);
+    statusEl.textContent = on ? 'På' : 'Av';
+    panel.hidden = !on;
+    if (on) {
+      applyAriaLabels();
+      injectChatReadAloud();
+      speak('Tillgänglighetsläge aktiverat');
+    } else {
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    }
+  }
+
+  toggleBtn.addEventListener('click', () => setEnabled(!enabled));
+  rateInput.addEventListener('input', () => { if (currentUtterance) currentUtterance.rate = parseFloat(rateInput.value); });
+
+  window.MyOffiCityAddons.addTool('Tillgänglighet', '♿', wrap);
+  window.MyOffiCityAddons.register('Tillgänglighet');
+} catch(e) {} })();

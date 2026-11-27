@@ -5330,3 +5330,50 @@ body.moc-focus-mode .chat-container {
 .moc-dashboard-refresh:hover {
   background: rgba(217, 180, 106, 0.25);
 }
+
+/* Agent Config Widget styling */
+.moc-config-panel {
+  background: rgba(12, 18, 34, 0.92);
+  border: 1px solid rgba(217, 180, 106, 0.32);
+  border-radius: 8px;
+  padding: 12px;
+  color: #f3ecdc;
+  backdrop-filter: blur(6px);
+  max-width: 260px;
+}
+.moc-config-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.moc-config-label {
+  font-size: 13px;
+  margin-right: 6px;
+}
+.moc-config-input {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #f3ecdc;
+  padding: 4px 6px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+.moc-config-input:focus {
+  outline: 1px solid rgba(217, 180, 106, 0.6);
+}
+.moc-config-button {
+  width: 100%;
+  margin-top: 8px;
+  background: rgba(217, 180, 106, 0.15);
+  border: 1px solid rgba(217, 180, 106, 0.4);
+  color: #f3ecdc;
+  padding: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.2s ease;
+}
+.moc-config-button:hover {
+  background: rgba(217, 180, 106, 0.25);
+}

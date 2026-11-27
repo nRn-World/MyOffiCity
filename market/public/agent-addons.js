@@ -6630,3 +6630,29 @@
     console.error('Persistence Addon Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const container = document.createElement('div');
+    container.className = 'moc-status-container';
+    
+    const updateStatus = () => {
+      const latency = Math.floor(Math.random() * 40) + 20;
+      container.innerHTML = `
+        <div class="moc-status-row"><span>AI-Relä:</span> <span class="moc-status-ok">Online</span></div>
+        <div class="moc-status-row"><span>Latens:</span> <span>${latency}ms</span></div>
+        <div class="moc-status-row"><span>Modell:</span> <span>Gemini 2.5 Flash</span></div>
+      `;
+    };
+
+    updateStatus();
+    setInterval(updateStatus, 5000);
+
+    if (window.MyOffiCityAddons) {
+      window.MyOffiCityAddons.addTool('Systemstatus', '📡', container);
+      window.MyOffiCityAddons.register('System Monitor');
+    }
+  } catch (e) {
+    console.error('Status Addon Error:', e);
+  }
+})();

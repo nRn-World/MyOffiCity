@@ -6635,24 +6635,65 @@
   try {
     const container = document.createElement('div');
     container.className = 'moc-status-container';
-    
-    const updateStatus = () => {
-      const latency = Math.floor(Math.random() * 40) + 20;
+    const stats = { fps: 0, latency: 0 };
+    let lastTime = performance.now(), frames = 0;
+
+    const updateFPS = () => {
+      frames++;
+      const now = performance.now();
+      if (now >= lastTime + 1000) {
+        stats.fps = Math.round((frames * 1000) / (now - lastTime));
+        frames = 0; lastTime = now;
+        render();
+      }
+      requestAnimationFrame(updateFPS);
+    };
+
+    const checkLatency = async () => {
+      const start = performance.now();
+      try {
+        await fetch(window.location.href, { method: 'HEAD', cache: 'no-store' });
+        stats.latency = Math.round(performance.now() - start);
+      } catch (e) { stats.latency = -1; }
+      render();
+    };
+
+    const render = () => {
+      const lCol = stats.latency < 150 ? '#4ade80' : '#fbbf24';
       container.innerHTML = `
-        <div class="moc-status-row"><span>AI-Relä:</span> <span class="moc-status-ok">Online</span></div>
-        <div class="moc-status-row"><span>Latens:</span> <span>${latency}ms</span></div>
-        <div class="moc-status-row"><span>Modell:</span> <span>Gemini 2.5 Flash</span></div>
+        <div class="moc-status-row"><span>Gränssnitt (FPS):</span> <span style="color:#4ade80">${stats.fps}</span></div>
+        <div class="moc-status-row"><span>Nätverkslatens:</span> <span style="color:${lCol}">${stats.latency >= 0 ? stats.latency + 'ms' : 'Offline'}</span></div>
+        <div class="moc-status-row"><span>AI-Relä:</span> <span class="moc-status-ok">Aktiv</span></div>
       `;
     };
 
-    updateStatus();
-    setInterval(updateStatus, 5000);
+    updateFPS(); checkLatency();
+    setInterval(checkLatency, 15000);
+    if (window.MyOffiCityAddons) {
+      window.MyOffiCityAddons.addTool('Systemstatus', '📊', container);
+      window.MyOffiCityAddons.register('Performance Monitor');
+    }
+  } catch (e) { console.error('Status Error:', e); }
+})();
+
+(() => {
+  try {
+    const logContainer = document.createElement('div');
+    logContainer.style.cssText = 'font-family: monospace; font-size: 11px; max-height: 200px; overflow-y: auto; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 4px;';
+    
+    const addLog = (msg) => {
+      const entry = document.createElement('div');
+      entry.style.marginBottom = '4px';
+      entry.innerHTML = `<span style="color:#d9b46a">[${(performance.now()/1000).toFixed(2)}s]</span> ${msg}`;
+      logContainer.prepend(entry);
+    };
+
+    addLog('System initierat...');
+    addLog('Agent-nätverk anslutet.');
 
     if (window.MyOffiCityAddons) {
-      window.MyOffiCityAddons.addTool('Systemstatus', '📡', container);
-      window.MyOffiCityAddons.register('System Monitor');
+      window.MyOffiCityAddons.addTool('Agent-logg', '📜', logContainer);
+      window.MyOffiCityAddons.register('Activity Logger');
     }
-  } catch (e) {
-    console.error('Status Addon Error:', e);
-  }
+  } catch (e) { console.error('Logg-fel:', e); }
 })();

@@ -5995,3 +5995,18 @@ body.moc-focus-mode .chat-container {
   opacity: 0.5;
   font-style: italic;
 }
+
+/* Workspace Switcher Styles */
+.moc-tool-card {
+  margin-bottom: 10px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  border: 1px solid rgba(217, 180, 106, 0.1);
+}
+.moc-tool-title {
+  font-weight: bold;
+  color: #d9b46a;
+  margin-bottom: 5px;
+  font-size: 13px;
+}

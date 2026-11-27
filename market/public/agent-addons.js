@@ -8615,3 +8615,38 @@
     console.error('Quick Preview Addon Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const routes = { '1': '/', '2': '/city', '3': '/dash' };
+    
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.altKey && routes[e.key]) {
+        e.preventDefault();
+        const target = routes[e.key];
+        
+        document.body.style.transition = 'opacity 0.3s ease';
+        document.body.style.opacity = '0';
+        
+        setTimeout(() => {
+          window.location.hash = target;
+          setTimeout(() => {
+            document.body.style.opacity = '1';
+          }, 100);
+        }, 300);
+      }
+    });
+
+    const info = document.createElement('div');
+    info.innerHTML = `<ul style="font-size:12px; color:#ccc; padding-left:15px; margin:0;">
+      <li><b>Ctrl+Alt+1</b>: Marketplace</li>
+      <li><b>Ctrl+Alt+2</b>: 3D City</li>
+      <li><b>Ctrl+Alt+3</b>: Office Dashboard</li>
+    </ul>`;
+    
+    window.MyOffiCityAddons.addTool('Workspace Switcher', '⌨️', info);
+    window.MyOffiCityAddons.register('Workspace Switcher');
+  } catch (e) {
+    console.error('Workspace Switcher Error:', e);
+  }
+})();

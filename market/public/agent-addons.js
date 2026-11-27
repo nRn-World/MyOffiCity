@@ -4781,3 +4781,48 @@
     console.error('Command Palette addon error:', e);
   }
 })();
+
+(() => {
+  try {
+    // Skapa container för tidslinjen
+    const container = document.createElement('div');
+    container.className = 'moc-timeline';
+    const list = document.createElement('ul');
+    list.className = 'moc-timeline-list';
+    container.appendChild(list);
+
+    // Placeholder‑funktion – ersätt med riktig API‑anrop vid behov
+    async function fetchEvents() {
+      // Simulerade händelser (ska bytas ut mot riktiga loggar)
+      const now = new Date();
+      return [
+        { time: now.toLocaleTimeString(), msg: 'AI svarade på en användarförfrågan' },
+        { time: now.toLocaleTimeString(), msg: 'Ny commit pushad till repo' },
+        { time: now.toLocaleTimeString(), msg: 'Sprint‑planering slutförd' },
+      ];
+    }
+
+    // Uppdatera tidslinjen
+    async function updateTimeline() {
+      const events = await fetchEvents();
+      // Visa max 5 senaste händelser, nyast överst
+      list.innerHTML = '';
+      events.slice(-5).reverse().forEach(e => {
+        const li = document.createElement('li');
+        li.className = 'moc-timeline-item';
+        li.innerHTML = `<span class="time">${e.time}</span><span class="msg">${e.msg}</span>`;
+        list.appendChild(li);
+      });
+    }
+
+    // Initiera och refresha var 15 sekunder
+    updateTimeline();
+    setInterval(updateTimeline, 15000);
+
+    // Registrera widgeten i AI‑dockan
+    window.MyOffiCityAddons.addTool('Agent‑Timeline', '🕒', container);
+    window.MyOffiCityAddons.register('Agent‑Timeline');
+  } catch (e) {
+    console.error('Agent Timeline addon error:', e);
+  }
+})();

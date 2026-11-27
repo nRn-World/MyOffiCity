@@ -9316,3 +9316,53 @@
     console.error('Smart-Scroll Init Error:', e);
   }
 })();
+
+(() => {
+  try {
+    /* ---------- Dark Mode Toggle ---------- */
+    const darkBtn = document.createElement('button');
+    darkBtn.textContent = '🌙 Dark Mode';
+    darkBtn.title = 'Växla mörkt läge';
+    darkBtn.className = 'moc-dark-toggle-btn';
+    const applyTheme = (theme) => {
+      if (theme === 'dark') {
+        document.documentElement.dataset.theme = 'dark';
+      } else {
+        delete document.documentElement.dataset.theme;
+      }
+    };
+    const savedTheme = localStorage.getItem('mocTheme');
+    if (savedTheme) applyTheme(savedTheme);
+    darkBtn.addEventListener('click', () => {
+      const isDark = document.documentElement.dataset.theme === 'dark';
+      const newTheme = isDark ? '' : 'dark';
+      applyTheme(newTheme);
+      localStorage.setItem('mocTheme', newTheme);
+    });
+    window.MyOffiCityAddons.addTool('Dark Mode', '🌙', darkBtn);
+    window.MyOffiCityAddons.register('Dark Mode');
+
+    /* ---------- Page Load Time Widget ---------- */
+    const loadInfo = document.createElement('div');
+    loadInfo.style.fontSize = '12px';
+    loadInfo.style.color = '#94a3b8';
+    const showLoadTime = () => {
+      const nav = performance.getEntriesByType('navigation')[0];
+      if (nav) {
+        const ms = Math.round(nav.loadEventEnd - nav.startTime);
+        loadInfo.textContent = `⏱️ Sidans laddningstid: ${ms} ms`;
+      } else {
+        loadInfo.textContent = '⏱️ Laddningstid ej tillgänglig';
+      }
+    };
+    if (document.readyState === 'complete') {
+      showLoadTime();
+    } else {
+      window.addEventListener('load', showLoadTime);
+    }
+    window.MyOffiCityAddons.addTool('Page Load Time', '⏱️', loadInfo);
+    window.MyOffiCityAddons.register('Page Load Time');
+  } catch (e) {
+    console.error('Addon Init Error:', e);
+  }
+})();

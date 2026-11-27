@@ -2345,3 +2345,44 @@
   wrap.querySelectorAll('input, select').forEach(el => el.addEventListener('input', update));
   window.MyOffiCityAddons.addTool('Prisberäknare', '💰', wrap);
 } catch(e) {} })();
+
+(() => { try {
+  const palette = document.createElement('div');
+  palette.className = 'moc-palette';
+  palette.innerHTML = `
+    <div class="moc-palette-inner">
+      <input type="text" placeholder="Sök kommando (t.ex. 'marknad', 'stad', 'dash')..." id="moc-palette-input">
+      <div class="moc-palette-list">
+        <div class="moc-palette-item" data-url="#/">Marknad</div>
+        <div class="moc-palette-item" data-url="#/city">Stadsvy</div>
+        <div class="moc-palette-item" data-url="#/dash">Dashboard</div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(palette);
+
+  const input = palette.querySelector('#moc-palette-input');
+  const toggle = (show) => {
+    palette.style.display = show ? 'flex' : 'none';
+    if (show) input.focus();
+  };
+
+  window.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      e.preventDefault();
+      toggle(palette.style.display !== 'flex');
+    }
+    if (e.key === 'Escape') toggle(false);
+  });
+
+  palette.addEventListener('click', (e) => {
+    if (e.target.classList.contains('moc-palette-item')) {
+      window.location.hash = e.target.dataset.url;
+      toggle(false);
+    } else if (e.target === palette) {
+      toggle(false);
+    }
+  });
+
+  window.MyOffiCityAddons.register('Kommando-Palett');
+} catch(e) {} })();

@@ -5390,3 +5390,67 @@
     console.error('Snapshot addon error:', e);
   }
 })();
+
+(() => {
+  try {
+    const performSort = (type) => {
+      const container = document.querySelector('.cards');
+      if (!container) return;
+
+      const cards = Array.from(container.children);
+      if (cards.length < 2) return;
+
+      // Starta animation
+      container.classList.add('moc-sorting-active');
+      
+      setTimeout(() => {
+        cards.sort((a, b) => {
+          if (type === 'pop') {
+            // Försök hitta betyg (stjärnor eller procent)
+            const getVal = (el) => {
+              const text = el.innerText;
+              const match = text.match(/(\d+)/);
+              return match ? parseInt(match[0]) : 0;
+            };
+            return getVal(b) - getVal(a);
+          } else if (type === 'new') {
+            // Sortera på ID eller ordning (nyast först)
+            return b.innerHTML.length - a.innerHTML.length; // Heuristisk fallback
+          } else {
+            // Alfabetisk
+            const nameA = a.querySelector('h3')?.innerText || a.innerText;
+            const nameB = b.querySelector('h3')?.innerText || b.innerText;
+            return nameA.localeCompare(nameB);
+          }
+        });
+
+        // Re-appenda i rätt ordning
+        cards.forEach(card => container.appendChild(card));
+        
+        // Avsluta animation
+        setTimeout(() => {
+          container.classList.remove('moc-sorting-active');
+        }, 50);
+      }, 300);
+    };
+
+    const ui = document.createElement('div');
+    ui.className = 'moc-sorter-container';
+    ui.innerHTML = `
+      <div class="moc-sorter-grid">
+        <button class="moc-sort-btn" data-type="pop">🔥 Popularitet</button>
+        <button class="moc-sort-btn" data-type="alpha">🔤 Namn A-Ö</button>
+        <button class="moc-sort-btn" data-type="new">🕒 Senaste</button>
+      </div>
+    `;
+
+    ui.querySelectorAll('.moc-sort-btn').forEach(btn => {
+      btn.onclick = () => performSort(btn.dataset.type);
+    });
+
+    window.MyOffiCityAddons.addTool('Market Sorter', '📊', ui);
+    window.MyOffiCityAddons.register('Market-Sorter-Pro');
+  } catch (e) {
+    console.error('Sorter addon error:', e);
+  }
+})();

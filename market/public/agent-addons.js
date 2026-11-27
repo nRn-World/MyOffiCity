@@ -2796,3 +2796,29 @@
     window.MyOffiCityAddons.register('Performance-Monitor');
   } catch(e) {}
 })();
+
+(() => {
+  try {
+    const container = document.createElement('div');
+    container.innerHTML = `
+      <div id="agent-log-viewer" style="display:none; position:fixed; top:10%; left:10%; width:80%; height:80%; background:#0f172a; border:1px solid #d9b46a; z-index:9999; padding:20px; overflow:auto; border-radius:8px;">
+        <h3 style="color:#d9b46a; margin-top:0;">Agent Rådata-logg</h3>
+        <pre id="agent-log-content" style="color:#e2e8f0; font-family:monospace; white-space:pre-wrap;"></pre>
+        <button onclick="document.getElementById('agent-log-viewer').style.display='none'" style="background:#d9b46a; border:none; padding:8px 16px; cursor:pointer; border-radius:4px;">Stäng</button>
+      </div>
+    `;
+    document.body.appendChild(container);
+
+    window.openAgentLog = (data) => {
+      const viewer = document.getElementById('agent-log-viewer');
+      const content = document.getElementById('agent-log-content');
+      content.textContent = JSON.stringify(data, null, 2);
+      viewer.style.display = 'block';
+    };
+
+    const toolEl = document.createElement('div');
+    toolEl.innerHTML = '<p style="font-size:12px; color:#94a3b8;">Klicka på "Expandera" i Tomas-chatten för att se JSON-loggar.</p>';
+    window.MyOffiCityAddons.addTool('Agent-logg', '📜', toolEl);
+    window.MyOffiCityAddons.register('Agent-Log-Viewer');
+  } catch(e) {}
+})();

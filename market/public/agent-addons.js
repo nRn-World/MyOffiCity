@@ -353,3 +353,69 @@
     console.error('Health monitor error:', e);
   }
 })();
+
+(() => {
+  try {
+    const container = document.createElement('div');
+    container.style.display = 'flex';
+    container.style.flexDirection = 'column';
+    container.style.gap = '12px';
+    container.style.padding = '4px 0';
+
+    const colors = [
+      { name: 'Guld', hex: '#d9b46a' },
+      { name: 'Cyan', hex: '#22d3ee' },
+      { name: 'Smaragd', hex: '#34d399' },
+      { name: 'Rosa', hex: '#fb7185' },
+      { name: 'Lila', hex: '#a855f7' }
+    ];
+
+    const colorRow = document.createElement('div');
+    colorRow.style.display = 'flex';
+    colorRow.style.gap = '10px';
+    colorRow.style.flexWrap = 'wrap';
+    
+    colors.forEach(c => {
+      const b = document.createElement('button');
+      b.style.width = '26px';
+      b.style.height = '26px';
+      b.style.borderRadius = '50%';
+      b.style.border = '2px solid rgba(255,255,255,0.15)';
+      b.style.backgroundColor = c.hex;
+      b.style.cursor = 'pointer';
+      b.style.transition = 'transform 0.2s ease';
+      b.title = c.name;
+      b.onmouseover = () => b.style.transform = 'scale(1.15)';
+      b.onmouseout = () => b.style.transform = 'scale(1)';
+      b.onclick = () => {
+        document.documentElement.style.setProperty('--moc-accent', c.hex);
+        document.documentElement.style.setProperty('--moc-accent-glow', c.hex + '44');
+      };
+      colorRow.appendChild(b);
+    });
+
+    const label = document.createElement('div');
+    label.textContent = 'Välj accentfärg:';
+    label.style.fontSize = '11px';
+    label.style.fontWeight = '600';
+    label.style.textTransform = 'uppercase';
+    label.style.letterSpacing = '0.05em';
+    label.style.opacity = '0.7';
+
+    const glassBtn = document.createElement('button');
+    glassBtn.className = 'moc-chip-btn';
+    glassBtn.style.width = '100%';
+    glassBtn.style.marginTop = '4px';
+    glassBtn.textContent = '✨ Växla Ultra-Glas';
+    glassBtn.onclick = () => document.body.classList.toggle('moc-ultra-glass');
+
+    container.appendChild(label);
+    container.appendChild(colorRow);
+    container.appendChild(glassBtn);
+
+    window.MyOffiCityAddons.addTool('Design-inställningar', '🎨', container);
+    window.MyOffiCityAddons.register('Design-inställningar');
+  } catch (e) {
+    console.error('Design tool error:', e);
+  }
+})();

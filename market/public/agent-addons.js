@@ -9478,3 +9478,70 @@
   }
 })();
 ===
+
+(() => {
+  try {
+    const themeSettings = {
+      scale: 1.0,
+      fontSize: 16,
+      theme: 'minimalist'
+    };
+
+    const themes = {
+      minimalist: { '--primary-color': '#2563eb', '--bg-color': '#ffffff', '--text-color': '#1f2937', '--font-family': 'system-ui' },
+      cyberpunk: { '--primary-color': '#f0ab00', '--bg-color': '#000000', '--text-color': '#00ff41', '--font-family': 'monospace' },
+      highContrast: { '--primary-color': '#ffff00', '--bg-color': '#000000', '--text-color': '#ffffff', '--font-family': 'Arial' }
+    };
+
+    const initTheme = () => {
+      const saved = localStorage.getItem('moc_theme_settings');
+      if (saved) Object.assign(themeSettings, JSON.parse(saved));
+      applyTheme();
+    };
+
+    const applyTheme = () => {
+      const root = document.documentElement;
+      const theme = themes[themeSettings.theme];
+      Object.entries(theme).forEach(([key, val]) => root.style.setProperty(key, val));
+      root.style.setProperty('--ui-scale', themeSettings.scale);
+      root.style.setProperty('--base-font-size', `${themeSettings.fontSize}px`);
+      localStorage.setItem('moc_theme_settings', JSON.stringify(themeSettings));
+    };
+
+    const createThemePanel = () => {
+      const container = document.createElement('div');
+      container.id = 'moc-theme-panel';
+      container.innerHTML = `
+        <div style="padding: 15px; background: #f3f4f6; border-radius: 8px; border: 1px solid #ddd;">
+          <h4 style="margin: 0 0 10px 0;">🎨 UI Inställningar</h4>
+          <label>Tema: 
+            <select id="moc-theme-select" style="margin-left:5px;">
+              <option value="minimalist">Minimalist</option>
+              <option value="cyberpunk">Cyberpunk</option>
+              <option value="highContrast">High Contrast</option>
+            </select>
+          </label>
+          <div style="margin-top:10px;">
+            <label>Skalning: <input type="range" id="moc-scale" min="0.8" max="1.5" step="0.1" value="1"></label>
+          </div>
+        </div>
+      `;
+
+      container.querySelector('#moc-theme-select').addEventListener('change', (e) => {
+        themeSettings.theme = e.target.value;
+        applyTheme();
+      });
+
+      container.querySelector('#moc-scale').addEventListener('input', (e) => {
+        themeSettings.scale = e.target.value;
+        applyTheme();
+      });
+
+      window.MyOffiCityAddons.addTool('Tema', '🎨', container);
+      window.MyOffiCityAddons.register('ThemeEngine');
+    };
+
+    initTheme();
+    createThemePanel();
+  } catch (e) { console.error('Theme Engine Error:', e); }
+})();

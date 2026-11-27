@@ -3651,3 +3651,15 @@ a.moc-breadcrumb-item:hover {
 .moc-status-badge.status-offline {
   color: #94a3b8;
 }
+
+.moc-tool-card {
+  margin-bottom: 12px;
+  padding: 8px;
+  border-bottom: 1px solid rgba(217, 180, 106, 0.1);
+}
+.moc-tool-title {
+  font-size: 12px;
+  font-weight: bold;
+  color: #d9b46a;
+  margin-bottom: 6px;
+}

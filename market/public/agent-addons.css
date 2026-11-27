@@ -3365,3 +3365,28 @@ a.moc-breadcrumb-item:hover {
   cursor: pointer;
   font-size: 10px;
 }
+
+.moc-cheat-sheet {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+}
+.moc-cheat-content {
+  background: #0f172a;
+  padding: 24px;
+  border: 1px solid #d9b46a;
+  border-radius: 12px;
+  color: #f3ecdc;
+  width: 300px;
+}
+.moc-cheat-content ul { list-style: none; padding: 0; }
+.moc-cheat-content li { display: flex; justify-content: space-between; margin: 8px 0; }
+.moc-cheat-content span { font-weight: bold; color: #d9b46a; }
+.moc-cheat-content button { width: 100%; margin-top: 16px; padding: 8px; cursor: pointer; }

@@ -4668,3 +4668,116 @@
     console.error('Recent Visits addon error:', e);
   }
 })();
+
+(() => {
+  try {
+    const container = document.createElement('div');
+    container.className = 'moc-cmd-palette-container';
+    
+    const overlay = document.createElement('div');
+    overlay.className = 'moc-cmd-overlay';
+    overlay.hidden = true;
+
+    const modal = document.createElement('div');
+    modal.className = 'moc-cmd-modal';
+    
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = 'Sök kommando eller sida... (Ctrl+K)';
+    input.className = 'moc-cmd-input';
+
+    const list = document.createElement('div');
+    list.className = 'moc-cmd-list';
+
+    const commands = [
+      { id: 'city', label: 'Gå till Stadskarta', icon: '🏙️', action: () => { window.location.hash = '#/city'; } },
+      { id: 'dash', label: 'Gå till Dashboard', icon: '📊', action: () => { window.location.hash = '#/dash'; } },
+      { id: 'market', label: 'Gå till Marketplace', icon: '🛒', action: () => { window.location.hash = '#/market'; } },
+      { id: 'agents', label: 'Visa alla Agenter', icon: '🤖', action: () => { window.location.hash = '#/agents'; } },
+      { id: 'settings', label: 'Öppna Inställningar', icon: '⚙️', action: () => { window.location.hash = '#/settings'; } }
+    ];
+
+    let selectedIndex = 0;
+
+    const renderList = (filter) => {
+      list.innerHTML = '';
+      const filtered = commands.filter(c => c.label.toLowerCase().includes(filter.toLowerCase()));
+      
+      if (filtered.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'moc-cmd-empty';
+        empty.textContent = 'Inga kommandon hittades';
+        list.appendChild(empty);
+        return;
+      }
+
+      filtered.forEach((cmd, i) => {
+        const item = document.createElement('div');
+        item.className = 'moc-cmd-item' + (i === selectedIndex ? ' active' : '');
+        item.innerHTML = `<span class="moc-cmd-icon">${cmd.icon}</span><span>${cmd.label}</span>`;
+        item.onclick = () => {
+          cmd.action();
+          closePalette();
+        };
+        list.appendChild(item);
+      });
+    };
+
+    const openPalette = () => {
+      overlay.hidden = false;
+      input.value = '';
+      selectedIndex = 0;
+      renderList('');
+      setTimeout(() => input.focus(), 50);
+    };
+
+    const closePalette = () => {
+      overlay.hidden = true;
+    };
+
+    input.addEventListener('input', (e) => {
+      selectedIndex = 0;
+      renderList(e.target.value);
+    });
+
+    input.addEventListener('keydown', (e) => {
+      const items = list.querySelectorAll('.moc-cmd-item');
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        selectedIndex = (selectedIndex + 1) % items.length;
+        renderList(input.value);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        selectedIndex = (selectedIndex - 1 + items.length) % items.length;
+        renderList(input.value);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (items[selectedIndex]) items[selectedIndex].click();
+      } else if (e.key === 'Escape') {
+        closePalette();
+      }
+    });
+
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closePalette();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        if (overlay.hidden) openPalette();
+        else closePalette();
+      }
+    });
+
+    modal.appendChild(input);
+    modal.appendChild(list);
+    overlay.appendChild(modal);
+    container.appendChild(overlay);
+
+    window.MyOffiCityAddons.addTool('Command Palette', '⌨️', container);
+    window.MyOffiCityAddons.register('Command Palette');
+  } catch (e) {
+    console.error('Command Palette addon error:', e);
+  }
+})();

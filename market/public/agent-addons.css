@@ -3441,3 +3441,70 @@ a.moc-breadcrumb-item:hover {
   padding-bottom: 8px;
   border-bottom: 1px solid rgba(217, 180, 106, 0.2);
 }
+
+.moc-cmd-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 15vh;
+}
+
+.moc-cmd-modal {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+  overflow: hidden;
+}
+
+.moc-cmd-input {
+  width: 100%;
+  padding: 16px 20px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #334155;
+  color: #f8fafc;
+  font-size: 16px;
+  outline: none;
+}
+
+.moc-cmd-list {
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.moc-cmd-item {
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  color: #cbd5e1;
+  transition: background 0.1s;
+}
+
+.moc-cmd-item:hover, .moc-cmd-item.active {
+  background: #334155;
+  color: #fff;
+}
+
+.moc-cmd-icon {
+  font-size: 18px;
+}
+
+.moc-cmd-empty {
+  padding: 20px;
+  text-align: center;
+  color: #64748b;
+}

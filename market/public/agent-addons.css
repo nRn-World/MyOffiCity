@@ -3822,3 +3822,44 @@ a.moc-breadcrumb-item:hover {
   0% { opacity: 0.8; }
   100% { opacity: 0; }
 }
+
+/* Market Sorter Styles */
+.moc-sorter-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  width: 100%;
+}
+.moc-sort-btn {
+  background: rgba(217, 180, 106, 0.08);
+  border: 1px solid rgba(217, 180, 106, 0.25);
+  color: #e9d7b0;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+.moc-sort-btn:hover {
+  background: rgba(217, 180, 106, 0.18);
+  border-color: #d9b46a;
+  transform: translateX(4px);
+}
+.cards.moc-sorting-active {
+  opacity: 0.4;
+  filter: blur(2px);
+  transform: scale(0.99);
+  pointer-events: none;
+}
+.cards {
+  transition: opacity 0.3s ease, transform 0.3s ease, filter 0.3s ease;
+}
+.cards > * {
+  animation: moc-card-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+@keyframes moc-card-pop {
+  0% { opacity: 0; transform: translateY(15px) scale(0.95); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}

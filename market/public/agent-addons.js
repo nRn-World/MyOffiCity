@@ -6081,3 +6081,81 @@
     console.warn('Copy URL addon error:', e);
   }
 })();
+
+(() => {
+  try {
+    // Create container for the theme switcher
+    const container = document.createElement('div');
+    container.className = 'moc-theme-switcher';
+    container.style.display = 'flex';
+    container.style.flexDirection = 'column';
+    container.style.gap = '8px';
+    container.style.padding = '8px';
+
+    // Title
+    const title = document.createElement('div');
+    title.textContent = '🖋️ Tema & Typsnitt';
+    title.style.fontWeight = '600';
+    title.style.fontSize = '0.95rem';
+    container.appendChild(title);
+
+    // Font family selector
+    const fontSelect = document.createElement('select');
+    fontSelect.className = 'moc-theme-select';
+    const fonts = [
+      { name: 'System (Standard)', value: '' },
+      { name: 'Serif', value: 'serif' },
+      { name: 'Monospace', value: 'monospace' },
+    ];
+    fonts.forEach(f => {
+      const opt = document.createElement('option');
+      opt.value = f.value;
+      opt.textContent = f.name;
+      fontSelect.appendChild(opt);
+    });
+    fontSelect.addEventListener('change', () => {
+      document.documentElement.style.setProperty('--moc-font-family', fontSelect.value || 'system-ui, -apple-system, sans-serif');
+    });
+    container.appendChild(fontSelect);
+
+    // Font size slider (responsive)
+    const sizeLabel = document.createElement('label');
+    sizeLabel.textContent = 'Textstorlek';
+    sizeLabel.style.fontSize = '0.85rem';
+    sizeLabel.htmlFor = 'moc-font-size';
+    container.appendChild(sizeLabel);
+
+    const sizeInput = document.createElement('input');
+    sizeInput.type = 'range';
+    sizeInput.id = 'moc-font-size';
+    sizeInput.min = '0.8';
+    sizeInput.max = '1.4';
+    sizeInput.step = '0.05';
+    sizeInput.value = '1';
+    sizeInput.style.width = '100%';
+    sizeInput.addEventListener('input', () => {
+      document.documentElement.style.setProperty('--moc-font-scale', sizeInput.value);
+    });
+    container.appendChild(sizeInput);
+
+    // Light/Dark mode toggle (optional)
+    const modeBtn = document.createElement('button');
+    modeBtn.className = 'moc-mode-btn';
+    modeBtn.textContent = '🌙 Mörkt Läge';
+    modeBtn.style.padding = '4px 8px';
+    modeBtn.style.fontSize = '0.85rem';
+    modeBtn.style.cursor = 'pointer';
+    modeBtn.addEventListener('click', () => {
+      const isDark = document.documentElement.dataset.mocTheme === 'dark';
+      document.documentElement.dataset.mocTheme = isDark ? 'light' : 'dark';
+      modeBtn.textContent = isDark ? '🌙 Mörkt Läge' : '☀️ Ljust Läge';
+    });
+    container.appendChild(modeBtn);
+
+    // Register the tool in the dock
+    window.MyOffiCityAddons.addTool('Tema & Typsnitt', '🎨', container);
+    window.MyOffiCityAddons.register('Theme & Typography Switcher');
+  } catch (e) {
+    console.warn('Theme & Typography addon error:', e);
+  }
+})();

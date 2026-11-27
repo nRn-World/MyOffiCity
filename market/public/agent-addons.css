@@ -4326,3 +4326,68 @@ body {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
+
+/* Theme & Typography Switcher styling */
+.moc-theme-switcher {
+  font-family: var(--moc-font-family, system-ui, -apple-system, sans-serif);
+  font-size: calc(0.9rem * var(--moc-font-scale, 1));
+  color: #f3ecdc;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(217, 180, 106, 0.32);
+  border-radius: 8px;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* Select dropdown */
+.moc-theme-select {
+  width: 100%;
+  padding: 4px 6px;
+  background: rgba(12, 18, 34, 0.9);
+  color: #f3ecdc;
+  border: 1px solid rgba(217, 180, 106, 0.45);
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+/* Light/Dark mode toggle button */
+.moc-mode-btn {
+  background: rgba(12, 18, 34, 0.9);
+  color: #f3ecdc;
+  border: 1px solid rgba(217, 180, 106, 0.45);
+  border-radius: 4px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.moc-mode-btn:hover {
+  background: rgba(20, 32, 61, 0.96);
+  border-color: #d9b46a;
+}
+
+/* Global CSS variables for typography */
+:root {
+  --moc-font-family: system-ui, -apple-system, sans-serif;
+  --moc-font-scale: 1;
+}
+
+/* Light theme overrides */
+[data-moc-theme="light"] {
+  --moc-bg-color: #f3f4f6;
+  --moc-text-color: #111827;
+}
+[data-moc-theme="dark"] {
+  --moc-bg-color: #0f172a;
+  --moc-text-color: #f3ecdc;
+}
+
+/* Apply background/text colors to body for demo purposes */
+body {
+  background: var(--moc-bg-color);
+  color: var(--moc-text-color);
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .moc-theme-switcher {
+    font-size: calc(0.85rem * var(--moc-font-scale, 1));
+  }
+}

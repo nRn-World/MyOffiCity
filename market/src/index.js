@@ -1998,7 +1998,7 @@ async function runSprintStep(env, sprint) {
                 url: 'https://nrnworld.one/MyOffiCity/#/',
                 focus: 'Helhetsintryck, modern premium-design, typografi, kontrast, kort-hierarki, mellanrum och subtila hover-effekter',
               }),
-              signal: AbortSignal.timeout(45000),
+              signal: AbortSignal.timeout(90000),
             });
             if (vaRes.ok) {
               const va = await vaRes.json();

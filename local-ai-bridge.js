@@ -49,8 +49,8 @@ function captureScreenshot(url) {
       '--no-sandbox',
       '--disable-dev-shm-usage',
       '--hide-scrollbars',
-      '--window-size=1440,900',
-      '--virtual-time-budget=6500',
+      '--window-size=1280,720',
+      '--virtual-time-budget=3500',
       `--screenshot=${tmpFile}`,
       url,
     ];
@@ -77,7 +77,7 @@ function captureScreenshot(url) {
     const timer = setTimeout(() => {
       try { child.kill('SIGKILL'); } catch { /* */ }
       finish(new Error('Screenshot timed out'));
-    }, 22000);
+    }, 40000);
     child.on('error', (e) => finish(e));
     child.on('exit', () => finish(null));
   });
@@ -91,7 +91,7 @@ function ollamaVisionCritique(pngBuf, url, focus) {
       stream: false,
       think: false,
       keep_alive: '30m',
-      options: { num_ctx: 8192, temperature: 0.35 },
+      options: { num_ctx: 8192, num_predict: 380, temperature: 0.35 },
       messages: [
         {
           role: 'system',

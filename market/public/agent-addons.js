@@ -1497,3 +1497,85 @@
     window.MyOffiCityAddons.register('Snabbåtgärds-dock');
   } catch (e) {}
 })();
+
+(() => {
+  try {
+    const LS_KEY = 'moc_accessibility';
+    const defaults = { fontSize: 100, contrast: 100 };
+    
+    let state = { ...defaults };
+    try {
+      const saved = localStorage.getItem(LS_KEY);
+      if (saved) state = { ...defaults, ...JSON.parse(saved) };
+    } catch (e) {}
+
+    const applySettings = () => {
+      const root = document.documentElement;
+      root.style.setProperty('--moc-font-scale', state.fontSize / 100);
+      root.style.setProperty('--moc-contrast', state.contrast / 100);
+      
+      const app = document.getElementById('app');
+      const nav = document.getElementById('nav');
+      const boxes = document.querySelectorAll('.tc-box');
+      
+      const targets = [app, nav, ...boxes].filter(Boolean);
+      targets.forEach(el => {
+        el.style.fontSize = `${state.fontSize}%`;
+        el.style.filter = `contrast(${state.contrast / 100})`;
+      });
+      
+      localStorage.setItem(LS_KEY, JSON.stringify(state));
+    };
+
+    const panel = document.createElement('div');
+    panel.className = 'moc-a11y-panel';
+    panel.innerHTML = `
+      <div class="moc-a11y-header">
+        <span class="moc-a11y-title">🔍 Tillgänglighet</span>
+        <button class="moc-a11y-reset" title="Återställ">↺</button>
+      </div>
+      <div class="moc-a11y-control">
+        <label>Textstorlek: <span class="moc-a11y-val" id="mocA11yFontVal">${state.fontSize}%</span></label>
+        <input type="range" min="80" max="200" value="${state.fontSize}" id="mocA11yFont" />
+      </div>
+      <div class="moc-a11y-control">
+        <label>Kontrast: <span class="moc-a11y-val" id="mocA11yContrastVal">${state.contrast}%</span></label>
+        <input type="range" min="80" max="150" value="${state.contrast}" id="mocA11yContrast" />
+      </div>
+    `;
+
+    const fontSlider = panel.querySelector('#mocA11yFont');
+    const contrastSlider = panel.querySelector('#mocA11yContrast');
+    const fontVal = panel.querySelector('#mocA11yFontVal');
+    const contrastVal = panel.querySelector('#mocA11yContrastVal');
+    const resetBtn = panel.querySelector('.moc-a11y-reset');
+
+    fontSlider.addEventListener('input', (e) => {
+      state.fontSize = parseInt(e.target.value, 10);
+      fontVal.textContent = state.fontSize + '%';
+      applySettings();
+    });
+
+    contrastSlider.addEventListener('input', (e) => {
+      state.contrast = parseInt(e.target.value, 10);
+      contrastVal.textContent = state.contrast + '%';
+      applySettings();
+    });
+
+    resetBtn.addEventListener('click', () => {
+      state = { ...defaults };
+      fontSlider.value = state.fontSize;
+      contrastSlider.value = state.contrast;
+      fontVal.textContent = state.fontSize + '%';
+      contrastVal.textContent = state.contrast + '%';
+      applySettings();
+    });
+
+    applySettings();
+
+    if (window.MyOffiCityAddons) {
+      window.MyOffiCityAddons.addTool('Tillgänglighet', '🔍', panel);
+      window.MyOffiCityAddons.register('Tillgänglighetspanel');
+    }
+  } catch (e) {}
+})();

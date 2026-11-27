@@ -9657,3 +9657,65 @@
     console.error('Hotkey Addon Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const PulseSystem = {
+      init() {
+        this.container = document.createElement('div');
+        this.container.id = 'moc-pulse-container';
+        document.body.appendChild(this.container);
+        
+        // Register the tool in the live drawer
+        const pulseWidget = document.createElement('div');
+        pulseWidget.innerHTML = `
+          <div style="padding: 10px; font-size: 12px; color: #d9b46a; border-bottom: 1px solid #333; margin-bottom: 5px;">Live Pulse</div>
+          <div id="moc-pulse-status" style="font-size: 11px; color: #fff;">Monitoring marketplace...</div>
+        `;
+        window.MyOffiCityAddons.addTool('Live Pulse', '📡', pulseWidget);
+        window.MyOffiCityAddons.register('LivePulseMonitor');
+      },
+
+      notify(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = 'moc-pulse-toast';
+        const icon = type === 'alert' ? '⚠️' : '✨';
+        toast.innerHTML = `<span class="moc-pulse-icon">${icon}</span> <span>${message}</span>`;
+        
+        this.container.appendChild(toast);
+        
+        setTimeout(() => {
+          toast.classList.add('fade-out');
+          setTimeout(() => toast.remove(), 500);
+        }, 4000);
+      },
+
+      simulatePulse() {
+        // Simulate real-time updates for demo
+        const events = [
+          "New listing: Office Suite 402",
+          "Price drop: Desk Cluster A",
+          "New listing: Conference Room B",
+          "Price update: Studio Space"
+        ];
+        
+        setInterval(() => {
+          const randomEvent = events[Math.floor(Math.random() * events.length)];
+          this.notify(randomEvent);
+          
+          const status = document.getElementById('moc-pulse-status');
+          if (status) {
+            status.innerText = `Last update: ${new Date().toLocaleTimeString()}`;
+            status.style.color = '#d9b46a';
+            setTimeout(() => { if(status) status.style.color = '#fff'; }, 1000);
+          }
+        }, 15000);
+      }
+    };
+
+    PulseSystem.init();
+    PulseSystem.simulatePulse();
+  } catch (e) {
+    console.error("PulseSystem Error:", e);
+  }
+})();

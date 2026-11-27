@@ -6897,3 +6897,32 @@
     window.MyOffiCityAddons.register('3D-Loader-Manager');
   } catch (e) { console.error('3D-Loader-Manager Error:', e); }
 })();
+
+(() => {
+  try {
+    // Keyboard Navigation Handler
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        const target = document.activeElement;
+        if (target && (target.classList.contains('moc-dock-btn') || target.tagName === 'BUTTON')) {
+          e.preventDefault();
+          target.click();
+        }
+      }
+    });
+
+    // Ensure interactive elements are focusable
+    const makeAccessible = () => {
+      const interactives = document.querySelectorAll('#nav, .cards, .tc-box, .moc-dock-btn');
+      interactives.forEach(el => {
+        if (!el.hasAttribute('tabindex')) {
+          el.setAttribute('tabindex', '0');
+          el.setAttribute('role', 'button');
+        }
+      });
+    };
+
+    setInterval(makeAccessible, 2000);
+    window.MyOffiCityAddons.register('Keyboard-Navigation');
+  } catch (e) { console.error('Keyboard-Nav Error:', e); }
+})();

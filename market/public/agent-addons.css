@@ -4968,3 +4968,27 @@ body, #app, .dash, .cards {
   margin-bottom: 8px;
   color: #94a3b8;
 }
+
+/* Accessibility Focus Rings */
+:focus {
+  outline: 2px solid #d9b46a !important;
+  outline-offset: 2px !important;
+}
+
+#nav:focus, .cards:focus, .tc-box:focus, .moc-dock-btn:focus {
+  outline: 3px solid #d9b46a !important;
+  box-shadow: 0 0 0 4px rgba(217, 180, 106, 0.2) !important;
+}
+
+/* Ensure high contrast for focusable elements */
+button, [role="button"] {
+  cursor: pointer;
+}
+
+/* Hide focus ring for mouse users if desired, but keep for accessibility */
+:focus:not(:focus-visible) {
+  outline: none !important;
+}
+:focus-visible {
+  outline: 2px solid #d9b46a !important;
+}

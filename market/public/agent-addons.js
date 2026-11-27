@@ -6806,3 +6806,57 @@
     window.MyOffiCityAddons.register('Command Palette');
   } catch (e) { console.error('CmdPalette Error:', e); }
 })();
+
+(() => {
+  try {
+    const searchContainer = document.createElement('div');
+    searchContainer.className = 'moc-search-wrapper';
+    searchContainer.innerHTML = `
+      <input type="text" id="moc-live-search" placeholder="Sök i marknadsplatsen..." />
+      <button id="moc-clear-search" style="display:none;">×</button>
+    `;
+
+    const input = searchContainer.querySelector('#moc-live-search');
+    const clearBtn = searchContainer.querySelector('#moc-clear-search');
+    let debounceTimer;
+
+    const filterCards = (query) => {
+      const cards = document.querySelectorAll('.cards .card, .card');
+      const term = query.toLowerCase();
+      let hasVisible = false;
+
+      cards.forEach(card => {
+        const text = card.innerText.toLowerCase();
+        const isMatch = text.includes(term);
+        card.style.display = isMatch ? '' : 'none';
+        if (isMatch) hasVisible = true;
+      });
+
+      let noMatch = document.getElementById('moc-no-match');
+      if (!hasVisible && term !== '') {
+        if (!noMatch) {
+          noMatch = document.createElement('div');
+          noMatch.id = 'moc-no-match';
+          noMatch.textContent = 'Inga träffar hittades.';
+          document.querySelector('.cards') ? document.querySelector('.cards').appendChild(noMatch) : document.body.appendChild(noMatch);
+        }
+        noMatch.style.display = 'block';
+      } else if (noMatch) {
+        noMatch.style.display = 'none';
+      }
+      clearBtn.style.display = term ? 'block' : 'none';
+    };
+
+    input.addEventListener('input', (e) => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => filterCards(e.target.value), 300);
+    });
+
+    clearBtn.addEventListener('click', () => {
+      input.value = '';
+      filterCards('');
+    });
+
+    window.MyOffiCityAddons.addTool('Live Search', '🔍', searchContainer);
+  } catch (e) { console.error('LiveSearch Error:', e); }
+})();

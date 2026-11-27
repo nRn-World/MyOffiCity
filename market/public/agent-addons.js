@@ -8964,3 +8964,69 @@
     window.MyOffiCityAddons.register('Command Palette');
   } catch (e) { console.error('CmdPalette error:', e); }
 })();
+
+(() => {
+  try {
+    // History stack for breadcrumb
+    const historyStack = [];
+
+    // Create breadcrumb container
+    const createBreadcrumb = () => {
+      const app = document.getElementById('app');
+      if (!app) return;
+
+      const breadcrumbContainer = document.createElement('div');
+      breadcrumbContainer.id = 'moc-breadcrumb';
+      app.appendChild(breadcrumbContainer);
+
+      // Update UI
+      const updateBreadcrumb = () => {
+        breadcrumbContainer.innerHTML = '';
+        historyStack.forEach((hash, idx) => {
+          const span = document.createElement('span');
+          span.textContent = hash;
+          span.onclick = () => {
+            // Navigate to selected hash and trim history
+            window.location.hash = hash;
+            historyStack.splice(idx + 1);
+            updateBreadcrumb();
+          };
+          breadcrumbContainer.appendChild(span);
+          if (idx < historyStack.length - 1) {
+            const sep = document.createElement('span');
+            sep.textContent = '>';
+            sep.className = 'moc-breadcrumb-sep';
+            breadcrumbContainer.appendChild(sep);
+          }
+        });
+      };
+
+      // Push new hash to stack
+      const pushHash = (hash) => {
+        if (!hash) return;
+        if (historyStack[historyStack.length - 1] !== hash) {
+          historyStack.push(hash);
+          updateBreadcrumb();
+        }
+      };
+
+      // Initial push
+      pushHash(window.location.hash || '#/');
+
+      // Listen for hash changes
+      window.addEventListener('hashchange', () => pushHash(window.location.hash));
+    };
+
+    // Ensure DOM ready
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      createBreadcrumb();
+    } else {
+      document.addEventListener('DOMContentLoaded', createBreadcrumb);
+    }
+
+    // Register feature for badge counter
+    window.MyOffiCityAddons.register('Breadcrumb Navigation');
+  } catch (e) {
+    console.error('Breadcrumb error:', e);
+  }
+})();

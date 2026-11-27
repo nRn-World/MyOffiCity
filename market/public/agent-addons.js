@@ -8768,3 +8768,66 @@
     console.error('Quick-Jump Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const injectButtons = () => {
+      const boxes = document.querySelectorAll('.tc-box:not(.moc-clipboard-ready)');
+      boxes.forEach(box => {
+        box.classList.add('moc-clipboard-ready');
+        const btn = document.createElement('button');
+        btn.className = 'moc-copy-json-btn';
+        btn.innerHTML = '<span>JSON</span>';
+        btn.title = 'Kopiera agent-data som JSON';
+        
+        btn.onclick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          const name = box.querySelector('h3, .name, b')?.innerText?.trim() || 'Namnlös Agent';
+          const role = box.querySelector('.role, .title, i')?.innerText?.trim() || 'Agent';
+          const desc = box.querySelector('p, .desc, .info')?.innerText?.trim() || '';
+          
+          const agentData = {
+            id: box.id || Math.random().toString(36).substr(2, 9),
+            name,
+            role,
+            description: desc,
+            exportedAt: new Date().toISOString(),
+            context: "MyOffiCity Agent Configuration"
+          };
+
+          navigator.clipboard.writeText(JSON.stringify(agentData, null, 2)).then(() => {
+            btn.classList.add('moc-copied');
+            setTimeout(() => btn.classList.remove('moc-copied'), 2000);
+          }).catch(err => console.error('Clipboard error:', err));
+        };
+        
+        box.style.position = 'relative';
+        box.appendChild(btn);
+      });
+    };
+
+    // Watch for dynamic content (new agents loading)
+    const observer = new MutationObserver(() => injectButtons());
+    observer.observe(document.body, { childList: true, subtree: true });
+    injectButtons();
+
+    // Register in the AI Addons Drawer
+    const info = document.createElement('div');
+    info.className = 'moc-clipboard-info';
+    info.innerHTML = `
+      <p style="font-size:12px; margin-bottom:8px; opacity:0.9;">
+        Hovra över agent-kort för att se JSON-knappen. Perfekt för att dela konfigurationer.
+      </p>
+      <div style="font-size:10px; color:#d9b46a; border-top:1px solid rgba(217,180,106,0.2); pt:5px;">
+        Status: Aktiv & bevakar .tc-box
+      </div>
+    `;
+    
+    window.MyOffiCityAddons.addTool('Smart-Clipboard', '📋', info);
+    window.MyOffiCityAddons.register('Smart-Clipboard');
+  } catch (e) {
+    console.error('Smart-Clipboard Error:', e);
+  }
+})();

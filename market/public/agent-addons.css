@@ -6060,3 +6060,69 @@ canvas {
   opacity: 0.6;
   font-style: italic;
 }
+
+/* Smart-Clipboard Styles */
+.moc-copy-json-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(217, 180, 106, 0.4);
+  color: #d9b46a;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  z-index: 20;
+  opacity: 0;
+  transform: translateY(-5px);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(4px);
+}
+
+.tc-box:hover .moc-copy-json-btn {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.moc-copy-json-btn:hover {
+  background: #d9b46a;
+  color: #0f172a;
+  border-color: #f3ecdc;
+  box-shadow: 0 4px 12px rgba(217, 180, 106, 0.3);
+}
+
+.moc-copy-json-btn.moc-copied {
+  background: #4ade80;
+  border-color: #4ade80;
+  color: #064e3b;
+}
+
+.moc-copy-json-btn.moc-copied::after {
+  content: 'Kopierad!';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 8px;
+  background: #4ade80;
+  color: #064e3b;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  white-space: nowrap;
+  animation: mocBounceIn 0.3s ease-out;
+}
+
+@keyframes mocBounceIn {
+  0% { opacity: 0; transform: translateX(-50%) scale(0.8); }
+  70% { opacity: 1; transform: translateX(-50%) scale(1.1); }
+  100% { opacity: 1; transform: translateX(-50%) scale(1); }
+}
+
+.moc-clipboard-info {
+  padding: 5px;
+  line-height: 1.4;
+}

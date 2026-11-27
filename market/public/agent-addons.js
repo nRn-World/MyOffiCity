@@ -2453,3 +2453,113 @@
 
   window.MyOffiCityAddons.register('Live-Status Indikator');
 } catch(e) {} })();
+
+(() => { try {
+  const techMap = {
+    'tomas': { role: 'Team Leader', stack: ['TypeScript', 'Node.js', 'Cloudflare Workers', 'D1', 'Three.js'], skills: ['Strategi', 'Code Review', 'Sprint Planning'], color: '#d9b46a' },
+    'ebba': { role: 'Frontend Dev', stack: ['React', 'TypeScript', 'CSS', 'Vite'], skills: ['UI/UX', 'Animation', 'Accessibility'], color: '#60a5fa' },
+    'kia': { role: 'Backend Dev', stack: ['Node.js', 'Express', 'PostgreSQL', 'Redis'], skills: ['API Design', 'Optimering', 'Säkerhet'], color: '#34d399' },
+    'manus': { role: 'Fullstack Dev', stack: ['Python', 'FastAPI', 'Docker', 'Kubernetes'], skills: ['DevOps', 'CI/CD', 'Skalbarhet'], color: '#f472b6' },
+    'laila': { role: 'AI Engineer', stack: ['PyTorch', 'Hugging Face', 'LangChain', 'Vector DBs'], skills: ['LLM Orchestration', 'RAG', 'Prompt Engineering'], color: '#a78bfa' }
+  };
+
+  const getAgentInfo = (card) => {
+    const nameEl = card.querySelector('h3, .agent-name, [data-name]');
+    const name = nameEl ? nameEl.textContent.trim().toLowerCase() : '';
+    for (const key in techMap) {
+      if (name.includes(key)) return { ...techMap[key], name: nameEl ? nameEl.textContent.trim() : key };
+    }
+    return { role: 'AI Agent', stack: ['JavaScript', 'Web API'], skills: ['Autonom', 'Kreativ'], color: '#94a3b8', name: nameEl ? nameEl.textContent.trim() : 'Agent' };
+  };
+
+  const createPopover = (agent) => {
+    const pop = document.createElement('div');
+    pop.className = 'moc-qv-pop';
+    pop.innerHTML = `
+      <div class="moc-qv-header" style="border-color:${agent.color}">
+        <span class="moc-qv-avatar" style="background:${agent.color}">${agent.name.charAt(0).toUpperCase()}</span>
+        <div>
+          <div class="moc-qv-name">${agent.name}</div>
+          <div class="moc-qv-role">${agent.role}</div>
+        </div>
+      </div>
+      <div class="moc-qv-section">
+        <div class="moc-qv-label">Tech-Stack</div>
+        <div class="moc-qv-tags">${agent.stack.map(s => `<span class="moc-qv-tag">${s}</span>`).join('')}</div>
+      </div>
+      <div class="moc-qv-section">
+        <div class="moc-qv-label">Kompetenser</div>
+        <div class="moc-qv-tags">${agent.skills.map(s => `<span class="moc-qv-tag moc-qv-skill">${s}</span>`).join('')}</div>
+      </div>
+      <div class="moc-qv-footer">
+        <span class="moc-qv-status"><span class="moc-pulse-dot moc-pulse-green"></span> Aktiv</span>
+        <span class="moc-qv-hint">Klicka för profil</span>
+      </div>
+    `;
+    return pop;
+  };
+
+  let activePop = null;
+  let hoverTimer = null;
+
+  const showPop = (card) => {
+    if (activePop) activePop.remove();
+    const agent = getAgentInfo(card);
+    activePop = createPopover(agent);
+    document.body.appendChild(activePop);
+    
+    const rect = card.getBoundingClientRect();
+    const popRect = activePop.getBoundingClientRect();
+    
+    let top = rect.top - popRect.height - 12;
+    if (top < 10) top = rect.bottom + 12;
+    
+    let left = rect.left + (rect.width / 2) - (popRect.width / 2);
+    if (left < 10) left = 10;
+    if (left + popRect.width > window.innerWidth - 10) left = window.innerWidth - popRect.width - 10;
+
+    activePop.style.top = top + 'px';
+    activePop.style.left = left + 'px';
+    activePop.style.opacity = '1';
+    activePop.style.transform = 'translateY(0)';
+  };
+
+  const hidePop = () => {
+    if (activePop) {
+      activePop.style.opacity = '0';
+      activePop.style.transform = 'translateY(5px)';
+      const p = activePop;
+      setTimeout(() => p.remove(), 200);
+      activePop = null;
+    }
+  };
+
+  const init = () => {
+    const cards = document.querySelectorAll('.cards > *');
+    if (!cards.length) return;
+    
+    cards.forEach(card => {
+      card.addEventListener('mouseenter', () => {
+        clearTimeout(hoverTimer);
+        hoverTimer = setTimeout(() => showPop(card), 300);
+      });
+      card.addEventListener('mouseleave', () => {
+        clearTimeout(hoverTimer);
+        hidePop();
+      });
+    });
+  };
+
+  const observer = new MutationObserver(() => {
+    if (!document.querySelector('.cards > *')) return;
+    init();
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  setTimeout(init, 1000);
+
+  const infoEl = document.createElement('div');
+  infoEl.innerHTML = `<p style="font-size:11px; color:#94a3b8; margin:0;">Hovra över ett agentkort för att se deras tech-stack och kompetenser direkt.</p>`;
+  window.MyOffiCityAddons.addTool('Agent Quick-View', '👁️', infoEl);
+  window.MyOffiCityAddons.register('Agent Quick-View');
+} catch(e) {} })();

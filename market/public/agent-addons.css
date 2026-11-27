@@ -4179,3 +4179,24 @@ body {
   letter-spacing: -0.025em;
   text-shadow: 0 2px 10px rgba(0,0,0,0.3);
 }
+
+.moc-weather-widget {
+  background: rgba(15,23,42,0.8);
+  color: #f3ecdc;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+.moc-weather-widget button {
+  background: rgba(217,180,106,0.2);
+  border: none;
+  color: #f3ecdc;
+  border-radius: 4px;
+}
+.moc-weather-widget button:hover {
+  background: rgba(217,180,106,0.3);
+}
+.moc-weather-widget div:first-child {
+  font-weight: bold;
+  margin-bottom: 4px;
+}

@@ -5727,3 +5727,41 @@
     console.warn('UX Booster Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const container = document.createElement('div');
+    container.className = 'moc-weather-widget';
+    const title = document.createElement('div');
+    title.textContent = '🌤 Väder';
+    title.style.fontWeight = 'bold';
+    container.appendChild(title);
+    const info = document.createElement('div');
+    info.textContent = 'Laddar...';
+    container.appendChild(info);
+    const refreshBtn = document.createElement('button');
+    refreshBtn.textContent = '⟳';
+    refreshBtn.style.marginTop = '5px';
+    refreshBtn.style.padding = '2px 6px';
+    refreshBtn.style.fontSize = '12px';
+    refreshBtn.style.cursor = 'pointer';
+    container.appendChild(refreshBtn);
+    const fetchWeather = () => {
+      fetch('https://wttr.in/?format=1')
+        .then(r => r.text())
+        .then(txt => {
+          info.textContent = txt.trim();
+        })
+        .catch(e => {
+          info.textContent = 'Fel vid hämtning';
+          console.warn('Weather fetch error', e);
+        });
+    };
+    fetchWeather();
+    refreshBtn.addEventListener('click', fetchWeather);
+    window.MyOffiCityAddons.addTool('Väder', '🌤', container);
+    window.MyOffiCityAddons.register('Weather Widget');
+  } catch (e) {
+    console.warn('Weather Widget Error:', e);
+  }
+})();

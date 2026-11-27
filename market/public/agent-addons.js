@@ -5135,3 +5135,40 @@
     console.error('Focus-Switching error:', e);
   }
 })();
+
+(() => {
+  try {
+    const container = document.createElement('div');
+    container.style.cssText = 'width: 100%; height: 100px; background: rgba(0,0,0,0.2); border-radius: 4px; position: relative; overflow: hidden;';
+    
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 200 60');
+    svg.style.cssText = 'width: 100%; height: 100%;';
+    
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', '#d9b46a');
+    path.setAttribute('stroke-width', '2');
+    path.setAttribute('d', 'M0 50 Q 50 10, 100 30 T 200 20');
+    
+    svg.appendChild(path);
+    container.appendChild(svg);
+
+    const label = document.createElement('div');
+    label.style.cssText = 'position: absolute; bottom: 5px; left: 5px; font-size: 10px; color: #d9b46a;';
+    label.textContent = 'Agent-aktivitet (Live)';
+    container.appendChild(label);
+
+    window.MyOffiCityAddons.addTool('Data-Visualizer', '📊', container);
+    window.MyOffiCityAddons.register('Data-Visualizer');
+
+    let offset = 0;
+    setInterval(() => {
+      offset += 0.1;
+      const d = `M0 50 Q 50 ${20 + Math.sin(offset)*15}, 100 30 T 200 ${20 + Math.cos(offset)*10}`;
+      path.setAttribute('d', d);
+    }, 100);
+  } catch (e) {
+    console.error('Data-Visualizer error:', e);
+  }
+})();

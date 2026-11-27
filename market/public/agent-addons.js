@@ -1107,3 +1107,58 @@
     console.error('Theme-Switcher Addon Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const shortcuts = [
+      { key: 'Esc', desc: 'Stäng paneler / återställ vy' },
+      { key: 'F', desc: 'Fokusera på vald byggnad' },
+      { key: 'R', desc: 'Roterat kameran' },
+      { key: 'T', desc: 'Byt tid (dag/natt)' },
+      { key: 'M', desc: 'Visa/dölj minikarta' },
+      { key: 'H', desc: 'Visa/dölj hjälp' },
+      { key: '?', desc: 'Visa denna panel' }
+    ];
+
+    const panel = document.createElement('div');
+    panel.className = 'moc-shortcuts-panel';
+    panel.innerHTML = `
+      <div class="moc-shortcuts-header">
+        <span class="moc-shortcuts-icon">⌨️</span>
+        <span class="moc-shortcuts-title">Kortkommandon</span>
+      </div>
+      <div class="moc-shortcuts-list">
+        ${shortcuts.map(s => `
+          <div class="moc-shortcut-item">
+            <kbd class="moc-shortcut-key">${s.key}</kbd>
+            <span class="moc-shortcut-desc">${s.desc}</span>
+          </div>
+        `).join('')}
+      </div>
+    `;
+
+    const foot = document.getElementById('foot');
+    if (foot) {
+      const btn = document.createElement('button');
+      btn.className = 'moc-shortcuts-btn';
+      btn.innerHTML = '⌨️ Kortkommandon';
+      btn.title = 'Visa alla tillgängliga kortkommandon';
+      btn.addEventListener('click', () => {
+        panel.classList.toggle('open');
+      });
+      foot.appendChild(btn);
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '?' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        panel.classList.toggle('open');
+      }
+    });
+
+    window.MyOffiCityAddons.addTool('Kortkommandon', '⌨️', panel);
+    window.MyOffiCityAddons.register('Kortkommandon');
+  } catch (e) {
+    console.error('Shortcuts Panel Error:', e);
+  }
+})();

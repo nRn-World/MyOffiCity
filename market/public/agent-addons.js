@@ -5210,3 +5210,30 @@
     console.error('Quick-Filter init error:', e);
   }
 })();
+
+(() => {
+  try {
+    const STORAGE_KEY = 'myofficity-theme';
+    const body = document.body;
+    const topbar = document.getElementById('topbar');
+    if (!topbar) return;
+
+    const stored = localStorage.getItem(STORAGE_KEY);
+    const isHighContrast = stored === 'high-contrast';
+    if (isHighContrast) body.classList.add('high-contrast');
+
+    const toggleBtn = document.createElement('button');
+    toggleBtn.id = 'moc-theme-toggle';
+    toggleBtn.className = 'moc-theme-toggle';
+    toggleBtn.title = 'High Contrast';
+    toggleBtn.textContent = isHighContrast ? '🌓' : '🌙';
+    toggleBtn.addEventListener('click', () => {
+      const newState = !body.classList.toggle('high-contrast');
+      localStorage.setItem(STORAGE_KEY, newState ? 'high-contrast' : 'dark');
+      toggleBtn.textContent = newState ? '🌓' : '🌙';
+    });
+    topbar.appendChild(toggleBtn);
+  } catch (e) {
+    console.error('Theme Switcher init error:', e);
+  }
+})();

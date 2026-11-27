@@ -8356,3 +8356,83 @@
     console.error('Scroll‑Spy error:', e);
   }
 })();
+
+(() => {
+  try {
+    // Vänta på att hela sidan är laddad
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initScrollSpy);
+    } else {
+      initScrollSpy();
+    }
+
+    function initScrollSpy() {
+      const main = document.querySelector('.dmain');
+      if (!main) return; // Ingen .dmain – inget att göra
+
+      // Hitta rubriker som representerar kategorier (h2 med id)
+      const headings = Array.from(main.querySelectorAll('h2[id]'));
+      if (headings.length === 0) return;
+
+      // Skapa sidomeny‑container
+      const spyContainer = document.createElement('nav');
+      spyContainer.className = 'moc-scroll-spy';
+      const list = document.createElement('ul');
+      spyContainer.appendChild(list);
+
+      // Bygg meny‑länkar
+      const idToLink = {};
+      headings.forEach((h) => {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = `#${h.id}`;
+        a.textContent = h.textContent.trim() || h.id;
+        a.dataset.targetId = h.id;
+        li.appendChild(a);
+        list.appendChild(li);
+        idToLink[h.id] = a;
+      });
+
+      // Lägg till en toggle‑knapp för att dölja/visa menyn
+      const toggleBtn = document.createElement('button');
+      toggleBtn.className = 'moc-spy-toggle';
+      toggleBtn.textContent = '🗂️';
+      toggleBtn.title = 'Toggle kategori‑meny';
+      toggleBtn.onclick = () => {
+        spyContainer.style.display = spyContainer.style.display === 'none' ? 'block' : 'none';
+      };
+      // Wrapper för verktyget i AI‑addons‑drawern
+      const toolWrapper = document.createElement('div');
+      toolWrapper.style.display = 'flex';
+      toolWrapper.style.flexDirection = 'column';
+      toolWrapper.appendChild(toggleBtn);
+      toolWrapper.appendChild(spyContainer.cloneNode(true));
+
+      // Registrera verktyget i dockan
+      window.MyOffiCityAddons.addTool('Scroll‑Spy', '🔎', toolWrapper);
+      window.MyOffiCityAddons.register('Scroll Spy');
+
+      // IntersectionObserver för att markera aktiv rubrik
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          const id = entry.target.id;
+          const link = idToLink[id];
+          if (!link) return;
+          if (entry.isIntersecting) {
+            link.classList.add('active');
+          } else {
+            link.classList.remove('active');
+          }
+        });
+      }, {
+        root: null,
+        rootMargin: '0px 0px -70% 0px', // trigga när rubriken är nära toppen
+        threshold: 0,
+      });
+
+      headings.forEach((h) => observer.observe(h));
+    }
+  } catch (e) {
+    console.error('Scroll‑Spy‑addon error:', e);
+  }
+})();

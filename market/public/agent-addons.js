@@ -8228,3 +8228,26 @@
     console.error('Performance monitor error:', e);
   }
 })();
+
+(() => {
+  try {
+    const container = document.createElement('div');
+    container.id = 'moc-toast-container';
+    document.body.appendChild(container);
+
+    window.MyOffiCityAddons.notify = (message, type = 'info') => {
+      const toast = document.createElement('div');
+      toast.className = `moc-toast moc-toast-${type}`;
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.add('fade-out');
+        setTimeout(() => toast.remove(), 500);
+      }, 3000);
+    };
+
+    window.MyOffiCityAddons.register('Notification System');
+  } catch (e) {
+    console.error('Toast system error:', e);
+  }
+})();

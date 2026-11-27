@@ -5447,3 +5447,41 @@ body.moc-focus-mode .chat-container {
   outline: none;
   border-color: #d9b46a;
 }
+
+@keyframes moc-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.moc-ai-chat-tool {
+  font-size: 13px;
+}
+
+.moc-ai-chat-messages {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(217,180,106,0.4) transparent;
+}
+.moc-ai-chat-messages::-webkit-scrollbar {
+  width: 6px;
+}
+.moc-ai-chat-messages::-webkit-scrollbar-thumb {
+  background: rgba(217,180,106,0.4);
+  border-radius: 3px;
+}
+
+.moc-ai-chat-input {
+  background: rgba(0,0,0,0.2);
+  color: #f3ecdc;
+}
+.moc-ai-chat-input:focus {
+  outline: none;
+  border-color: #d9b46a;
+}
+
+.moc-ai-chat-send {
+  background: rgba(217,180,106,0.6);
+  color: #111;
+}
+.moc-ai-chat-send:hover {
+  background: rgba(217,180,106,0.8);
+}

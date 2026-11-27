@@ -7614,3 +7614,57 @@
     console.error('Neighborhood Map Addon Error:', e);
   }
 })();
+
+(() => {
+  try {
+    // Apply saved wallpaper on load
+    const applyWallpaper = (url) => {
+      document.body.style.backgroundImage = url ? `url(${url})` : '';
+      document.body.style.backgroundSize = 'cover';
+      document.body.style.backgroundAttachment = 'fixed';
+    };
+    const saved = localStorage.getItem('myofficity_wallpaper');
+    if (saved) applyWallpaper(saved);
+
+    // Build UI
+    const container = document.createElement('div');
+    container.style.display = 'flex';
+    container.style.flexDirection = 'column';
+    container.style.gap = '6px';
+    const label = document.createElement('label');
+    label.textContent = 'Välj väggpapper:';
+    label.style.color = '#f3ecdc';
+    const select = document.createElement('select');
+    select.className = 'moc-wallpaper-select';
+
+    const options = [
+      { name: 'Ingen', value: '' },
+      { name: 'Skog', value: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1200&q=80' },
+      { name: 'Stad', value: 'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80' },
+      { name: 'Abstrakt', value: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=80' },
+    ];
+
+    options.forEach(o => {
+      const opt = document.createElement('option');
+      opt.value = o.value;
+      opt.textContent = o.name;
+      if (saved === o.value) opt.selected = true;
+      select.appendChild(opt);
+    });
+
+    select.addEventListener('change', () => {
+      const url = select.value;
+      applyWallpaper(url);
+      localStorage.setItem('myofficity_wallpaper', url);
+    });
+
+    container.appendChild(label);
+    container.appendChild(select);
+
+    // Register tool in AI dock
+    window.MyOffiCityAddons.addTool('Väggpapper', '🎨', container);
+    window.MyOffiCityAddons.register('Custom Wallpaper Addon');
+  } catch (e) {
+    console.error('Wallpaper Addon Error:', e);
+  }
+})();

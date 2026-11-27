@@ -5432,3 +5432,18 @@ body.moc-focus-mode .chat-container {
 .moc-zoom-btn:hover {
   background: rgba(0,0,0,0.8);
 }
+
+/* Custom Wallpaper Addon styles */
+.moc-wallpaper-select {
+  width: 100%;
+  padding: 4px 6px;
+  background: rgba(15, 23, 42, 0.8);
+  color: #f3ecdc;
+  border: 1px solid rgba(217, 180, 106, 0.4);
+  border-radius: 4px;
+  font-size: 13px;
+}
+.moc-wallpaper-select:focus {
+  outline: none;
+  border-color: #d9b46a;
+}

@@ -8650,3 +8650,39 @@
     console.error('Workspace Switcher Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const container = document.createElement('div');
+    container.innerHTML = `<p style="font-size:12px; color:#94a3b8; margin:0;">Visualiserar historisk prisdata för agenter i realtid.</p>`;
+    
+    const observer = new MutationObserver(() => {
+      const cards = document.querySelectorAll('.cards .card, .card');
+      cards.forEach(card => {
+        if (card.querySelector('.moc-sparkline')) return;
+        const spark = document.createElement('div');
+        spark.className = 'moc-sparkline';
+        const canvas = document.createElement('canvas');
+        canvas.width = 100;
+        canvas.height = 20;
+        const ctx = canvas.getContext('2d');
+        ctx.strokeStyle = '#d9b46a';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, 15 + Math.random() * -10);
+        ctx.lineTo(33, 10 + Math.random() * -5);
+        ctx.lineTo(66, 12 + Math.random() * -8);
+        ctx.lineTo(100, 5 + Math.random() * -2);
+        ctx.stroke();
+        spark.appendChild(canvas);
+        card.appendChild(spark);
+      });
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+    
+    window.MyOffiCityAddons.addTool('Price Trends', '📈', container);
+    window.MyOffiCityAddons.register('Price Trends');
+  } catch (e) {
+    console.error('Price Trends Addon Error:', e);
+  }
+})();

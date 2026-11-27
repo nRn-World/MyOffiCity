@@ -6015,3 +6015,69 @@
     init();
   } catch(e){console.warn('Reset View addon error:',e);}
 })();
+
+(() => {
+  try {
+    const init = () => {
+      const cards = document.querySelectorAll('.agent-card');
+      if (!cards.length) return;
+      cards.forEach(card => {
+        if (card.querySelector('.moc-copy-icon')) return;
+        const icon = document.createElement('span');
+        icon.className = 'moc-copy-icon';
+        icon.textContent = '📋';
+        card.appendChild(icon);
+        icon.addEventListener('click', e => {
+          e.stopPropagation();
+          const url = card.dataset.agentUrl ||
+                      card.dataset.href ||
+                      card.dataset.link ||
+                      card.dataset.id
+                      ? `${window.location.origin}/#/agent/${card.dataset.id}`
+                      : card.querySelector('a[href]')?.href ||
+                        window.location.href;
+          copyToClipboard(url, icon);
+        });
+      });
+    };
+
+    const copyToClipboard = (text, target) => {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => showTooltip(target));
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+          document.execCommand('copy');
+          showTooltip(target);
+        } catch (err) {}
+        document.body.removeChild(textarea);
+      }
+    };
+
+    const showTooltip = target => {
+      const tooltip = document.createElement('div');
+      tooltip.className = 'moc-copy-tooltip';
+      tooltip.textContent = 'Kopierad!';
+      target.appendChild(tooltip);
+      setTimeout(() => {
+        tooltip.classList.add('show');
+        setTimeout(() => tooltip.remove(), 2000);
+      }, 0);
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+
+    window.MyOffiCityAddons.register('Copy URL Tool');
+  } catch (e) {
+    console.warn('Copy URL addon error:', e);
+  }
+})();

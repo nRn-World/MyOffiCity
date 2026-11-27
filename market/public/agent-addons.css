@@ -6368,3 +6368,17 @@ canvas {
 .tc-box:active {
   cursor: grabbing;
 }
+
+/* Smart-Scroll Sticky Nav */
+.moc-nav-sticky {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: rgba(12, 18, 34, 0.95) !important;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  border-bottom: 1px solid rgba(217, 180, 106, 0.2);
+  transition: all 0.3s ease;
+}

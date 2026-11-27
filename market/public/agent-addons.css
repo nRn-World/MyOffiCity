@@ -2684,3 +2684,26 @@ a.moc-breadcrumb-item:hover {
   color: #4ade80;
   font-weight: 500;
 }
+
+.moc-copy-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(217, 180, 106, 0.3);
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.tc-box:hover .moc-copy-btn {
+  opacity: 1;
+}
+
+.moc-copy-btn:hover {
+  background: rgba(217, 180, 106, 0.2);
+  border-color: #d9b46a;
+}

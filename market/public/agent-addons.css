@@ -6461,3 +6461,50 @@ canvas {
 .moc-modal-close:hover {
   background: rgba(217,180,106,0.2);
 }
+
+/* Quota & GPU Monitor Styles */
+.moc-status-widget {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(217, 180, 106, 0.4);
+  border-radius: 12px;
+  padding: 12px;
+  color: #f3ecdc;
+  font-family: sans-serif;
+  font-size: 12px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 160px;
+}
+.moc-status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+}
+.moc-progress-bar {
+  height: 6px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 3px;
+  flex-grow: 1;
+  overflow: hidden;
+}
+.moc-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #d9b46a, #f3ecdc);
+  transition: width 1s ease-in-out;
+}
+.moc-gpu-indicator {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(0, 255, 157, 0.2);
+  color: #00ff9d;
+  border: 1px solid rgba(0, 255, 157, 0.3);
+}

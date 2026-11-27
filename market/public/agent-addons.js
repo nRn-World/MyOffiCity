@@ -4152,3 +4152,78 @@
     window.MyOffiCityAddons.register('Accessibility ARIA Tool');
   } catch(e) {}
 })();
+
+(() => {
+  try {
+    // Definiera möjliga statusar och färger
+    const STATUSES = ['Aktiv', 'Bekräftar', 'Offline'];
+    const COLORS = {
+      Aktiv: '#4ade80',
+      Bekräftar: '#fbbf24',
+      Offline: '#9ca3af'
+    };
+
+    // Skapa status‑element i top‑baren
+    const topbar = document.getElementById('topbar');
+    if (topbar) {
+      const statusEl = document.createElement('span');
+      statusEl.className = 'moc-agent-status';
+      statusEl.title = 'Agentstatus';
+      topbar.appendChild(statusEl);
+    }
+
+    // Lägg till status‑dot på varje kort (.cards)
+    const cards = document.querySelectorAll('.cards');
+    cards.forEach(card => {
+      const dot = document.createElement('span');
+      dot.className = 'moc-card-status';
+      dot.title = 'Agentstatus';
+      // Säkerställ relativ positionering för absolut placerad dot
+      if (getComputedStyle(card).position === 'static') {
+        card.style.position = 'relative';
+      }
+      card.appendChild(dot);
+    });
+
+    // Uppdatera status‑elementen med slumpmässig status (demo‑syfte)
+    const updateStatuses = () => {
+      const randomStatus = () => STATUSES[Math.floor(Math.random() * STATUSES.length)];
+
+      // Top‑bar
+      const topStatus = document.querySelector('.moc-agent-status');
+      if (topStatus) {
+        const s = randomStatus();
+        topStatus.dataset.status = s;
+        topStatus.style.background = COLORS[s];
+        topStatus.title = `Agent är ${s}`;
+        topStatus.classList.toggle('pulse', s === 'Aktiv');
+      }
+
+      // Kort‑dots
+      document.querySelectorAll('.moc-card-status').forEach(dot => {
+        const s = randomStatus();
+        dot.dataset.status = s;
+        dot.style.background = COLORS[s];
+        dot.title = `Agent är ${s}`;
+        dot.classList.toggle('pulse', s === 'Aktiv');
+      });
+    };
+
+    // Initiera och kör var 5 sekunder
+    updateStatuses();
+    setInterval(updateStatuses, 5000);
+
+    // Lägg till ett verktyg i AI‑tilläggsdockan för att visa information
+    const toolEl = document.createElement('div');
+    toolEl.innerHTML = `
+      <p style="margin:0;font-size:0.9rem;color:#e9d7b0;">
+        Live‑statusindikatorer uppdateras var 5 sek.
+        <br>Grön = Aktiv, Gul = Bekräftar, Grå = Offline.
+      </p>
+    `;
+    window.MyOffiCityAddons.addTool('Live‑Status', '🔔', toolEl);
+    window.MyOffiCityAddons.register('Live Status Indicator');
+  } catch (e) {
+    console.error('Live‑Status‑modul fel:', e);
+  }
+})();

@@ -886,3 +886,62 @@ body {
 
 SUMMARY: Byggde en interaktiv Asset-Inspector Tooltip som visas när man hoverar över `.cards` i marketplace. Den extraherar och visar detaljerad metadata (namn, beskrivning, pris, skapare, modell-vikt, ID och taggar) i en animerad, flytande tooltip-box som följer muspekaren. Använder MutationObserver för att dynamiskt binda nya kort och registreras i AI-docken.
 COMMIT: feat: add interactive Asset-Inspector tooltip for marketplace cards
+
+/* Theme-Switcher Button */
+.moc-theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(217, 180, 106, 0.45);
+  background: rgba(15, 23, 42, 0.88);
+  color: #f3ecdc;
+  font: 600 12px/1 system-ui, -apple-system, sans-serif;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+  margin-left: 12px;
+}
+.moc-theme-toggle:hover {
+  border-color: #d9b46a;
+  background: rgba(20, 32, 61, 0.96);
+  transform: translateY(-1px);
+}
+
+/* Soft-Dark Theme (default) */
+.moc-theme-soft-dark {
+  --moc-bg: #0f172a;
+  --moc-text: #f3ecdc;
+  --moc-accent: #d9b46a;
+  --moc-card-bg: rgba(15, 23, 42, 0.88);
+  --moc-border: rgba(217, 180, 106, 0.32);
+}
+
+/* High-Contrast Theme */
+.moc-theme-high-contrast {
+  --moc-bg: #000000;
+  --moc-text: #ffffff;
+  --moc-accent: #ffff00;
+  --moc-card-bg: #1a1a1a;
+  --moc-border: #ffffff;
+}
+.moc-theme-high-contrast body,
+.moc-theme-high-contrast #app,
+.moc-theme-high-contrast .dash,
+.moc-theme-high-contrast .dsb,
+.moc-theme-high-contrast .dmain,
+.moc-theme-high-contrast .cards {
+  background-color: var(--moc-bg) !important;
+  color: var(--moc-text) !important;
+}
+.moc-theme-high-contrast .moc-theme-toggle {
+  border-color: var(--moc-accent);
+  color: var(--moc-accent);
+}
+.moc-theme-high-contrast .moc-dock-btn,
+.moc-theme-high-contrast .moc-scroll-top {
+  border-color: var(--moc-accent);
+  color: var(--moc-text);
+}

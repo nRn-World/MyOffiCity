@@ -1038,3 +1038,72 @@
     window.MyOffiCityAddons.register('Asset-Inspector Tooltip');
   } catch (e) { console.error('Asset-Inspector Addon Error:', e); }
 })();
+
+(() => {
+  try {
+    const themeKey = 'moc-theme';
+    const themes = {
+      'soft-dark': { label: 'Soft-Dark', icon: '🌙', class: 'moc-theme-soft-dark' },
+      'high-contrast': { label: 'High-Contrast', icon: '☀️', class: 'moc-theme-high-contrast' }
+    };
+
+    function getSavedTheme() {
+      try {
+        return localStorage.getItem(themeKey) || 'soft-dark';
+      } catch (e) {
+        return 'soft-dark';
+      }
+    }
+
+    function applyTheme(themeName) {
+      const theme = themes[themeName] || themes['soft-dark'];
+      document.body.classList.remove('moc-theme-soft-dark', 'moc-theme-high-contrast');
+      document.body.classList.add(theme.class);
+      try {
+        localStorage.setItem(themeKey, themeName);
+      } catch (e) {}
+    }
+
+    function toggleTheme() {
+      const current = getSavedTheme();
+      const next = current === 'soft-dark' ? 'high-contrast' : 'soft-dark';
+      applyTheme(next);
+      updateButtonLabel(next);
+    }
+
+    function updateButtonLabel(themeName) {
+      const theme = themes[themeName] || themes['soft-dark'];
+      const btn = document.getElementById('mocThemeToggle');
+      if (btn) {
+        btn.innerHTML = `${theme.icon} ${theme.label}`;
+        btn.title = `Växla till ${themeName === 'soft-dark' ? 'High-Contrast' : 'Soft-Dark'}`;
+      }
+    }
+
+    const currentTheme = getSavedTheme();
+    applyTheme(currentTheme);
+
+    const topbar = document.getElementById('topbar');
+    if (topbar) {
+      const btn = document.createElement('button');
+      btn.id = 'mocThemeToggle';
+      btn.className = 'moc-theme-toggle';
+      btn.innerHTML = `${themes[currentTheme].icon} ${themes[currentTheme].label}`;
+      btn.title = `Växla till ${currentTheme === 'soft-dark' ? 'High-Contrast' : 'Soft-Dark'}`;
+      btn.addEventListener('click', toggleTheme);
+      topbar.appendChild(btn);
+      updateButtonLabel(currentTheme);
+    }
+
+    const info = document.createElement('div');
+    info.className = 'moc-toast-info';
+    info.innerHTML = `
+      <div class="moc-toast-info-title">Theme-Switcher</div>
+      <div class="moc-toast-info-text">Växla mellan Soft-Dark och High-Contrast lägen. Ditt val sparas automatiskt.</div>
+    `;
+    window.MyOffiCityAddons.addTool('Theme-Switcher', '🎨', info);
+    window.MyOffiCityAddons.register('Theme-Switcher');
+  } catch (e) {
+    console.error('Theme-Switcher Addon Error:', e);
+  }
+})();

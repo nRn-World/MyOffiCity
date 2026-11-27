@@ -9759,3 +9759,66 @@
     console.error('Heatmap initialization failed:', e);
   }
 })();
+
+(() => {
+  try {
+    const searchContainer = document.createElement('div');
+    searchContainer.className = 'moc-quick-search-container';
+    searchContainer.id = 'moc-quick-search-bar';
+    
+    const input = document.createElement('input');
+    input.className = 'moc-quick-search-input';
+    input.placeholder = 'Search Agent or Coord (e.g. "Tomas" or "X:10,Y:20")';
+    
+    const results = document.createElement('div');
+    results.className = 'moc-quick-search-results';
+    
+    searchContainer.appendChild(input);
+    searchContainer.appendChild(results);
+
+    const handleSearch = (e) => {
+      const val = e.target.value.toLowerCase();
+      results.innerHTML = '';
+      if (!val) { results.style.display = 'none'; return; }
+      
+      // Mock logic for demonstration - in production, this would query the city state
+      const mockAgents = ['Tomas', 'Agent_Alpha', 'Agent_Beta', 'Reception_Desk'];
+      const matches = mockAgents.filter(a => a.toLowerCase().includes(val));
+      
+      if (matches.length > 0) {
+        results.style.display = 'block';
+        matches.forEach(m => {
+          const item = document.createElement('div');
+          item.className = 'moc-quick-search-item';
+          item.textContent = m;
+          item.onclick = () => {
+            alert(`Navigating to ${m}...`);
+            results.style.display = 'none';
+            input.value = '';
+          };
+          results.appendChild(item);
+        });
+      } else {
+        results.style.display = 'none';
+      }
+    };
+
+    input.addEventListener('input', handleSearch);
+
+    // Toggle visibility with Cmd/Ctrl + F
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+        e.preventDefault();
+        searchContainer.classList.toggle('visible');
+        if (searchContainer.classList.contains('visible')) {
+          input.focus();
+        }
+      }
+    });
+
+    window.MyOffiCityAddons.addTool('Quick Search', '🔍', searchContainer);
+    window.MyOffiCityAddons.register('QuickSearchBar');
+  } catch (e) {
+    console.error('QuickSearch Addon Error:', e);
+  }
+})();

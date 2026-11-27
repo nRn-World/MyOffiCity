@@ -2012,3 +2012,97 @@
 
   } catch(e) {}
 })();
+
+(() => {
+  try {
+    const wrap = document.createElement('div');
+    wrap.className = 'moc-timeline-wrap';
+    
+    const timeSlider = document.createElement('input');
+    timeSlider.type = 'range';
+    timeSlider.min = '0';
+    timeSlider.max = '24';
+    timeSlider.step = '0.1';
+    timeSlider.value = '12';
+    timeSlider.className = 'moc-timeline-slider';
+    
+    const timeLabel = document.createElement('div');
+    timeLabel.className = 'moc-timeline-label';
+    timeLabel.textContent = '🕒 12:00';
+    
+    const skyColor = document.createElement('div');
+    skyColor.className = 'moc-timeline-sky';
+    
+    const lightStatus = document.createElement('div');
+    lightStatus.className = 'moc-timeline-status';
+    
+    wrap.appendChild(timeLabel);
+    wrap.appendChild(timeSlider);
+    wrap.appendChild(skyColor);
+    wrap.appendChild(lightStatus);
+    
+    const updateAtmosphere = (hour) => {
+      const h = parseFloat(hour);
+      let skyTop, skyBottom, ambient, sunIntensity, streetLights, windowLights;
+      
+      if (h >= 5 && h < 8) {
+        skyTop = '#ff9a56'; skyBottom = '#ffd89d';
+        ambient = 0.4; sunIntensity = 0.8;
+        streetLights = false; windowLights = false;
+        lightStatus.textContent = '🌅 Morgon';
+      } else if (h >= 8 && h < 17) {
+        skyTop = '#87ceeb'; skyBottom = '#e0f6ff';
+        ambient = 0.8; sunIntensity = 1.0;
+        streetLights = false; windowLights = false;
+        lightStatus.textContent = '☀️ Dag';
+      } else if (h >= 17 && h < 20) {
+        skyTop = '#ff6b6b'; skyBottom = '#ffa07a';
+        ambient = 0.5; sunIntensity = 0.6;
+        streetLights = true; windowLights = true;
+        lightStatus.textContent = '🌇 Kväll';
+      } else {
+        skyTop = '#0f172a'; skyBottom = '#1e293b';
+        ambient = 0.15; sunIntensity = 0.05;
+        streetLights = true; windowLights = true;
+        lightStatus.textContent = '🌙 Natt';
+      }
+      
+      skyColor.style.background = `linear-gradient(to bottom, ${skyTop}, ${skyBottom})`;
+      
+      const hours = Math.floor(h);
+      const minutes = Math.floor((h % 1) * 60);
+      timeLabel.textContent = `🕒 ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+      
+      if (window.THREE) {
+        const scene = window.__cityScene || window.__scene;
+        if (scene) {
+          scene.background = new window.THREE.Color(skyTop);
+          scene.fog = new window.THREE.Fog(skyBottom, 50, 200);
+          
+          scene.traverse((obj) => {
+            if (obj.isLight) {
+              if (obj.name.includes('ambient') || obj.name.includes('Ambient')) {
+                obj.intensity = ambient;
+              } else if (obj.name.includes('sun') || obj.name.includes('Sun') || obj.name.includes('directional')) {
+                obj.intensity = sunIntensity;
+              } else if (obj.name.includes('street') || obj.name.includes('Street')) {
+                obj.intensity = streetLights ? 1.5 : 0;
+              } else if (obj.name.includes('window') || obj.name.includes('Window')) {
+                obj.intensity = windowLights ? 0.8 : 0;
+              }
+            }
+          });
+        }
+      }
+    };
+    
+    timeSlider.addEventListener('input', (e) => {
+      updateAtmosphere(e.target.value);
+    });
+    
+    updateAtmosphere(12);
+    
+    window.MyOffiCityAddons.addTool('Tidslinje & Atmosfär', '🕒', wrap);
+    window.MyOffiCityAddons.register('Tidslinje & Atmosfär');
+  } catch(e) {}
+})();

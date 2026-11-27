@@ -8544,3 +8544,74 @@
     console.error('Session-timer error:', e);
   }
 })();
+
+(() => {
+  try {
+    const createPreviewModal = () => {
+      let modal = document.getElementById('mocQuickPreview');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'mocQuickPreview';
+        modal.className = 'moc-preview-overlay';
+        modal.innerHTML = `
+          <div class="moc-preview-modal">
+            <button class="moc-preview-close">&times;</button>
+            <div class="moc-preview-content"></div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+        
+        modal.querySelector('.moc-preview-close').onclick = () => modal.classList.remove('active');
+        modal.onclick = (e) => { if (e.target === modal) modal.classList.remove('active'); };
+      }
+      return modal;
+    };
+
+    const handleCardClick = (e) => {
+      if (!e.shiftKey) return;
+      const card = e.target.closest('.card');
+      if (!card) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      const modal = createPreviewModal();
+      const content = modal.querySelector('.moc-preview-content');
+      
+      // Extrahera data från det existerande kortet
+      const title = card.querySelector('h3')?.innerText || 'Information';
+      const img = card.querySelector('img')?.src;
+      const desc = card.querySelector('p')?.innerText || 'Ingen beskrivning tillgänglig.';
+      const tags = Array.from(card.querySelectorAll('.tag, .badge, .status')).map(t => t.innerText);
+
+      content.innerHTML = `
+        ${img ? `<div class="moc-preview-img-wrap"><img src="${img}" /></div>` : ''}
+        <div class="moc-preview-details">
+          <h2>${title}</h2>
+          <div class="moc-preview-tags">
+            ${tags.map(t => `<span class="moc-tag">${t}</span>`).join('')}
+          </div>
+          <p class="moc-preview-desc">${desc}</p>
+          <div class="moc-preview-footer">
+            <small>Tips: Klicka utanför eller på krysset för att stänga</small>
+          </div>
+        </div>
+      `;
+
+      modal.classList.add('active');
+    };
+
+    document.addEventListener('click', handleCardClick, true);
+
+    // Registrera verktyget i AI-panelen
+    const helpEl = document.createElement('div');
+    helpEl.style.padding = '5px';
+    helpEl.innerHTML = '<p style="font-size:12px; color:#ccc; margin:0;">Håll ner <b>Shift</b> och klicka på valfritt kort i listan för att snabbgranska detaljer.</p>';
+    
+    window.MyOffiCityAddons.addTool('Quick Preview', '🔍', helpEl);
+    window.MyOffiCityAddons.register('Quick Preview');
+
+  } catch (e) {
+    console.error('Quick Preview Addon Error:', e);
+  }
+})();

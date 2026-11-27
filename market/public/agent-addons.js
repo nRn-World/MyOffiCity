@@ -933,3 +933,108 @@
     window.MyOffiCityAddons.register('Quick-Search Overlay');
   } catch (e) { console.error('Quick-Search Addon Error:', e); }
 })();
+
+(() => {
+  try {
+    const tooltip = document.createElement('div');
+    tooltip.className = 'moc-asset-tip';
+    tooltip.hidden = true;
+    tooltip.innerHTML = `
+      <div class="moc-asset-tip-head">
+        <span class="moc-asset-tip-icon">📦</span>
+        <span class="moc-asset-tip-title">Asset-Inspector</span>
+      </div>
+      <div class="moc-asset-tip-body"></div>
+      <div class="moc-asset-tip-foot">
+        <span class="moc-asset-tip-hint">Hover för detaljer</span>
+      </div>
+    `;
+    document.body.appendChild(tooltip);
+
+    const body = tooltip.querySelector('.moc-asset-tip-body');
+    const titleEl = tooltip.querySelector('.moc-asset-tip-title');
+    const iconEl = tooltip.querySelector('.moc-asset-tip-icon');
+
+    let activeCard = null;
+    let hideTimer = null;
+
+    function extractMeta(card) {
+      const name = (card.querySelector('.card-title, h3, h2, [class*="title"]')?.textContent || card.dataset.name || 'Okänd asset').trim();
+      const desc = (card.querySelector('.card-desc, p, [class*="desc"]')?.textContent || '').trim();
+      const price = (card.querySelector('[class*="price"], .price, [data-price]')?.textContent || card.dataset.price || '').trim();
+      const author = (card.querySelector('[class*="author"], [class*="creator"], [data-author]')?.textContent || card.dataset.author || 'nRn-World').trim();
+      const weight = card.dataset.weight || card.dataset.modelWeight || '';
+      const tags = Array.from(card.querySelectorAll('[class*="tag"], .tag, [data-tag]')).map(t => t.textContent.trim()).filter(Boolean);
+      const img = card.querySelector('img')?.src || '';
+      const id = card.dataset.id || card.id || '';
+      return { name, desc, price, author, weight, tags, img, id };
+    }
+
+    function renderTip(meta) {
+      titleEl.textContent = meta.name;
+      iconEl.textContent = meta.img ? '🖼️' : '📦';
+      let html = '';
+      if (meta.desc) html += `<div class="moc-asset-tip-row"><span class="moc-asset-tip-label">Beskrivning</span><span class="moc-asset-tip-val">${meta.desc}</span></div>`;
+      if (meta.price) html += `<div class="moc-asset-tip-row"><span class="moc-asset-tip-label">Pris</span><span class="moc-asset-tip-val moc-asset-tip-price">${meta.price}</span></div>`;
+      if (meta.author) html += `<div class="moc-asset-tip-row"><span class="moc-asset-tip-label">Skapare</span><span class="moc-asset-tip-val">${meta.author}</span></div>`;
+      if (meta.weight) html += `<div class="moc-asset-tip-row"><span class="moc-asset-tip-label">Modell-vikt</span><span class="moc-asset-tip-val">${meta.weight}</span></div>`;
+      if (meta.id) html += `<div class="moc-asset-tip-row"><span class="moc-asset-tip-label">ID</span><span class="moc-asset-tip-val moc-asset-tip-mono">${meta.id}</span></div>`;
+      if (meta.tags.length) html += `<div class="moc-asset-tip-tags">${meta.tags.map(t => `<span class="moc-asset-tip-tag">${t}</span>`).join('')}</div>`;
+      body.innerHTML = html || '<div class="moc-asset-tip-empty">Ingen metadata tillgänglig</div>';
+    }
+
+    function showTip(card, e) {
+      clearTimeout(hideTimer);
+      const meta = extractMeta(card);
+      renderTip(meta);
+      tooltip.hidden = false;
+      tooltip.classList.add('visible');
+      positionTip(e);
+    }
+
+    function positionTip(e) {
+      const pad = 14;
+      const tw = tooltip.offsetWidth;
+      const th = tooltip.offsetHeight;
+      let x = e.clientX + pad;
+      let y = e.clientY + pad;
+      if (x + tw > window.innerWidth - 10) x = e.clientX - tw - pad;
+      if (y + th > window.innerHeight - 10) y = e.clientY - th - pad;
+      if (x < 10) x = 10;
+      if (y < 10) y = 10;
+      tooltip.style.left = x + 'px';
+      tooltip.style.top = y + 'px';
+    }
+
+    function hideTip() {
+      hideTimer = setTimeout(() => {
+        tooltip.classList.remove('visible');
+        setTimeout(() => { tooltip.hidden = true; }, 200);
+      }, 120);
+    }
+
+    function bindCards() {
+      const cards = document.querySelectorAll('.cards, .card, [class*="card"]');
+      cards.forEach(card => {
+        if (card.dataset.assetBound) return;
+        card.dataset.assetBound = '1';
+        card.addEventListener('mouseenter', (e) => showTip(card, e));
+        card.addEventListener('mousemove', (e) => { if (!tooltip.hidden) positionTip(e); });
+        card.addEventListener('mouseleave', hideTip);
+      });
+    }
+
+    bindCards();
+    const observer = new MutationObserver(() => bindCards());
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    const info = document.createElement('div');
+    info.className = 'moc-toast-info';
+    info.innerHTML = `
+      <div class="moc-toast-info-title">Asset-Inspector</div>
+      <div class="moc-toast-info-text">Hovra över en asset-kort i marketplace för att se detaljerad metadata: skapare, pris, modell-vikt och taggar.</div>
+    `;
+    window.MyOffiCityAddons.addTool('Asset-Inspector', '🔬', info);
+    window.MyOffiCityAddons.register('Asset-Inspector Tooltip');
+  } catch (e) { console.error('Asset-Inspector Addon Error:', e); }
+})();

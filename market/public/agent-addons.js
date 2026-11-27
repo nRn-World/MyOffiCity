@@ -8714,3 +8714,57 @@
     console.error('Focus-Zone Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const container = document.createElement('div');
+    container.className = 'moc-quickjump';
+    const list = document.createElement('div');
+    list.className = 'moc-quickjump-list';
+    container.appendChild(list);
+
+    const updateList = () => {
+      list.innerHTML = '';
+      const objects = [];
+      const scene = window.__THREE_SCENE__;
+      if (scene) {
+        scene.traverse((obj) => {
+          if (obj.isMesh && obj.name) {
+            objects.push({ name: obj.name, position: obj.position.clone() });
+          }
+        });
+      }
+      if (objects.length === 0) {
+        list.innerHTML = '<div class="moc-quickjump-empty">Inga 3D-objekt hittade</div>';
+        return;
+      }
+      objects.forEach((obj, i) => {
+        const item = document.createElement('div');
+        item.className = 'moc-quickjump-item';
+        item.textContent = obj.name;
+        item.addEventListener('click', () => {
+          const camera = window.__THREE_CAMERA__;
+          if (camera) {
+            camera.position.set(obj.position.x + 5, obj.position.y + 5, obj.position.z + 5);
+            camera.lookAt(obj.position);
+          }
+        });
+        list.appendChild(item);
+      });
+    };
+
+    const keyHandler = (e) => {
+      if (e.altKey && e.key === 'g') {
+        e.preventDefault();
+        updateList();
+        window.MyOffiCityAddons.toggleDock(true);
+      }
+    };
+    document.addEventListener('keydown', keyHandler);
+
+    window.MyOffiCityAddons.addTool('Quick-Jump', '⚡', container);
+    window.MyOffiCityAddons.register('Quick-Jump');
+  } catch (e) {
+    console.error('Quick-Jump Error:', e);
+  }
+})();

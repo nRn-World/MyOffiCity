@@ -6032,3 +6032,31 @@ canvas {
 .moc-dimmed {
   filter: brightness(0.3) blur(2px);
 }
+
+.moc-quickjump {
+  max-height: 300px;
+  overflow-y: auto;
+}
+.moc-quickjump-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.moc-quickjump-item {
+  padding: 8px;
+  background: rgba(217, 180, 106, 0.1);
+  border: 1px solid rgba(217, 180, 106, 0.3);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.moc-quickjump-item:hover {
+  background: rgba(217, 180, 106, 0.2);
+  border-color: #d9b46a;
+}
+.moc-quickjump-empty {
+  padding: 10px;
+  text-align: center;
+  opacity: 0.6;
+  font-style: italic;
+}

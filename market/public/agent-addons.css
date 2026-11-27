@@ -3018,3 +3018,93 @@ a.moc-breadcrumb-item:hover {
   background: rgba(217, 180, 106, 0.3);
   transform: translateY(-1px);
 }
+
+.moc-perf-monitor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 8px;
+  border: 1px solid rgba(217, 180, 106, 0.2);
+}
+
+.moc-perf-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.moc-perf-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: #f3ecdc;
+}
+
+.moc-perf-status {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.moc-perf-status-good {
+  background: rgba(74, 222, 128, 0.2);
+  color: #4ade80;
+}
+
+.moc-perf-status-warn {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+}
+
+.moc-perf-status-bad {
+  background: rgba(248, 113, 113, 0.2);
+  color: #f87171;
+}
+
+.moc-perf-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.moc-perf-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px;
+  background: rgba(12, 18, 34, 0.8);
+  border-radius: 6px;
+}
+
+.moc-perf-label {
+  font-size: 10px;
+  color: #94a3b8;
+  margin-bottom: 4px;
+}
+
+.moc-perf-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #f3ecdc;
+}
+
+.moc-perf-insight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: rgba(217, 180, 106, 0.1);
+  border-radius: 6px;
+  border-left: 3px solid #d9b46a;
+}
+
+.moc-perf-icon {
+  font-size: 14px;
+}
+
+.moc-perf-text {
+  font-size: 12px;
+  color: #e9d7b0;
+}

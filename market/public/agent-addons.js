@@ -6259,3 +6259,73 @@
     console.warn('Health Monitor Error:', e);
   }
 })();
+
+(() => {
+  try {
+    // Create Help Center container
+    const helpContainer = document.createElement('div');
+    helpContainer.style.padding = '8px';
+    helpContainer.style.fontSize = '12px';
+    helpContainer.style.color = '#e9d7b0';
+    helpContainer.style.background = 'rgba(15,23,42,0.8)';
+    helpContainer.style.borderRadius = '6px';
+    helpContainer.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+
+    // Button to open modal
+    const openBtn = document.createElement('button');
+    openBtn.textContent = '🆘 Hjälp';
+    openBtn.style.padding = '6px 12px';
+    openBtn.style.background = 'rgba(217,180,106,0.2)';
+    openBtn.style.border = '1px solid rgba(217,180,106,0.4)';
+    openBtn.style.borderRadius = '4px';
+    openBtn.style.color = '#f3ecdc';
+    openBtn.style.cursor = 'pointer';
+    openBtn.style.fontSize = '12px';
+    openBtn.style.transition = 'background 0.2s';
+    openBtn.onmouseover = () => openBtn.style.background = 'rgba(217,180,106,0.3)';
+    openBtn.onmouseout = () => openBtn.style.background = 'rgba(217,180,106,0.2)';
+    helpContainer.appendChild(openBtn);
+
+    // Modal elements
+    const modalOverlay = document.createElement('div');
+    modalOverlay.className = 'moc-help-overlay';
+    modalOverlay.style.display = 'none';
+
+    const modalContent = document.createElement('div');
+    modalContent.className = 'moc-help-modal';
+    modalContent.innerHTML = `
+      <div class="moc-help-header">
+        <h3>Hjälp & Tips</h3>
+        <button class="moc-help-close">✖</button>
+      </div>
+      <div class="moc-help-body">
+        <p>Välkommen till MyOffiCity! Här är några snabba tips för att komma igång:</p>
+        <ul>
+          <li>Tryck på <strong>Esc</strong> för att återgå till 3D‑vyn.</li>
+          <li>Välj företag i kartan för att se deras kontor.</li>
+          <li>Öppna chattfönstret för att prata med AI‑teamet.</li>
+          <li>Besök <a href="/privacy.html" target="_blank">Integritetspolicy</a> för mer info.</li>
+        </ul>
+      </div>
+    `;
+    modalOverlay.appendChild(modalContent);
+    document.body.appendChild(modalOverlay);
+
+    // Event handlers
+    openBtn.onclick = () => {
+      modalOverlay.style.display = 'flex';
+    };
+    modalContent.querySelector('.moc-help-close').onclick = () => {
+      modalOverlay.style.display = 'none';
+    };
+    modalOverlay.onclick = (e) => {
+      if (e.target === modalOverlay) modalOverlay.style.display = 'none';
+    };
+
+    // Register tool
+    window.MyOffiCityAddons.addTool('Help Center', '❓', helpContainer);
+    window.MyOffiCityAddons.register('Help Center Widget');
+  } catch (e) {
+    console.warn('Help Center Addon Error:', e);
+  }
+})();

@@ -6148,3 +6148,37 @@ canvas {
   margin: 0;
   padding-left: 1.2em;
 }
+
+.moc-cmd-palette {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.7);
+  z-index: 10000;
+  display: none;
+  justify-content: center;
+  padding-top: 100px;
+}
+.moc-cmd-inner {
+  width: 400px;
+  background: #0f172a;
+  border: 1px solid #d9b46a;
+  border-radius: 8px;
+  padding: 10px;
+  max-height: 300px;
+}
+#moc-cmd-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #334155;
+  color: #f3ecdc;
+  padding: 8px;
+  outline: none;
+}
+.moc-cmd-item {
+  padding: 10px;
+  color: #e2e8f0;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.moc-cmd-item:hover { background: #1e293b; }

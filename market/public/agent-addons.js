@@ -8910,3 +8910,57 @@
     console.error('Contextual Tooltip error:', e);
   }
 })();
+
+(() => {
+  try {
+    const palette = document.createElement('div');
+    palette.className = 'moc-cmd-palette';
+    palette.innerHTML = `
+      <div class="moc-cmd-inner">
+        <input type="text" placeholder="Sök kommando (t.ex. city, dash)..." id="moc-cmd-input">
+        <div class="moc-cmd-list" id="moc-cmd-list"></div>
+      </div>
+    `;
+    document.body.appendChild(palette);
+
+    const input = palette.querySelector('#moc-cmd-input');
+    const list = palette.querySelector('#moc-cmd-list');
+    const commands = [
+      { name: 'Gå till Dashboard', path: '#/dash' },
+      { name: 'Gå till City', path: '#/city' },
+      { name: 'Marknadsplats', path: '#/market' }
+    ];
+
+    const toggle = (show) => {
+      palette.style.display = show ? 'flex' : 'none';
+      if (show) input.focus();
+    };
+
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        toggle(palette.style.display !== 'flex');
+      }
+      if (e.key === 'Escape') toggle(false);
+    });
+
+    input.addEventListener('input', () => {
+      const val = input.value.toLowerCase();
+      list.innerHTML = '';
+      commands.filter(c => c.name.toLowerCase().includes(val)).forEach(c => {
+        const item = document.createElement('div');
+        item.className = 'moc-cmd-item';
+        item.textContent = c.name;
+        item.onclick = () => { window.location.hash = c.path; toggle(false); };
+        list.appendChild(item);
+      });
+    });
+
+    palette.addEventListener('click', (e) => { if (e.target === palette) toggle(false); });
+    
+    const info = document.createElement('div');
+    info.innerHTML = `<p style="font-size:12px;margin:0;">⌨️ Tryck <b>Ctrl+K</b> var som helst för att navigera snabbt.</p>`;
+    window.MyOffiCityAddons.addTool('Command Palette', '⌘', info);
+    window.MyOffiCityAddons.register('Command Palette');
+  } catch (e) { console.error('CmdPalette error:', e); }
+})();

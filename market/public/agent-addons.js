@@ -3287,3 +3287,52 @@
     window.MyOffiCityAddons.register('Quick-View Sidebar');
   } catch(e) {}
 })();
+
+(() => {
+  try {
+    const routes = { 'marketplace': '#/', 'city': '#/city', 'dashboard': '#/dash' };
+    
+    const modal = document.createElement('div');
+    modal.className = 'moc-cmd-palette';
+    modal.innerHTML = `
+      <div class="moc-cmd-content">
+        <div class="moc-cmd-header">Navigera (Ctrl+G)</div>
+        <input type="text" id="moc-cmd-input" placeholder="Skriv: marketplace, city, eller dash...">
+        <div class="moc-cmd-list">
+          <p><strong>Kortkommandon:</strong></p>
+          <ul>
+            <li>Ctrl+G : Öppna navigering</li>
+            <li>Esc : Stäng</li>
+          </ul>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    const input = modal.querySelector('#moc-cmd-input');
+    const toggle = (show) => {
+      modal.style.display = show ? 'flex' : 'none';
+      if (show) input.focus();
+    };
+
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.key === 'g') { e.preventDefault(); toggle(true); }
+      if (e.key === 'Escape') toggle(false);
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const val = input.value.toLowerCase().trim();
+        if (routes[val]) { window.location.hash = routes[val]; toggle(false); input.value = ''; }
+      }
+    });
+
+    const toolBtn = document.createElement('button');
+    toolBtn.className = 'moc-quickview-toggle';
+    toolBtn.textContent = '⌨️ Visa Kommandon';
+    toolBtn.onclick = () => toggle(true);
+    
+    window.MyOffiCityAddons.addTool('Kommando-palett', '⌨️', toolBtn);
+    window.MyOffiCityAddons.register('Command Palette');
+  } catch(e) {}
+})();

@@ -2106,3 +2106,49 @@ COMMIT: feat: add interactive Asset-Inspector tooltip for marketplace cards
   font-size: 10px;
   color: #64748b;
 }
+
+/* Zen-mode Focus Overlay */
+.moc-zen-btn {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(217, 180, 106, 0.3);
+  background: rgba(217, 180, 106, 0.08);
+  color: #e9d7b0;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 10px;
+}
+.moc-zen-btn:hover {
+  background: rgba(217, 180, 106, 0.15);
+  border-color: #d9b46a;
+}
+.moc-zen-btn.active {
+  background: rgba(217, 180, 106, 0.2);
+  border-color: #d9b46a;
+  color: #fff;
+}
+
+/* CSS transitions for Zen-mode */
+body.moc-zen-active .dash,
+body.moc-zen-active .dsb,
+body.moc-zen-active .dmain,
+body.moc-zen-active .cards {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.98);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+body.moc-zen-active #app,
+body.moc-zen-active .bar {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Ensure 3D canvas and chat remain visible */
+body.moc-zen-active canvas {
+  z-index: 10;
+}

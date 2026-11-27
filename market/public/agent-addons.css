@@ -5092,3 +5092,24 @@ button, [role="button"] {
   width: 100px;
   height: 20px;
 }
+
+/* Focus Mode Styles */
+body.moc-focus-mode #nav,
+body.moc-focus-mode .sidebar,
+body.moc-focus-mode #topbar,
+body.moc-focus-mode .dashboard-nav {
+  display: none !important;
+}
+
+body.moc-focus-mode #app {
+  width: 100% !important;
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  padding: 20px !important;
+}
+
+body.moc-focus-mode .chat-container {
+  height: 90vh !important;
+  border: 1px solid #d9b46a !important;
+  box-shadow: 0 0 30px rgba(217, 180, 106, 0.2) !important;
+}

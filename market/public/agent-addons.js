@@ -3801,3 +3801,76 @@
     }
   } catch(e) {}
 })();
+
+(() => {
+  try {
+    const STORAGE_KEY = 'moc-dark-mode';
+    const root = document.documentElement;
+    
+    // 1. Initiera läge baserat på localStorage eller systeminställning
+    const getInitialMode = () => {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved === 'dark' || saved === 'light') return saved;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    };
+
+    const applyMode = (mode) => {
+      if (mode === 'dark') {
+        root.setAttribute('data-theme', 'dark');
+      } else {
+        root.setAttribute('data-theme', 'light');
+      }
+      // Uppdatera ikonen i toppen
+      const btn = document.getElementById('mocDarkModeToggle');
+      if (btn) {
+        btn.textContent = mode === 'dark' ? '☀️' : '🌙';
+        btn.title = mode === 'dark' ? 'Byt till ljus läge' : 'Byt till mörkt läge';
+      }
+    };
+
+    // 2. Skapa toggle-knappen
+    const createToggle = () => {
+      const topbar = document.getElementById('topbar');
+      if (!topbar) return;
+      
+      // Undvik dubbla knappar
+      if (document.getElementById('mocDarkModeToggle')) return;
+
+      const btn = document.createElement('button');
+      btn.id = 'mocDarkModeToggle';
+      btn.className = 'moc-dark-mode-toggle';
+      btn.setAttribute('aria-label', 'Byt tema');
+      
+      btn.addEventListener('click', () => {
+        const current = root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+        const next = current === 'dark' ? 'light' : 'dark';
+        localStorage.setItem(STORAGE_KEY, next);
+        applyMode(next);
+      });
+
+      // Lägg till knappen i toppen
+      topbar.appendChild(btn);
+      
+      // Tillämpa initialt läge
+      const initialMode = getInitialMode();
+      applyMode(initialMode);
+      
+      // 3. Lyssna på systemändringar (om användaren inte har valt manuellt)
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      mediaQuery.addEventListener('change', (e) => {
+        // Endast uppdatera om användaren inte har satt ett explicit val
+        if (!localStorage.getItem(STORAGE_KEY)) {
+          applyMode(e.matches ? 'dark' : 'light');
+        }
+      });
+
+      window.MyOffiCityAddons.register('Dark Mode');
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', createToggle);
+    } else {
+      createToggle();
+    }
+  } catch(e) {}
+})();

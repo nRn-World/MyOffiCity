@@ -759,3 +759,57 @@
     window.MyOffiCityAddons.addTool('Portal Jump', '🚀', info);
   } catch (e) {}
 })();
+
+(() => {
+  try {
+    const pulseContainer = document.createElement('div');
+    pulseContainer.id = 'moc-live-pulse';
+    pulseContainer.className = 'moc-pulse-wrapper';
+    pulseContainer.innerHTML = `
+      <div class="moc-pulse-dot"></div>
+      <span class="moc-pulse-label">AI System Ready</span>
+    `;
+
+    // Mount to topbar or app root as requested by Tomas
+    const target = document.getElementById('topbar') || document.getElementById('app') || document.body;
+    target.appendChild(pulseContainer);
+
+    let activeCalls = 0;
+    const setPulseState = (busy) => {
+      pulseContainer.classList.toggle('moc-pulse-active', busy);
+      const label = pulseContainer.querySelector('.moc-pulse-label');
+      label.textContent = busy ? 'AI Processing...' : 'AI System Ready';
+    };
+
+    // Hook into actual system events (Fetch API) to detect real-time activity
+    const originalFetch = window.fetch;
+    window.fetch = async (...args) => {
+      const isAiAction = typeof args[0] === 'string' && (args[0].includes('/api/') || args[0].includes('chat'));
+      if (isAiAction) {
+        activeCalls++;
+        setPulseState(true);
+      }
+      try {
+        const response = await originalFetch(...args);
+        return response;
+      } finally {
+        if (isAiAction) {
+          activeCalls--;
+          if (activeCalls <= 0) {
+            setTimeout(() => { if (activeCalls <= 0) setPulseState(false); }, 1000);
+          }
+        }
+      }
+    };
+
+    // Register with the Addon System
+    window.MyOffiCityAddons.register('Live Pulse');
+    const statusInfo = document.createElement('div');
+    statusInfo.className = 'moc-toast-info';
+    statusInfo.innerHTML = `
+      <div class="moc-toast-info-title">Systemstatus</div>
+      <div class="moc-toast-info-text">Indikatorn i topbaren visar realtidsaktivitet. Grön = Väntar, Blå = AI-bearbetning pågår.</div>
+    `;
+    window.MyOffiCityAddons.addTool('Pulse Status', '💓', statusInfo);
+  } catch (e) { console.error('Pulse Addon Error:', e); }
+})();

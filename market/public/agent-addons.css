@@ -5213,3 +5213,42 @@ body.moc-focus-mode .chat-container {
 .moc-pulse-latency {
   font-family: monospace;
 }
+
+.moc-agent-dock {
+  position: fixed;
+  bottom: 70px;
+  left: 20px;
+  width: 280px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(217, 180, 106, 0.3);
+  border-radius: 12px;
+  padding: 12px;
+  color: #f3ecdc;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  z-index: 900;
+  backdrop-filter: blur(10px);
+}
+.moc-dock-header {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #d9b46a;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(217, 180, 106, 0.2);
+}
+.moc-dock-dropzone {
+  min-height: 60px;
+  border: 2px dashed rgba(217, 180, 106, 0.2);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.3s;
+}
+.moc-dock-dropzone:hover {
+  border-color: rgba(217, 180, 106, 0.5);
+}
+.moc-hint {
+  font-size: 12px;
+  opacity: 0.5;
+}

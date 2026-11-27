@@ -1650,3 +1650,62 @@ COMMIT: feat: add interactive Asset-Inspector tooltip for marketplace cards
 }
 
 .moc-fav-table th,
+
+.moc-timeline-wrap {
+  padding: 12px;
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 8px;
+  border: 1px solid rgba(217, 180, 106, 0.2);
+}
+
+.moc-timeline-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f3ecdc;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.moc-timeline-slider {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(to right, #0f172a, #ff9a56, #87ceeb, #ff6b6b, #0f172a);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.moc-timeline-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #d9b46a;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition: transform 0.15s ease;
+}
+
+.moc-timeline-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+.moc-timeline-sky {
+  height: 40px;
+  border-radius: 6px;
+  margin: 10px 0;
+  transition: background 0.4s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.moc-timeline-status {
+  font-size: 13px;
+  font-weight: 500;
+  color: #e9d7b0;
+  text-align: center;
+  padding: 6px;
+  background: rgba(217, 180, 106, 0.1);
+  border-radius: 4px;
+}

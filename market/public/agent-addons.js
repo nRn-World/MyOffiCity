@@ -6207,3 +6207,55 @@
     console.warn('Timer addon error:', e);
   }
 })();
+
+(() => {
+  try {
+    const container = document.createElement('div');
+    container.className = 'moc-health-container';
+
+    const checkSystem = () => {
+      const status = [
+        { n: '3D Engine', v: !!window.THREE },
+        { n: 'Addon API', v: !!window.MyOffiCityAddons },
+        { n: 'DOM Ready', v: document.readyState === 'complete' || document.readyState === 'interactive' }
+      ];
+
+      container.innerHTML = `
+        <div class="moc-health-list">
+          ${status.map(s => `
+            <div class="moc-health-item">
+              <span>${s.n}</span>
+              <span class="${s.v ? 'moc-status-ok' : 'moc-status-warn'}">${s.v ? 'AKTIV' : 'VÄNTAR'}</span>
+            </div>
+          `).join('')}
+        </div>
+        <button class="moc-action-btn" id="mocResetUI">Återställ Gränssnitt</button>
+      `;
+
+      container.querySelector('#mocResetUI').onclick = (e) => {
+        const btn = e.target;
+        // Real UI Reset Actions
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (window.MyOffiCityAddons && typeof window.MyOffiCityAddons.toggleDock === 'function') {
+          setTimeout(() => window.MyOffiCityAddons.toggleDock(false), 500);
+        }
+        
+        btn.textContent = '✅ Återställd';
+        btn.style.borderColor = '#4ade80';
+        setTimeout(() => {
+          btn.textContent = 'Återställ Gränssnitt';
+          btn.style.borderColor = '';
+        }, 2000);
+      };
+    };
+
+    checkSystem();
+    // Refresh status every 10s without being intrusive
+    setInterval(checkSystem, 10000);
+
+    window.MyOffiCityAddons.addTool('Systemstatus', '🛡️', container);
+    window.MyOffiCityAddons.register('System Health Monitor');
+  } catch (e) {
+    console.warn('Health Monitor Error:', e);
+  }
+})();

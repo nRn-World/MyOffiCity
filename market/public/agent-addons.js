@@ -8831,3 +8831,82 @@
     console.error('Smart-Clipboard Error:', e);
   }
 })();
+
+(() => {
+  try {
+    // --- Tooltip element (reused) ---
+    const tooltipClass = 'moc-tooltip';
+    const tooltipEl = document.createElement('div');
+    tooltipEl.className = tooltipClass;
+    tooltipEl.style.position = 'fixed';
+    tooltipEl.style.pointerEvents = 'none';
+    tooltipEl.style.zIndex = '9999';
+    tooltipEl.style.transition = 'opacity 0.15s ease';
+    tooltipEl.style.opacity = '0';
+    document.body.appendChild(tooltipEl);
+
+    const showTooltip = (content, x, y) => {
+      tooltipEl.innerHTML = content;
+      tooltipEl.style.left = `${x + 12}px`;
+      tooltipEl.style.top = `${y + 12}px`;
+      tooltipEl.style.opacity = '1';
+    };
+
+    const hideTooltip = () => {
+      tooltipEl.style.opacity = '0';
+    };
+
+    const formatStack = (stackStr) => {
+      try {
+        const arr = JSON.parse(stackStr);
+        if (Array.isArray(arr)) {
+          return '<ul style="margin:0;padding-left:1.2em;">' + arr.map(i => `<li>${i}</li>`).join('') + '</ul>';
+        }
+      } catch (_) { /* ignore */ }
+      // fallback – plain text
+      return `<span>${stackStr}</span>`;
+    };
+
+    // Bind to existing elements with data‑stack inside .cards
+    const bindTooltip = (el) => {
+      if (el.__tooltipBound) return;
+      el.__tooltipBound = true;
+
+      el.addEventListener('mouseenter', (e) => {
+        const raw = el.getAttribute('data-stack') || '';
+        showTooltip(formatStack(raw), e.clientX, e.clientY);
+      });
+
+      el.addEventListener('mousemove', (e) => {
+        if (tooltipEl.style.opacity === '1') {
+          tooltipEl.style.left = `${e.clientX + 12}px`;
+          tooltipEl.style.top = `${e.clientY + 12}px`;
+        }
+      });
+
+      el.addEventListener('mouseleave', hideTooltip);
+    };
+
+    document.querySelectorAll('.cards [data-stack]').forEach(bindTooltip);
+
+    // Observe future DOM changes (e.g., lazy‑loaded agents)
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach(m => {
+        m.addedNodes.forEach(node => {
+          if (node.nodeType !== 1) return;
+          const candidates = node.matches('.cards [data-stack]') ? [node] : node.querySelectorAll('.cards [data-stack]');
+          candidates.forEach(bindTooltip);
+        });
+      });
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    // Register a small info panel in the AI‑addons drawer
+    const infoDiv = document.createElement('div');
+    infoDiv.innerHTML = `<p style="font-size:12px;margin:0;">💡 Hovra över ikoner med <code>data-stack</code> för att se agentens tekniska stack.</p>`;
+    window.MyOffiCityAddons.addTool('Contextual Tooltip', '💡', infoDiv);
+    window.MyOffiCityAddons.register('Contextual Tooltip');
+  } catch (e) {
+    console.error('Contextual Tooltip error:', e);
+  }
+})();

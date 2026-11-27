@@ -6126,3 +6126,25 @@ canvas {
   padding: 5px;
   line-height: 1.4;
 }
+
+/* Contextual Tooltip styling */
+.moc-tooltip {
+  max-width: 220px;
+  background: rgba(15, 23, 42, 0.95);
+  color: #f3ecdc;
+  border: 1px solid rgba(217, 180, 106, 0.4);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 9999;
+}
+.moc-tooltip ul {
+  margin: 0;
+  padding-left: 1.2em;
+}

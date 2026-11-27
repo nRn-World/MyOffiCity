@@ -4460,3 +4460,31 @@
     window.MyOffiCityAddons.register('Cheat Sheet');
   } catch(e) { console.error(e); }
 })();
+
+(() => {
+  try {
+    const pulseClass = 'pulse';
+    // Observe attribute changes on all elements for data-processing flag
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((m) => {
+        if (m.type === 'attributes' && m.attributeName === 'data-processing') {
+          const el = m.target;
+          const active = el.getAttribute('data-processing') === 'true';
+          if (active) el.classList.add(pulseClass);
+          else el.classList.remove(pulseClass);
+        }
+      });
+    });
+    observer.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['data-processing'] });
+
+    // Public API for agents to toggle pulse on a card element
+    window.MyOffiCityAddons.setProcessing = (el, active) => {
+      if (!el) return;
+      el.setAttribute('data-processing', active ? 'true' : 'false');
+      if (active) el.classList.add(pulseClass);
+      else el.classList.remove(pulseClass);
+    };
+  } catch (e) {
+    console.error(e);
+  }
+})();

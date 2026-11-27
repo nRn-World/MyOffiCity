@@ -2913,3 +2913,45 @@
     window.MyOffiCityAddons.register('Ambient Soundscape');
   } catch(e) {}
 })();
+
+(() => {
+  try {
+    const themes = {
+      'default': { name: 'Standard', vars: {} },
+      'high-contrast': { 
+        name: 'High Contrast', 
+        vars: { '--bg-color': '#000', '--text-color': '#fff', '--accent': '#ffff00', '--border': '#fff' } 
+      },
+      'midnight-blue': { 
+        name: 'Midnight Blue', 
+        vars: { '--bg-color': '#050a14', '--text-color': '#d1d5db', '--accent': '#3b82f6', '--border': '#1e3a8a' } 
+      }
+    };
+
+    const applyTheme = (themeKey) => {
+      const theme = themes[themeKey] || themes['default'];
+      Object.entries(theme.vars).forEach(([prop, val]) => document.documentElement.style.setProperty(prop, val));
+      localStorage.setItem('moc-theme', themeKey);
+    };
+
+    const saved = localStorage.getItem('moc-theme');
+    if (saved) applyTheme(saved);
+
+    const container = document.createElement('div');
+    container.style.display = 'flex';
+    container.style.flexDirection = 'column';
+    container.style.gap = '8px';
+
+    Object.keys(themes).forEach(key => {
+      const btn = document.createElement('button');
+      btn.textContent = themes[key].name;
+      btn.className = 'agent-log-btn';
+      btn.style.margin = '0';
+      btn.onclick = () => applyTheme(key);
+      container.appendChild(btn);
+    });
+
+    window.MyOffiCityAddons.addTool('Tema-inställningar', '🎨', container);
+    window.MyOffiCityAddons.register('Theme Switcher');
+  } catch(e) {}
+})();

@@ -4432,3 +4432,31 @@
     render();
   } catch(e) { console.error(e); }
 })();
+
+(() => {
+  try {
+    const modal = document.createElement('div');
+    modal.className = 'moc-cheat-sheet';
+    modal.innerHTML = `
+      <div class="moc-cheat-content">
+        <h3>⌨️ Kortkommandon</h3>
+        <ul>
+          <li><span>W / A / S / D</span> Flytta kamera</li>
+          <li><span>Space</span> Hoppa / Upp</li>
+          <li><span>Shift</span> Spring</li>
+          <li><span>?</span> Visa denna meny</li>
+          <li><span>Esc</span> Stäng meny</li>
+        </ul>
+        <button onclick="this.parentElement.parentElement.style.display='none'">Stäng</button>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === '?') modal.style.display = 'flex';
+      if (e.key === 'Escape') modal.style.display = 'none';
+    });
+
+    window.MyOffiCityAddons.register('Cheat Sheet');
+  } catch(e) { console.error(e); }
+})();

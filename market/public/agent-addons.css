@@ -6668,3 +6668,36 @@ body {
   color: #d9b46a;
   font-size: 18px;
 }
+
+/* Heatmap Overlay Styles */
+.moc-heatmap-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+  overflow: hidden;
+}
+
+.moc-heatmap-zone {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(25px);
+  opacity: 0.6;
+  animation: moc-pulse 3s infinite ease-in-out;
+}
+
+@keyframes moc-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.4; }
+  50% { transform: scale(1.3); opacity: 0.8; }
+}
+
+.moc-heatmap-zone.high-activity {
+  background: radial-gradient(circle, rgba(255, 85, 0, 0.8) 0%, rgba(255, 85, 0, 0) 70%);
+}
+
+.moc-heatmap-zone.med-activity {
+  background: radial-gradient(circle, rgba(0, 150, 255, 0.6) 0%, rgba(0, 150, 255, 0) 70%);
+}

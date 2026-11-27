@@ -2386,3 +2386,70 @@
 
   window.MyOffiCityAddons.register('Kommando-Palett');
 } catch(e) {} })();
+
+(() => { try {
+  const topbar = document.getElementById('topbar');
+  if (!topbar) return;
+
+  const widget = document.createElement('div');
+  widget.className = 'moc-live-status';
+  widget.innerHTML = `
+    <div class="moc-status-item">
+      <span class="moc-pulse-dot" id="moc-ai-dot"></span>
+      <span class="moc-status-label">LocalAI</span>
+      <span class="moc-status-val" id="moc-ai-val">Kopplar...</span>
+    </div>
+    <div class="moc-status-divider"></div>
+    <div class="moc-status-item">
+      <span class="moc-load-bar"><span class="moc-load-fill" id="moc-load-fill"></span></span>
+      <span class="moc-status-val" id="moc-load-val">0%</span>
+    </div>
+  `;
+  topbar.appendChild(widget);
+
+  const aiDot = document.getElementById('moc-ai-dot');
+  const aiVal = document.getElementById('moc-ai-val');
+  const loadFill = document.getElementById('moc-load-fill');
+  const loadVal = document.getElementById('moc-load-val');
+
+  let aiConnected = false;
+  let load = 0;
+
+  const checkAI = async () => {
+    try {
+      const res = await fetch('/api/health', { method: 'GET', mode: 'cors' });
+      if (res.ok) {
+        aiConnected = true;
+        aiDot.className = 'moc-pulse-dot moc-pulse-green';
+        aiVal.textContent = 'Online';
+      } else {
+        aiConnected = false;
+        aiDot.className = 'moc-pulse-dot moc-pulse-red';
+        aiVal.textContent = 'Offline';
+      }
+    } catch (e) {
+      aiConnected = false;
+      aiDot.className = 'moc-pulse-dot moc-pulse-red';
+      aiVal.textContent = 'Offline';
+    }
+  };
+
+  const updateLoad = () => {
+    load = Math.min(100, Math.max(0, load + (Math.random() * 15 - 7)));
+    loadFill.style.width = load + '%';
+    loadVal.textContent = Math.round(load) + '%';
+    if (load > 80) {
+      loadFill.className = 'moc-load-fill moc-load-critical';
+    } else if (load > 50) {
+      loadFill.className = 'moc-load-fill moc-load-warning';
+    } else {
+      loadFill.className = 'moc-load-fill';
+    }
+  };
+
+  checkAI();
+  setInterval(checkAI, 10000);
+  setInterval(updateLoad, 2000);
+
+  window.MyOffiCityAddons.register('Live-Status Indikator');
+} catch(e) {} })();

@@ -2655,3 +2655,39 @@
   window.MyOffiCityAddons.addTool('JSON-kopiering', '📋', info);
   window.MyOffiCityAddons.register('Smart Copy-to-Clipboard');
 } catch(e) {} })();
+
+(() => {
+  try {
+    const container = document.querySelector('.dmain') || document.body;
+    const initDrag = () => {
+      let draggedItem = null;
+      container.addEventListener('dragstart', (e) => {
+        if (e.target.classList.contains('agent-card')) {
+          draggedItem = e.target;
+          e.target.style.opacity = '0.5';
+        }
+      });
+      container.addEventListener('dragend', (e) => {
+        if (e.target.classList.contains('agent-card')) {
+          e.target.style.opacity = '1';
+        }
+      });
+      container.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        const afterElement = [...container.querySelectorAll('.agent-card:not(.dragging)')].reduce((closest, child) => {
+          const box = child.getBoundingClientRect();
+          const offset = e.clientY - box.top - box.height / 2;
+          if (offset < 0 && offset > closest.offset) return { offset: offset, element: child };
+          return closest;
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+        if (afterElement) container.insertBefore(draggedItem, afterElement);
+        else container.appendChild(draggedItem);
+      });
+    };
+    const info = document.createElement('div');
+    info.innerHTML = 'Dra och släpp agentkort för att ändra ordning i din vy.';
+    window.MyOffiCityAddons.addTool('Agent-sortering', '↕️', info);
+    window.MyOffiCityAddons.register('Drag-and-Drop');
+    initDrag();
+  } catch(e) {}
+})();

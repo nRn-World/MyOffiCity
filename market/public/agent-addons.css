@@ -2152,3 +2152,15 @@ body.moc-zen-active .bar {
 body.moc-zen-active canvas {
   z-index: 10;
 }
+
+.agent-card {
+  cursor: grab;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.agent-card:active {
+  cursor: grabbing;
+}
+.agent-card.dragging {
+  opacity: 0.5;
+  border: 2px dashed #d9b46a;
+}

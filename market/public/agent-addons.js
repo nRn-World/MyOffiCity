@@ -7448,3 +7448,88 @@
     console.error('Dashboard Addon Error:', e);
   }
 })();
+
+(() => {
+  try {
+    // Läs sparade inställningar eller sätt standardvärden
+    const defaultConfig = { theme: 'light', accent: '#d9b46a' };
+    const saved = JSON.parse(localStorage.getItem('mocAgentConfig') || 'null');
+    const config = Object.assign({}, defaultConfig, saved);
+
+    // Applicera konfiguration direkt på sidan
+    const applyConfig = (cfg) => {
+      if (cfg.theme) document.body.setAttribute('data-theme', cfg.theme);
+      if (cfg.accent) document.documentElement.style.setProperty('--accent-color', cfg.accent);
+    };
+    applyConfig(config);
+
+    // Skapa UI‑panel
+    const panel = document.createElement('div');
+    panel.className = 'moc-config-panel';
+
+    // Tema‑rad
+    const themeRow = document.createElement('div');
+    themeRow.className = 'moc-config-row';
+    const themeLabel = document.createElement('label');
+    themeLabel.className = 'moc-config-label';
+    themeLabel.textContent = 'Tema:';
+    const themeSelect = document.createElement('select');
+    themeSelect.className = 'moc-config-input';
+    ['light', 'dark'].forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t;
+      opt.textContent = t.charAt(0).toUpperCase() + t.slice(1);
+      if (t === config.theme) opt.selected = true;
+      themeSelect.appendChild(opt);
+    });
+    themeRow.appendChild(themeLabel);
+    themeRow.appendChild(themeSelect);
+    panel.appendChild(themeRow);
+
+    // Accent‑färg‑rad
+    const accentRow = document.createElement('div');
+    accentRow.className = 'moc-config-row';
+    const accentLabel = document.createElement('label');
+    accentLabel.className = 'moc-config-label';
+    accentLabel.textContent = 'Accent‑färg:';
+    const accentInput = document.createElement('input');
+    accentInput.type = 'color';
+    accentInput.className = 'moc-config-input';
+    accentInput.value = config.accent;
+    accentRow.appendChild(accentLabel);
+    accentRow.appendChild(accentInput);
+    panel.appendChild(accentRow);
+
+    // Återställ‑knapp
+    const resetBtn = document.createElement('button');
+    resetBtn.className = 'moc-config-button';
+    resetBtn.textContent = '🔄 Återställ';
+    panel.appendChild(resetBtn);
+
+    // Händelsehanterare – uppdatera och spara
+    const updateConfig = () => {
+      const newCfg = {
+        theme: themeSelect.value,
+        accent: accentInput.value
+      };
+      Object.assign(config, newCfg);
+      localStorage.setItem('mocAgentConfig', JSON.stringify(config));
+      applyConfig(config);
+    };
+    themeSelect.addEventListener('change', updateConfig);
+    accentInput.addEventListener('input', updateConfig);
+    resetBtn.addEventListener('click', () => {
+      localStorage.removeItem('mocAgentConfig');
+      Object.assign(config, defaultConfig);
+      themeSelect.value = defaultConfig.theme;
+      accentInput.value = defaultConfig.accent;
+      applyConfig(config);
+    });
+
+    // Registrera widgeten i AI‑addons‑dockan
+    window.MyOffiCityAddons.addTool('Agentinställningar', '⚙️', panel);
+    window.MyOffiCityAddons.register('Agent Config Widget');
+  } catch (e) {
+    console.error('Agent Config Addon Error:', e);
+  }
+})();

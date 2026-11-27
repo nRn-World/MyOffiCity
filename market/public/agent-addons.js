@@ -4058,3 +4058,97 @@
     window.MyOffiCityAddons.register('3D-Performance Monitor');
   } catch(e) {}
 })();
+
+(() => {
+  try {
+    const el = document.createElement('div');
+    el.className = 'moc-a11y-panel';
+    el.setAttribute('role', 'region');
+    el.setAttribute('aria-label', 'Tillgänglighetsstatus och verktyg');
+
+    el.innerHTML = `
+      <div class="moc-a11y-header">
+        <span class="moc-a11y-title">♿ Tillgänglighet</span>
+        <span id="mocA11yScore" class="moc-a11y-score" aria-live="polite">--%</span>
+      </div>
+      <div class="moc-a11y-metrics">
+        <div class="moc-a11y-metric">
+          <span class="moc-a11y-label">ARIA Labels</span>
+          <span id="mocA11yLabels" class="moc-a11y-val">0</span>
+        </div>
+        <div class="moc-a11y-metric">
+          <span class="moc-a11y-label">Live Regions</span>
+          <span id="mocA11yLive" class="moc-a11y-val">0</span>
+        </div>
+        <div class="moc-a11y-metric">
+          <span class="moc-a11y-label">Roles</span>
+          <span id="mocA11yRoles" class="moc-a11y-val">0</span>
+        </div>
+      </div>
+      <div class="moc-a11y-actions">
+        <button id="mocA11yScan" class="moc-a11y-btn" aria-label="Skanna sidan för tillgänglighetsproblem">Skanna nu</button>
+        <button id="mocA11yFix" class="moc-a11y-btn moc-a11y-btn-fix" aria-label="Automatisk reparation av saknade ARIA-tagger">Auto-fix</button>
+      </div>
+      <div id="mocA11yStatus" class="moc-a11y-status" aria-live="assertive" role="status">Klar för skanning</div>
+    `;
+
+    const scanBtn = el.querySelector('#mocA11yScan');
+    const fixBtn = el.querySelector('#mocA11yFix');
+    const statusEl = el.querySelector('#mocA11yStatus');
+    const scoreEl = el.querySelector('#mocA11yScore');
+    const labelsEl = el.querySelector('#mocA11yLabels');
+    const liveEl = el.querySelector('#mocA11yLive');
+    const rolesEl = el.querySelector('#mocA11yRoles');
+
+    const scan = () => {
+      const all = document.querySelectorAll('*');
+      let labels = 0, live = 0, roles = 0;
+      all.forEach(node => {
+        if (node.hasAttribute('aria-label')) labels++;
+        if (node.hasAttribute('aria-live')) live++;
+        if (node.hasAttribute('role')) roles++;
+      });
+      labelsEl.textContent = labels;
+      liveEl.textContent = live;
+      rolesEl.textContent = roles;
+      
+      const total = all.length;
+      const score = Math.min(100, Math.round(((labels + live + roles) / (total * 0.1)) * 100));
+      scoreEl.textContent = score + '%';
+      scoreEl.className = 'moc-a11y-score ' + (score > 80 ? 'good' : score > 50 ? 'warn' : 'bad');
+      
+      statusEl.textContent = `Skannat: ${labels} labels, ${live} live, ${roles} roles.`;
+    };
+
+    const autoFix = () => {
+      const dynamicEls = document.querySelectorAll('.moc-tool-card, .moc-dock-btn, .moc-addon-badge, .moc-scroll-top, button, [data-dynamic]');
+      let fixed = 0;
+      dynamicEls.forEach(node => {
+        if (!node.hasAttribute('aria-label')) {
+          const text = node.textContent.trim().substring(0, 30);
+          if (text) {
+            node.setAttribute('aria-label', text);
+            fixed++;
+          }
+        }
+        if (node.classList.contains('moc-a11y-status') || node.id === 'mocA11yStatus') {
+          if (!node.hasAttribute('aria-live')) {
+            node.setAttribute('aria-live', 'polite');
+            fixed++;
+          }
+        }
+      });
+      statusEl.textContent = `Auto-fix: ${fixed} element uppdaterade.`;
+      scan();
+    };
+
+    scanBtn.addEventListener('click', scan);
+    fixBtn.addEventListener('click', autoFix);
+    
+    // Initial scan
+    setTimeout(scan, 500);
+
+    window.MyOffiCityAddons.addTool('Tillgänglighet', '♿', el);
+    window.MyOffiCityAddons.register('Accessibility ARIA Tool');
+  } catch(e) {}
+})();

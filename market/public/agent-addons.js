@@ -785,3 +785,64 @@
     console.error('Quota widget failed', e);
   }
 })();
+
+(() => {
+  try {
+    // Skapa huvudbehållare
+    const container = document.createElement('div');
+    container.className = 'company-map-widget';
+
+    // Titel
+    const title = document.createElement('h3');
+    title.textContent = 'Företags‑karta (Mini‑vy)';
+    title.style.margin = '0 0 0.5rem 0';
+    title.style.fontSize = '1rem';
+    title.style.color = '#f3ecdc';
+    container.appendChild(title);
+
+    // Lista där företagen visas
+    const list = document.createElement('ul');
+    list.className = 'company-list';
+    container.appendChild(list);
+
+    // Hämtning av företagsdata
+    const fetchCompanies = async () => {
+      try {
+        const res = await fetch('/MyOffiCity/api/companies');
+        if (!res.ok) throw new Error('Network response not ok');
+        const data = await res.json(); // förväntas vara [{id, name, online}, …]
+
+        // Rensa och bygg upp listan
+        list.innerHTML = '';
+        data.forEach((c) => {
+          const li = document.createElement('li');
+          li.className = 'company-item';
+
+          const dot = document.createElement('span');
+          dot.className = 'status-indicator';
+          dot.dataset.online = c.online ? 'true' : 'false';
+          dot.title = c.online ? 'Online' : 'Offline';
+
+          const name = document.createElement('span');
+          name.textContent = c.name;
+
+          li.appendChild(dot);
+          li.appendChild(name);
+          list.appendChild(li);
+        });
+      } catch (e) {
+        console.error('Kunde inte hämta företagsdata:', e);
+        list.innerHTML = '<li class="error">Kunde inte hämta företagsdata.</li>';
+      }
+    };
+
+    // Init‑fetch + periodisk uppdatering var 60:e sekund
+    fetchCompanies();
+    setInterval(fetchCompanies, 60_000);
+
+    // Registrera verktyget i AI‑tilläggsdockan
+    window.MyOffiCityAddons.addTool('Företags‑karta', '🗺️', container);
+  } catch (e) {
+    console.error('Company‑map‑widget misslyckades', e);
+  }
+})();

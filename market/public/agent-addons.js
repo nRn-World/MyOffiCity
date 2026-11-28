@@ -691,3 +691,22 @@
     console.error('AI Insight widget failed', e);
   }
 })();
+
+(() => {
+  try {
+    // Parallax effect for hero background and overlay
+    const heroBg = document.querySelector('.hero-bg');
+    const heroOverlay = document.querySelector('.hero-overlay');
+    if (heroBg) {
+      const parallax = () => {
+        const y = window.scrollY;
+        heroBg.style.transform = `translateY(${y * 0.3}px)`;
+        if (heroOverlay) heroOverlay.style.transform = `translateY(${y * 0.1}px)`;
+      };
+      window.addEventListener('scroll', parallax);
+      parallax();
+    }
+  } catch (e) {
+    console.error('Hero parallax init failed', e);
+  }
+})();

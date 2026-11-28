@@ -1029,3 +1029,36 @@ small, .label, .caption, .meta {
   z-index: 1;
   border-radius: inherit;
 }
+
+/* AI Insight Widget Styles */
+.moc-ai-insight-select {
+  width: 100%;
+  background: rgba(12,18,34,0.8);
+  color: #f3ecdc;
+  border: 1px solid rgba(217,180,106,0.3);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 14px;
+  font-family: system-ui, sans-serif;
+  outline: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.moc-ai-insight-select:hover {
+  background: rgba(20,32,61,0.9);
+}
+.moc-ai-insight-panel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  background: rgba(255,255,255,0.08);
+  color: #f3ecdc;
+  font-size: 14px;
+  font-family: system-ui, sans-serif;
+}
+.moc-ai-insight-icon {
+  font-size: 18px;
+}

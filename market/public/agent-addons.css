@@ -204,3 +204,52 @@ html.moc-theme-warm {
 }
 
 /* === APPEND NEW AGENT CSS UPGRADES BELOW THIS LINE === */
+
+/* Micro-Interaction & Feedback Engine */
+:root {
+  --shimmer-speed: 2s;
+  --magnetic-strength: 15px;
+}
+
+/* Shimmer Loading State */
+.shimmer-loading {
+  position: relative;
+  overflow: hidden;
+  background: #e2e8f0;
+}
+.shimmer-loading::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.6) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: shimmer var(--shimmer-speed) infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Card Hover & Button Polish */
+.moc-card {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+}
+.moc-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 24px -10px rgba(0,0,0,0.15);
+}
+
+.btn-primary {
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.2s ease;
+}
+.btn-primary:active {
+  transform: scale(0.95);
+}

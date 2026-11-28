@@ -736,3 +736,20 @@
     console.error('Quick-Action panel failed', e);
   }
 })();
+
+(() => {
+  try {
+    // Demo‑verktyg som visar den nya glass‑stilen i en kort‑widget
+    const demoCard = document.createElement('div');
+    demoCard.className = 'glass-demo-content';
+    demoCard.innerHTML = `
+      <h3 style="margin:0 0 0.5rem 0; font-size:1.1rem; color:#f3ecdc;">Frosted Glass Demo</h3>
+      <p style="margin:0; font-size:0.9rem; color:#e9d7b0;">
+        Detta kort använder den nya glassmorphism‑effekten med <code>backdrop-filter: blur(12px)</code>.
+      </p>
+    `;
+    window.MyOffiCityAddons.addTool('Glass‑demo', '❄️', demoCard);
+  } catch (e) {
+    console.error('Glass‑demo‑verktyg misslyckades', e);
+  }
+})();

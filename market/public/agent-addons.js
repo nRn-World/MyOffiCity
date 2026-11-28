@@ -188,3 +188,49 @@
 })();
 
 /* === APPEND NEW AGENT JS MODULES BELOW THIS LINE === */
+
+(() => {
+  try {
+    /* --- Micro-Interaction Engine --- */
+    const applyMagneticEffect = (btn) => {
+      btn.style.transition = 'transform 0.3s cubic-bezier(0.23, 1, 0.32, 1)';
+      btn.addEventListener('mousemove', (e) => {
+        const rect = btn.getBoundingClientRect();
+        const x = e.clientX - (rect.left + rect.width / 2);
+        const y = e.clientY - (rect.top + rect.height / 2);
+        const moveX = (x / rect.width) * 10;
+        const moveY = (y / rect.height) * 10;
+        btn.style.transform = `translate(${moveX}px, ${moveY}px)`;
+      });
+      btn.addEventListener('mouseleave', () => {
+        btn.style.transform = 'translate(0, 0)';
+      });
+    };
+
+    const setShimmer = (el, isLoading) => {
+      if (isLoading) {
+        el.classList.add('shimmer-loading');
+      } else {
+        el.classList.remove('shimmer-loading');
+      }
+    };
+
+    // Apply to all primary buttons in the dock/tools
+    const initInteractions = () => {
+      const buttons = document.querySelectorAll('.btn-primary, .moc-dock-panel .btn');
+      buttons.forEach(btn => {
+        applyMagneticEffect(btn);
+      });
+    };
+
+    // Run once on load and after tool rendering
+    window.addEventListener('DOMContentLoaded', initInteractions);
+    
+    // Expose to global for manual triggers
+    window.MyOffiCityAddons.applyMagneticEffect = applyMagneticEffect;
+    window.MyOffiCityAddons.setShimmer = setShimmer;
+
+  } catch (e) {
+    console.error('Micro-Interaction Engine Error:', e);
+  }
+})();

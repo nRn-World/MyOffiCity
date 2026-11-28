@@ -337,3 +337,113 @@
     console.error('Företagsprofil widget error:', e);
   }
 })();
+
+(() => {
+  try {
+    if (!window.MyOffiCityAddons || typeof window.MyOffiCityAddons.addTool !== 'function') return;
+
+    const el = document.createElement('div');
+    el.className = 'moc-quicksearch';
+    el.innerHTML = `
+      <div class="moc-qs-input-wrap">
+        <span class="moc-qs-input-icon">🔍</span>
+        <input type="search" class="moc-qs-input" placeholder="Sök företag eller kategori…" autocomplete="off" />
+      </div>
+      <div class="moc-qs-pills" role="tablist"></div>
+      <div class="moc-qs-results" aria-live="polite"></div>
+    `;
+
+    const input = el.querySelector('.moc-qs-input');
+    const pillsWrap = el.querySelector('.moc-qs-pills');
+    const results = el.querySelector('.moc-qs-results');
+
+    let all = [];
+    let activeCat = 'Alla';
+    let debounce = null;
+
+    const norm = (s) => (s || '').toString().toLowerCase().trim();
+
+    const uniqueCats = (list) => {
+      const set = new Set();
+      list.forEach((c) => {
+        const cat = (c.category || c.sector || c.industry || 'Övrigt').toString().trim() || 'Övrigt';
+        set.add(cat);
+      });
+      return Array.from(set).sort((a, b) => a.localeCompare(b, 'sv'));
+    };
+
+    const renderPills = (cats) => {
+      pillsWrap.innerHTML = '';
+      const catsList = ['Alla', ...cats];
+      catsList.forEach((cat) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'moc-qs-pill' + (cat === activeCat ? ' is-active' : '');
+        b.textContent = cat;
+        b.addEventListener('click', () => {
+          activeCat = cat;
+          pillsWrap.querySelectorAll('.moc-qs-pill').forEach((p) => p.classList.remove('is-active'));
+          b.classList.add('is-active');
+          renderResults();
+        });
+        pillsWrap.appendChild(b);
+      });
+    };
+
+    const renderResults = () => {
+      const q = norm(input.value);
+      const filtered = all.filter((c) => {
+        const cat = (c.category || c.sector || c.industry || 'Övrigt').toString().trim() || 'Övrigt';
+        if (activeCat !== 'Alla' && cat !== activeCat) return false;
+        if (!q) return true;
+        const hay = norm([c.name, c.title, cat, c.description, c.about].join(' '));
+        return hay.includes(q);
+      });
+
+      if (!filtered.length) {
+        results.innerHTML = `<div class="moc-qs-empty"><span>🔎</span><p>Inga träffar. Prova ett annat sökord eller kategori.</p></div>`;
+        return;
+      }
+
+      results.innerHTML = '';
+      filtered.slice(0, 30).forEach((c) => {
+        const cat = (c.category || c.sector || c.industry || 'Övrigt').toString().trim() || 'Övrigt';
+        const row = document.createElement('a');
+        row.className = 'moc-qs-row';
+        row.href = c.url || c.link || `#company-${c.id || c.slug || ''}`;
+        row.innerHTML = `
+          <span class="moc-qs-row-name">${c.name || c.title || 'Företag'}</span>
+          <span class="moc-qs-row-cat">${cat}</span>
+        `;
+        results.appendChild(row);
+      });
+      if (filtered.length > 30) {
+        const more = document.createElement('div');
+        more.className = 'moc-qs-more';
+        more.textContent = `+ ${filtered.length - 30} till…`;
+        results.appendChild(more);
+      }
+    };
+
+    const load = async () => {
+      try {
+        const res = await fetch('/MyOffiCity/api/companies');
+        if (!res.ok) throw new Error('bad status');
+        const data = await res.json();
+        all = Array.isArray(data) ? data : (data && Array.isArray(data.companies) ? data.companies : []);
+        renderPills(uniqueCats(all));
+        renderResults();
+      } catch (e) {
+        results.innerHTML = `<div class="moc-qs-empty"><span>⚠️</span><p>Kunde inte ladda företagslistan.</p></div>`;
+      }
+    };
+
+    input.addEventListener('input', () => {
+      clearTimeout(debounce);
+      debounce = setTimeout(renderResults, 140);
+    });
+
+    load();
+    window.MyOffiCityAddons.addTool('Snabbsök & Filtrera', '🔍', el);
+  } catch (e) {}
+})();

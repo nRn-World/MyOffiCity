@@ -1110,3 +1110,34 @@ small, .label, .caption, .meta {
   .hero-overlay { animation: none; }
   .hero-cta .btn { animation: none; }
 }
+
+.moc-quick-action-container {
+  display: flex;
+  gap: 8px;
+  padding: 8px 0;
+  animation: slideIn 0.3s ease-out;
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.moc-quick-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(217,180,106,0.2);
+  border-radius: 8px;
+  padding: 8px;
+  color: #f3ecdc;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex: 1;
+}
+.moc-quick-btn:hover {
+  background: rgba(217,180,106,0.15);
+  border-color: #d9b46a;
+}
+.moc-quick-icon { font-size: 1.2rem; }
+.moc-quick-label { font-size: 0.7rem; text-transform: uppercase; }

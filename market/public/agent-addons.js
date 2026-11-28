@@ -710,3 +710,29 @@
     console.error('Hero parallax init failed', e);
   }
 })();
+
+(() => {
+  try {
+    const container = document.createElement('div');
+    container.className = 'moc-quick-action-container';
+    
+    const actions = [
+      { label: 'Profil', icon: '👤', action: () => alert('Öppnar företagsprofil...') },
+      { label: 'Kontakt', icon: '✉️', action: () => alert('Startar kontaktformulär...') },
+      { label: 'Jämför', icon: '⚖️', action: () => alert('Lägger till i jämförelse...') }
+    ];
+
+    actions.forEach(a => {
+      const btn = document.createElement('button');
+      btn.className = 'moc-quick-btn';
+      btn.innerHTML = `<span class="moc-quick-icon">${a.icon}</span><span class="moc-quick-label">${a.label}</span>`;
+      btn.title = a.label;
+      btn.onclick = a.action;
+      container.appendChild(btn);
+    });
+
+    window.MyOffiCityAddons.addTool('Snabb-Åtgärd', '⚡', container);
+  } catch (e) {
+    console.error('Quick-Action panel failed', e);
+  }
+})();

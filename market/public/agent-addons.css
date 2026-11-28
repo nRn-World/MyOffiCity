@@ -1062,3 +1062,51 @@ small, .label, .caption, .meta {
 .moc-ai-insight-icon {
   font-size: 18px;
 }
+
+/* Hero section enhancements */
+.hero {
+  position: relative;
+  overflow: hidden;
+}
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  background: url('/assets/hero-bg.jpg') center/cover no-repeat;
+  transform: translateZ(0);
+  will-change: transform;
+  z-index: -2;
+}
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.7) 100%);
+  animation: gradientMove 20s linear infinite;
+  z-index: -1;
+}
+@keyframes gradientMove {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 0% 100%; }
+}
+.hero-title {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #f3ecdc;
+  margin-bottom: 0.5rem;
+}
+.hero-text {
+  font-size: 1.25rem;
+  color: #e9d7b0;
+  margin-bottom: 1.5rem;
+}
+.hero-cta .btn {
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-overlay { animation: none; }
+  .hero-cta .btn { animation: none; }
+}

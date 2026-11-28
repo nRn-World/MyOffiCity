@@ -497,3 +497,127 @@ small, .label, .caption, .meta {
   background: linear-gradient(135deg, #d9b46a 0%, #c9a35a 100%);
   color: #0f172a;
 }
+
+/* Företagsprofil Widget Styles */
+.moc-fp-container {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  font-family: system-ui, -apple-system, sans-serif;
+  color: #1e293b;
+}
+
+.moc-fp-controls {
+  margin-bottom: 16px;
+}
+
+.moc-fp-select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #334155;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.moc-fp-select:focus {
+  outline: none;
+  border-color: #d9b46a;
+  background: #fff;
+}
+
+.moc-fp-content {
+  min-height: 120px;
+}
+
+.moc-fp-empty, .moc-fp-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 0;
+  color: #64748b;
+  font-size: 14px;
+  text-align: center;
+}
+
+.moc-fp-empty-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+  opacity: 0.7;
+}
+
+.moc-fp-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.moc-fp-logo, .moc-fp-logo-placeholder {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.moc-fp-name {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.moc-fp-tag {
+  font-size: 13px;
+  color: #64748b;
+  display: block;
+  margin-top: 2px;
+}
+
+.moc-fp-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.moc-fp-stat {
+  background: #f8fafc;
+  padding: 10px;
+  border-radius: 8px;
+  text-align: center;
+  border: 1px solid #f1f5f9;
+}
+
+.moc-fp-stat-val {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 2px;
+}
+
+.moc-fp-stat-label {
+  font-size: 11px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.moc-fp-desc p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #475569;
+}

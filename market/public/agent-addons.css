@@ -1141,3 +1141,23 @@ small, .label, .caption, .meta {
 }
 .moc-quick-icon { font-size: 1.2rem; }
 .moc-quick-label { font-size: 0.7rem; text-transform: uppercase; }
+
+/* Glassmorphism‑effekt för alla AI‑tilläggskort och paneler */
+.moc-tool-card,
+.moc-dock-panel,
+.glass-demo-content {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  border: 1px solid rgba(217, 180, 106, 0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  padding: 12px;
+  margin: 8px 0;
+  color: #f3ecdc;
+}
+
+/* För finjustering av demo‑kortets text */
+.glass-demo-content h3 {
+  margin-top: 0;
+}

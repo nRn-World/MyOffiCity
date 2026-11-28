@@ -447,3 +447,101 @@
     window.MyOffiCityAddons.addTool('Snabbsök & Filtrera', '🔍', el);
   } catch (e) {}
 })();
+
+(() => {
+  try {
+    const el = document.createElement('div');
+    el.className = 'moc-theme-studio';
+
+    const presets = {
+      midnight: { name: 'Midnight Premium', bg: '#0a0e1a', surface: '#131a2e', accent: '#d9b46a', text: '#f3ecdc', font: 'system-ui, -apple-system, sans-serif', radius: '12px', spacing: '1' },
+      corporate: { name: 'Clean Corporate', bg: '#f8fafc', surface: '#ffffff', accent: '#2563eb', text: '#1e293b', font: 'Inter, system-ui, sans-serif', radius: '8px', spacing: '1.1' },
+      vibrant: { name: 'Vibrant Start', bg: '#1a0b2e', surface: '#2d1b4e', accent: '#ec4899', text: '#fdf2f8', font: 'Segoe UI, system-ui, sans-serif', radius: '16px', spacing: '0.9' }
+    };
+
+    const applyTheme = (t) => {
+      const r = document.documentElement.style;
+      r.setProperty('--moc-bg', t.bg);
+      r.setProperty('--moc-surface', t.surface);
+      r.setProperty('--moc-accent', t.accent);
+      r.setProperty('--moc-text', t.text);
+      r.setProperty('--moc-font', t.font);
+      r.setProperty('--moc-radius', t.radius);
+      r.setProperty('--moc-spacing', t.spacing);
+    };
+
+    const save = (key) => {
+      try { localStorage.setItem('moc-theme', JSON.stringify(presets[key])); } catch(e) {}
+    };
+
+    const load = () => {
+      try {
+        const s = localStorage.getItem('moc-theme');
+        if (s) {
+          const t = JSON.parse(s);
+          applyTheme(t);
+          const btn = document.querySelector(`.moc-ts-preset[data-key="${Object.keys(presets).find(k => presets[k].name === t.name)}"]`);
+          if (btn) btn.classList.add('active');
+        }
+      } catch(e) {}
+    };
+
+    el.innerHTML = `
+      <div class="moc-ts-header">
+        <span class="moc-ts-title">🎨 Tema-Studio</span>
+        <span class="moc-ts-sub">Live-förhandsvisning</span>
+      </div>
+      <div class="moc-ts-presets">
+        ${Object.entries(presets).map(([k, v]) => `<button class="moc-ts-preset" data-key="${k}">${v.name}</button>`).join('')}
+      </div>
+      <div class="moc-ts-controls">
+        <label class="moc-ts-label">Accentfärg</label>
+        <input type="color" class="moc-ts-color" id="mocTsAccent" value="#d9b46a">
+        <label class="moc-ts-label">Avstånd (0.8 - 1.2)</label>
+        <input type="range" class="moc-ts-range" id="mocTsSpacing" min="0.8" max="1.2" step="0.05" value="1">
+        <label class="moc-ts-label">Avrundning (4px - 20px)</label>
+        <input type="range" class="moc-ts-range" id="mocTsRadius" min="4" max="20" step="1" value="12">
+      </div>
+      <div class="moc-ts-preview">
+        <div class="moc-ts-preview-card">
+          <div class="moc-ts-preview-title">Förhandsvisning</div>
+          <div class="moc-ts-preview-text">Din skräddarsydda upplevelse.</div>
+          <button class="moc-ts-preview-btn">Klicka här</button>
+        </div>
+      </div>
+    `;
+
+    const accentInput = el.querySelector('#mocTsAccent');
+    const spacingInput = el.querySelector('#mocTsSpacing');
+    const radiusInput = el.querySelector('#mocTsRadius');
+
+    el.querySelectorAll('.moc-ts-preset').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const key = btn.dataset.key;
+        const t = presets[key];
+        applyTheme(t);
+        accentInput.value = t.accent;
+        spacingInput.value = t.spacing;
+        radiusInput.value = parseInt(t.radius);
+        el.querySelectorAll('.moc-ts-preset').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        save(key);
+      });
+    });
+
+    accentInput.addEventListener('input', (e) => {
+      document.documentElement.style.setProperty('--moc-accent', e.target.value);
+    });
+
+    spacingInput.addEventListener('input', (e) => {
+      document.documentElement.style.setProperty('--moc-spacing', e.target.value);
+    });
+
+    radiusInput.addEventListener('input', (e) => {
+      document.documentElement.style.setProperty('--moc-radius', e.target.value + 'px');
+    });
+
+    load();
+    window.MyOffiCityAddons.addTool('Tema-Studio', '🎨', el);
+  } catch(e) {}
+})();

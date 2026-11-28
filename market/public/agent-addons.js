@@ -736,3 +736,52 @@
     console.error('Quick-Action panel failed', e);
   }
 })();
+
+(() => {
+  try {
+    // Demo‑verktyg som visar den nya glass‑stilen i en kort‑widget
+    const demoCard = document.createElement('div');
+    demoCard.className = 'glass-demo-content';
+    demoCard.innerHTML = `
+      <h3 style="margin:0 0 0.5rem 0; font-size:1.1rem; color:#f3ecdc;">Frosted Glass Demo</h3>
+      <p style="margin:0; font-size:0.9rem; color:#e9d7b0;">
+        Detta kort använder den nya glassmorphism‑effekten med <code>backdrop-filter: blur(12px)</code>.
+      </p>
+    `;
+    window.MyOffiCityAddons.addTool('Glass‑demo', '❄️', demoCard);
+  } catch (e) {
+    console.error('Glass‑demo‑verktyg misslyckades', e);
+  }
+})();
+
+(() => {
+  try {
+    const container = document.createElement('div');
+    container.className = 'moc-quota-container';
+    
+    const updateQuota = async () => {
+      try {
+        const res = await fetch('/MyOffiCity/api/ai/quota');
+        const data = await res.json();
+        const percent = Math.min(100, Math.max(0, (data.used / data.limit) * 100));
+        
+        container.innerHTML = `
+          <div class="moc-quota-info">
+            <span>AI-användning</span>
+            <span>${data.used} / ${data.limit}</span>
+          </div>
+          <div class="moc-progress-bg">
+            <div class="moc-progress-fill" style="width: ${percent}%"></div>
+          </div>
+        `;
+      } catch (e) {
+        container.innerHTML = '<p style="font-size:0.8rem; opacity:0.7;">Kunde inte hämta kvotdata.</p>';
+      }
+    };
+
+    updateQuota();
+    window.MyOffiCityAddons.addTool('AI-Kvot', '📊', container);
+  } catch (e) {
+    console.error('Quota widget failed', e);
+  }
+})();

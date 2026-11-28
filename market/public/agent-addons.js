@@ -587,3 +587,107 @@
     window.MyOffiCityAddons.register('3D-tilt & Glans');
   } catch(e) {}
 })();
+
+(() => {
+  try {
+    const createInsightWidget = () => {
+      const container = document.createElement('div');
+      container.style.display = 'flex';
+      container.style.flexDirection = 'column';
+      container.style.gap = '8px';
+      container.style.width = '100%';
+
+      const select = document.createElement('select');
+      select.className = 'moc-ai-insight-select';
+      select.style.padding = '6px 8px';
+      select.style.borderRadius = '8px';
+      select.style.border = '1px solid rgba(217,180,106,0.3)';
+      select.style.background = 'rgba(12,18,34,0.8)';
+      select.style.color = '#f3ecdc';
+      select.style.fontSize = '14px';
+      select.style.fontFamily = 'system-ui, sans-serif';
+      select.style.outline = 'none';
+      select.style.cursor = 'pointer';
+      select.style.transition = 'background 0.2s ease';
+
+      const panel = document.createElement('div');
+      panel.className = 'moc-ai-insight-panel';
+      panel.style.display = 'flex';
+      panel.style.alignItems = 'center';
+      panel.style.padding = '12px';
+      panel.style.borderRadius = '12px';
+      panel.style.backdropFilter = 'blur(10px)';
+      panel.style.background = 'rgba(255,255,255,0.08)';
+      panel.style.color = '#f3ecdc';
+      panel.style.fontSize = '14px';
+      panel.style.fontFamily = 'system-ui, sans-serif';
+      panel.style.gap = '8px';
+      panel.style.minHeight = '48px';
+
+      const icon = document.createElement('span');
+      icon.className = 'moc-ai-insight-icon';
+      icon.textContent = '🔍';
+      panel.appendChild(icon);
+
+      const text = document.createElement('span');
+      text.textContent = 'Välj ett företag för insikt…';
+      panel.appendChild(text);
+
+      container.appendChild(select);
+      container.appendChild(panel);
+
+      const fetchCompanies = async () => {
+        try {
+          const res = await fetch('/MyOffiCity/api/companies');
+          if (!res.ok) throw new Error('Network error');
+          const data = await res.json();
+          select.innerHTML = '';
+          data.forEach((c) => {
+            const opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = c.name;
+            select.appendChild(opt);
+          });
+          if (data.length) select.dispatchEvent(new Event('change'));
+        } catch (e) {
+          console.error(e);
+          select.innerHTML = '<option>Fel vid hämtning</option>';
+        }
+      };
+
+      const generateInsight = (company) => {
+        if (!company) return 'Ingen insikt tillgänglig.';
+        const parts = [];
+        if (company.teamSize) parts.push(`Team på ${company.teamSize} medarbetare`);
+        if (company.focus && company.focus.toLowerCase().includes('sustainability')) parts.push('Starkt fokus på hållbarhet');
+        if (company.industry) parts.push(`Verksam inom ${company.industry}`);
+        if (parts.length === 0) return 'Intressant affärsmodell.';
+        return parts.join(', ') + '.';
+      };
+
+      const updateInsight = async () => {
+        const id = select.value;
+        if (!id) return;
+        try {
+          const res = await fetch(`/MyOffiCity/api/companies/${id}`);
+          if (!res.ok) throw new Error('Network error');
+          const company = await res.json();
+          text.textContent = generateInsight(company);
+        } catch (e) {
+          console.error(e);
+          text.textContent = 'Fel vid hämtning av insikt.';
+        }
+      };
+
+      select.addEventListener('change', updateInsight);
+
+      fetchCompanies();
+
+      window.MyOffiCityAddons.addTool('AI‑Insikt', '✨', container);
+    };
+
+    createInsightWidget();
+  } catch (e) {
+    console.error('AI Insight widget failed', e);
+  }
+})();

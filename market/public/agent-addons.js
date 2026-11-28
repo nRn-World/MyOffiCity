@@ -545,3 +545,45 @@
     window.MyOffiCityAddons.addTool('Tema-Studio', '🎨', el);
   } catch(e) {}
 })();
+
+(() => {
+  try {
+    const MAX_TILT = 6;
+    const cards = document.querySelectorAll('.card, .cards > *, .dpane > .card, .dmain > .card');
+    if (!cards.length) return;
+
+    cards.forEach(card => {
+      if (card.dataset.tiltInit) return;
+      card.dataset.tiltInit = '1';
+      card.style.position = 'relative';
+      card.style.overflow = 'hidden';
+      card.style.transformStyle = 'preserve-3d';
+      card.style.transition = 'transform 0.2s ease-out, box-shadow 0.2s ease-out';
+
+      const glare = document.createElement('div');
+      glare.className = 'moc-card-glare';
+      card.appendChild(glare);
+
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const px = (x / rect.width - 0.5) * 2;
+        const py = (y / rect.height - 0.5) * 2;
+
+        card.style.transform = `perspective(1000px) rotateX(${-py * MAX_TILT}deg) rotateY(${px * MAX_TILT}deg) scale3d(1.02, 1.02, 1.02)`;
+        card.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(217, 180, 106, 0.15)';
+        glare.style.opacity = '1';
+        glare.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(255, 255, 255, 0.15) 0%, transparent 60%)`;
+      });
+
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+        card.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+        glare.style.opacity = '0';
+      });
+    });
+
+    window.MyOffiCityAddons.register('3D-tilt & Glans');
+  } catch(e) {}
+})();

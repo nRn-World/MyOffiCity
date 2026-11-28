@@ -836,7 +836,7 @@
       }
     };
 
-    // Init‑fetch + periodisk uppdatering var 60:e sekund
+    // Init‑fetch + periodisk uppdatering var// (removed stray line)
     fetchCompanies();
     setInterval(fetchCompanies, 60_000);
 

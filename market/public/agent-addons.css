@@ -1220,3 +1220,39 @@ small, .label, .caption, .meta {
     opacity: 0;
   }
 }
+
+/* Företags‑karta‑widget – kompakt lista med status‑indikatorer */
+.company-map-widget {
+  font-family: system-ui, sans-serif;
+  color: #e9d7b0;
+}
+.company-map-widget .company-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.company-map-widget .company-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 0;
+  font-size: 0.9rem;
+}
+.company-map-widget .status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4ade80;               /* online – grön */
+  box-shadow: 0 0 4px rgba(74,222,128,0.6);
+  flex-shrink: 0;
+}
+.company-map-widget .status-indicator[data-online="false"] {
+  background: #ef4444;               /* offline – röd */
+  box-shadow: 0 0 4px rgba(239,68,68,0.6);
+}
+.company-map-widget .error {
+  color: #ef4444;
+  font-size: 0.85rem;
+}

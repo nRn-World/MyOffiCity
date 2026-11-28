@@ -234,3 +234,106 @@
     console.error('Micro-Interaction Engine Error:', e);
   }
 })();
+
+(() => {
+  try {
+    const el = document.createElement('div');
+    el.className = 'moc-fp-container';
+    el.innerHTML = `
+      <div class="moc-fp-controls">
+        <select id="moc-fp-select" class="moc-fp-select">
+          <option value="">Välj företag...</option>
+        </select>
+      </div>
+      <div class="moc-fp-content" id="moc-fp-content">
+        <div class="moc-fp-empty">
+          <span class="moc-fp-empty-icon">🏢</span>
+          <p>Välj ett företag ovan för att se dess profil.</p>
+        </div>
+      </div>
+    `;
+
+    const select = el.querySelector('#moc-fp-select');
+    const content = el.querySelector('#moc-fp-content');
+
+    const fetchCompanies = async () => {
+      try {
+        const res = await fetch('/MyOffiCity/api/companies');
+        if (!res.ok) throw new Error('API error');
+        const data = await res.json();
+        const companies = Array.isArray(data) ? data : (data.companies || []);
+        
+        if (companies.length === 0) {
+          select.innerHTML = '<option value="">Inga företag hittades</option>';
+          return;
+        }
+
+        companies.forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c.id;
+          opt.textContent = c.name;
+          select.appendChild(opt);
+        });
+      } catch (e) {
+        select.innerHTML = '<option value="">Fel vid hämtning</option>';
+      }
+    };
+
+    const renderProfile = (c) => {
+      if (!c) return;
+      const logo = c.logo || c.logoUrl || '';
+      const logoHtml = logo 
+        ? `<img src="${logo}" alt="${c.name}" class="moc-fp-logo" onerror="this.style.display='none'">`
+        : `<div class="moc-fp-logo-placeholder">🏢</div>`;
+
+      content.innerHTML = `
+        <div class="moc-fp-header">
+          ${logoHtml}
+          <div class="moc-fp-title-group">
+            <h3 class="moc-fp-name">${c.name}</h3>
+            <span class="moc-fp-tag">${c.tagline || c.description || 'Företag i MyOffiCity'}</span>
+          </div>
+        </div>
+        <div class="moc-fp-stats">
+          <div class="moc-fp-stat">
+            <span class="moc-fp-stat-val">${c.employees || c.teamSize || '–'}</span>
+            <span class="moc-fp-stat-label">Medarbetare</span>
+          </div>
+          <div class="moc-fp-stat">
+            <span class="moc-fp-stat-val">${c.rating || c.score || '–'}</span>
+            <span class="moc-fp-stat-label">Betyg</span>
+          </div>
+          <div class="moc-fp-stat">
+            <span class="moc-fp-stat-val">${c.projects || c.orders || '–'}</span>
+            <span class="moc-fp-stat-label">Projekt</span>
+          </div>
+        </div>
+        <div class="moc-fp-desc">
+          <p>${c.description || c.about || 'Ingen beskrivning tillgänglig.'}</p>
+        </div>
+      `;
+    };
+
+    select.addEventListener('change', async (e) => {
+      const id = e.target.value;
+      if (!id) {
+        content.innerHTML = `<div class="moc-fp-empty"><span class="moc-fp-empty-icon">🏢</span><p>Välj ett företag ovan för att se dess profil.</p></div>`;
+        return;
+      }
+      content.innerHTML = `<div class="moc-fp-loading">Laddar profil...</div>`;
+      try {
+        const res = await fetch(`/MyOffiCity/api/companies/${id}`);
+        if (!res.ok) throw new Error('Not found');
+        const c = await res.json();
+        renderProfile(c);
+      } catch (err) {
+        content.innerHTML = `<div class="moc-fp-empty"><span class="moc-fp-empty-icon">⚠️</span><p>Kunde inte ladda profilen.</p></div>`;
+      }
+    });
+
+    fetchCompanies();
+    window.MyOffiCityAddons.addTool('Företagsprofil', '🏢', el);
+  } catch (e) {
+    console.error('Företagsprofil widget error:', e);
+  }
+})();

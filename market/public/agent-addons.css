@@ -1256,3 +1256,72 @@ small, .label, .caption, .meta {
   color: #ef4444;
   font-size: 0.85rem;
 }
+
+/* ==========================================================================
+   MyOffiCity — Typografisk hierarki-förfining (Task #280)
+   Sofistikerad font-stack, optimerad line-height och letter-spacing
+   ========================================================================== */
+
+.moc-dock-panel,
+.moc-tool-card,
+.moc-tool-title,
+.moc-addon-badge,
+.moc-scroll-top,
+.moc-dock-btn {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+.moc-dock-panel {
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+}
+
+.moc-tool-card {
+  line-height: 1.6;
+  letter-spacing: 0.015em;
+}
+
+.moc-tool-title {
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+}
+
+.moc-addon-badge {
+  line-height: 1.4;
+  letter-spacing: 0.025em;
+  font-weight: 500;
+}
+
+.moc-dock-btn {
+  line-height: 1.2;
+  letter-spacing: 0.03em;
+  font-weight: 600;
+}
+
+.moc-scroll-top {
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+/* Företags-karta-widget typografi */
+.company-map-widget {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+}
+
+.company-map-widget .company-item {
+  line-height: 1.4;
+  letter-spacing: 0.015em;
+}
+
+.company-map-widget .error {
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+}

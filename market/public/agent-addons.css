@@ -253,3 +253,191 @@ html.moc-theme-warm {
 .btn-primary:active {
   transform: scale(0.95);
 }
+
+/* Fluid Typography System */
+:root {
+  --font-size-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+  --font-size-sm: clamp(0.875rem, 0.825rem + 0.25vw, 1rem);
+  --font-size-lg: clamp(1.125rem, 1.05rem + 0.375vw, 1.375rem);
+  --font-size-xl: clamp(1.375rem, 1.25rem + 0.625vw, 1.75rem);
+  --font-size-2xl: clamp(1.75rem, 1.5rem + 1.25vw, 2.5rem);
+  --font-size-3xl: clamp(2.25rem, 1.875rem + 1.875vw, 3.5rem);
+  
+  /* Contrast-optimized colors */
+  --text-primary: #1a202c;
+  --text-secondary: #2d3748;
+  --text-muted: #4a5568;
+  --text-inverse: #f7fafc;
+  
+  /* Spacing & line-height */
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.6;
+  --line-height-relaxed: 1.75;
+  --letter-spacing-uppercase: 0.05em;
+  --letter-spacing-normal: 0.01em;
+}
+
+/* Apply fluid typography to headings */
+h1, .h1, .hero h1 {
+  font-size: var(--font-size-3xl);
+  line-height: var(--line-height-tight);
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+h2, .h2, .section-title {
+  font-size: var(--font-size-2xl);
+  line-height: var(--line-height-tight);
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+h3, .h3, .card-title {
+  font-size: var(--font-size-xl);
+  line-height: var(--line-height-tight);
+  color: var(--text-primary);
+}
+
+h4, .h4, .subsection-title {
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-normal);
+  color: var(--text-secondary);
+}
+
+/* Body text optimization */
+p, .description, .long-text {
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  color: var(--text-secondary);
+}
+
+/* Small text & labels */
+small, .label, .caption, .meta {
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+  color: var(--text-muted);
+}
+
+/* Uppercase labels with proper letter-spacing */
+.label-uppercase, .badge, .tag, .eyebrow {
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-uppercase);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* Ensure minimum contrast ratio 4.5:1 */
+.text-primary, .heading {
+  color: var(--text-primary);
+}
+
+.text-secondary, .body-text {
+  color: var(--text-secondary);
+}
+
+.text-muted, .helper-text {
+  color: var(--text-muted);
+}
+
+/* Dark mode contrast optimization */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text-primary: #f7fafc;
+    --text-secondary: #e2e8f0;
+    --text-muted: #a0aec0;
+  }
+  
+  h1, h2, h3, h4, .card-title {
+    color: var(--text-primary);
+  }
+  
+  p, .description, .long-text {
+    color: var(--text-secondary);
+  }
+  
+  small, .label, .caption, .meta {
+    color: var(--text-muted);
+  }
+}
+
+/* Long-form description optimization */
+.long-form, .article-content, .detailed-description {
+  line-height: var(--line-height-relaxed);
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+}
+
+/* Button text contrast */
+.btn, .button {
+  font-size: var(--font-size-sm);
+  letter-spacing: var(--letter-spacing-normal);
+  font-weight: 600;
+}
+
+/* Card content typography */
+.card p, .card .description {
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+  color: var(--text-secondary);
+}
+
+.card h3, .card .card-title {
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-tight);
+  color: var(--text-primary);
+}
+
+/* Navigation & menu typography */
+.nav-link, .menu-item {
+  font-size: var(--font-size-sm);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--text-secondary);
+}
+
+.nav-link:hover, .menu-item:hover {
+  color: var(--text-primary);
+}
+
+/* Form labels & inputs */
+.form-label, .input-label {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.form-input, .input-field {
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
+}
+
+/* Footer typography */
+.foot p, .footer-text {
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+  color: var(--text-muted);
+}
+
+.foot a, .footer-link {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.foot a:hover, .footer-link:hover {
+  color: var(--text-primary);
+}
+
+/* Accessibility: ensure focus states have good contrast */
+:focus-visible {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+  :root {
+    --text-primary: #000;
+    --text-secondary: #333;
+    --text-muted: #666;
+  }
+}

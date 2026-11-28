@@ -846,3 +846,34 @@
     console.error('Company‑map‑widget misslyckades', e);
   }
 })();
+
+(() => {
+  try {
+    const container = document.createElement('div');
+    container.className = 'sentiment-widget';
+    container.innerHTML = `
+      <div class="sentiment-chart">
+        <div class="donut-ring"></div>
+        <div class="donut-text" id="sentiment-val">--%</div>
+      </div>
+      <div class="sentiment-label">Genomsnittlig hälsa</div>
+    `;
+
+    const updateSentiment = async () => {
+      try {
+        const res = await fetch('/MyOffiCity/api/companies');
+        if (!res.ok) return;
+        const data = await res.json();
+        const avg = data.length ? Math.round(data.reduce((acc, c) => acc + (c.health || 85), 0) / data.length) : 0;
+        const valEl = container.querySelector('#sentiment-val');
+        const ring = container.querySelector('.donut-ring');
+        if (valEl) valEl.textContent = `${avg}%`;
+        if (ring) ring.style.background = `conic-gradient(#d9b46a ${avg}%, #1e293b 0)`;
+      } catch (e) {}
+    };
+
+    updateSentiment();
+    setInterval(updateSentiment, 30000);
+    window.MyOffiCityAddons.addTool('Företags-Sentiment', '📊', container);
+  } catch (e) {}
+})();

@@ -199,7 +199,9 @@ const server = http.createServer((req, res) => {
         j.keep_alive = '30m';
         j.reasoning_effort = 'none';
         j.think = false;
-        j.options = { ...(j.options || {}), num_ctx: 12288 };
+        const maxTok = Math.max(2048, Number(j.max_tokens) || 4096);
+        j.max_tokens = maxTok;
+        j.options = { ...(j.options || {}), num_ctx: 12288, num_predict: maxTok };
         bodyBuf = Buffer.from(JSON.stringify(j), 'utf8');
       } catch { /* pass through raw */ }
     }

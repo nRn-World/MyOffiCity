@@ -441,3 +441,59 @@ small, .label, .caption, .meta {
     --text-muted: #666;
   }
 }
+
+/* Hero Section Visual Hierarchy & Depth */
+.hero {
+  position: relative;
+  background: radial-gradient(ellipse at 50% 0%, rgba(217, 180, 106, 0.08) 0%, transparent 60%);
+  padding: 4rem 1.5rem;
+  text-align: center;
+}
+
+.hero h1 {
+  position: relative;
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.5rem;
+  z-index: 1;
+}
+
+.hero h1::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120%;
+  height: 150%;
+  background: radial-gradient(ellipse, rgba(217, 180, 106, 0.15) 0%, transparent 70%);
+  filter: blur(40px);
+  z-index: -1;
+  animation: heroGlow 4s ease-in-out infinite alternate;
+}
+
+@keyframes heroGlow {
+  0% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+}
+
+.hero p {
+  font-size: 1.125rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin: 0 auto 2rem;
+}
+
+.hero .btn {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.hero .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(217, 180, 106, 0.25);
+  background: linear-gradient(135deg, #d9b46a 0%, #c9a35a 100%);
+  color: #0f172a;
+}

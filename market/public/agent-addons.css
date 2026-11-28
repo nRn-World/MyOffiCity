@@ -1161,3 +1161,26 @@ small, .label, .caption, .meta {
 .glass-demo-content h3 {
   margin-top: 0;
 }
+
+.moc-quota-container {
+  padding: 4px 0;
+}
+.moc-quota-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  margin-bottom: 6px;
+  color: #e9d7b0;
+}
+.moc-progress-bg {
+  height: 6px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.moc-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #d9b46a, #f3ecdc);
+  transition: width 1s ease-in-out;
+  box-shadow: 0 0 8px rgba(217, 180, 106, 0.5);
+}
